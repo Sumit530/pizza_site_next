@@ -9,17 +9,8 @@ const Schema = new  mongoose.Schema({
     emoji : {
         type:String,
         require:true
-    },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+},
+{timestamps:true})
 const recent_emojis = new mongoose.model("recent_emojis",Schema)
 module.exports = recent_emojis;

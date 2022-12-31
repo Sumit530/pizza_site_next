@@ -25,17 +25,10 @@ const Schema = new  mongoose.Schema({
     status : {
         type:Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
+},
+{
+    timestamps:true
 })
 const safeties = new mongoose.model("safeties",Schema)
 module.exports = safeties;

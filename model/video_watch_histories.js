@@ -11,24 +11,12 @@ const Schema = new  mongoose.Schema({
         ref : 'videos',
         require:true
     },
-    parent_id : {
-        type:mongoose.Schema.Types.ObjectId,
-        require:true
-    },
-    comment : {
-        type:String,
-        default:null
-    },
-    mention_user : {
-        type:mongoose.Schema.Types.ObjectId,
-        require:true
-
-    },
     status : {
         type:Boolean,
         default:true
     }
+
 },
 {timestamps:true})
-const videos_comments = new mongoose.model("videos_comments",Schema)
-module.exports = videos_comments;
+const video_watch_histories = new mongoose.model("video_watch_histories",Schema)
+module.exports = video_watch_histories;

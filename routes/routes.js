@@ -21,6 +21,7 @@ router.post("/login",usercontroller.LoginUser)
 router.post("/send_otp",usercontroller.send_otp)
 router.post("/get_my_accounts",usercontroller.get_my_accounts)
 router.post("/user_details",usercontroller.user_details)
+router.post("/user_detail",usercontroller.user_details)
 router.post("/following_list",usercontroller.following_list)
 
 module.exports = router

@@ -1,20 +1,20 @@
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
-    terms_of_use :{
+    title : {
         type:String,
     },
-    privacy_policy :{
+    details: {
         type:String,
     },
-    copyright_policy :{
-        type:String,
-    },
+
     status : {
         type:Boolean,
         default:true
     }
+
 },
 {timestamps:true})
-const settings = new mongoose.model("settings",Schema)
-module.exports = settings;
+
+const help_centers = new mongoose.model("help_centers",Schema)
+module.exports = help_centers;

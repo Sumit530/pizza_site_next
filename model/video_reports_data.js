@@ -11,18 +11,9 @@ const Schema = new  mongoose.Schema({
         status : {
             type:Boolean,
             default:true
-        },
-        created_at : {
-            type:Date,
-            default:Date.now()
-            
-        },
-        updated_at : {
-            type:Date,
-            default:null
-            
         }
 
-})
+},
+{timestamps:true})
 const video_reports_data = new mongoose.model("video_reports_data",Schema)
 module.exports = video_reports_data;

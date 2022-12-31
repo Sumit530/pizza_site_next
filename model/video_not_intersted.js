@@ -14,18 +14,8 @@ const Schema = new  mongoose.Schema({
     status : {
         type:Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-
-})
+},
+{timestamps:true})
 const video_not_intersted = new mongoose.model("video_not_intersted",Schema)
 module.exports = video_not_intersted;

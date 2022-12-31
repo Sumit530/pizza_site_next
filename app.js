@@ -1,6 +1,7 @@
 const express = require("express")
 const app = express()
 const http = require("http")
+const moment = require("moment")
 const { CLIENT_RENEG_LIMIT } = require("tls")
 const router = require("./routes/routes")
 const multer = require("multer")
@@ -15,5 +16,7 @@ app.use(router)
 
 app.listen(8000,()=>{
 console.log("server is running on 8000");
-
+const j = moment().format("YYYY-MM-DD hh:mm a")
+const m  = moment(j,"YYYY-MM-DD hh:mm a").format("DD")
+console.log(m);
 })

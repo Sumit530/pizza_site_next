@@ -1,3 +1,4 @@
+const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
@@ -6,27 +7,14 @@ const Schema = new  mongoose.Schema({
    },
    attachment : {
     type:String
-   },
-   deleted_at : {
-    type:Date,
-    default:null
-    
-},
+   }, 
     status : {
         type:Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
 
-})
+},
+{timestamps:true})
+Schema.plugin(softDeletePlugin)
 const video_effects = new mongoose.model("video_effects",Schema)
 module.exports = video_effects;

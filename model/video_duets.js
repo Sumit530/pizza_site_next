@@ -1,22 +1,23 @@
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
-
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
         require:true
     },
-    follower_id : {
+    video_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'videos',
         require:true
     },
     status : {
-        type : Boolean,
+        type:Boolean,
         default:true
     }
-},
-{timestamps:true})
-const followers = new mongoose.model("followers",Schema)
-module.exports = followers;
+
+},{
+    timestamps:true
+})
+const video_likes = new mongoose.model("video_likes",Schema)
+module.exports = video_likes;

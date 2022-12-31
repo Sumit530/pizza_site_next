@@ -6,19 +6,21 @@ const Schema = new  mongoose.Schema({
         ref : 'Users',
         require:true
     },
-    hashtag_id : {
+    help_center_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'hashtags',
+        ref : 'help_centers',
         require:true
     },
+    problem_solved : {
+        type:Boolean,
+    },
+    
     status : {
-        type : Boolean,
+        type:Boolean,
         default:true
     }
+}
+,{timestamps:true})
 
-},
-{
-timestamps:true
-})
-const hashtags_bookmarks = new mongoose.model("hashtags_bookmarks",Schema)
-module.exports = hashtags_bookmarks;
+const help_center_data = new mongoose.model("help_center_data",Schema)
+module.exports = help_center_data;

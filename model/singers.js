@@ -1,3 +1,4 @@
+const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
@@ -15,22 +16,9 @@ const Schema = new  mongoose.Schema({
     status : {
         type:Boolean,
         default:true
-    },
-    deleted_at : {
-        type:Date,
-        default:null
-        
-    },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+},
+{timestamps:true})
+Schema.plugin(softDeletePlugin)
 const singers = new mongoose.model("singers",Schema)
 module.exports = singers;
