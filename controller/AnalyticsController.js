@@ -1,8 +1,8 @@
 const User = require("../model/users")
-const Follow = require("../model/followers")
 const Videos = require("../model/videos")
+const Follow = require("../model/followers")
 const VideoLikes = require("../model/video_likes")
-const VideoData = require("../model/Video")
+const VideoData = require("../model/video_data")
 const VideoWatchHistory = require("../model/video_watch_histories")
 const Country = require("../model/countries")
 const moment = require("moment")
@@ -36,5 +36,20 @@ exports.analytics_overview = (req,res) =>{
         })
     }
     const data = {past_seven_views,past_month_views}
-    return  res.status(201).json({status:1,message:"unFollow successfully!"})
+    return  res.status(201).json({status:1,message:"Overview analytics data list get successfully!",data:data})
+}
+
+exports.analytics_followers = async(req,res) =>{
+    try {
+        if(!req.body.user_id || req.body.user_id == '' ){
+            return res.status(406).json({status:0,message:"please give a user id"})
+        } 
+        const today_date = moment().format('YYYY-MM-DD hh:mm:ss a')
+        const past_week_date = moment(startdate,"YYYY-MM-DD hh:mm:ss a").subtract(7,"day")
+        total_follower =  await Follow.find({user_id:req.body.user_id})
+
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on add comment pinned");
+    }
 }

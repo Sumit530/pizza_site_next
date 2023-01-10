@@ -14,14 +14,14 @@ const { default: axios } = require("axios");
 
 
 exports.RegiserUser = async(req,res) =>{
-const {country_code} = req.body
+const {country_code} = req?.body
 let email = null;
 let mobile_no = null;
-if(req.body.email){
-email = req.body.email
+if(req?.body?.email){
+email = req?.body?.email
 }
-if(req.body.mobile_no){
-mobile_no = req.body.mobile_no
+if(req?.body?.mobile_no){
+mobile_no = req?.body?.mobile_no
 }
 
 if(mobile_no != null ){
@@ -38,7 +38,7 @@ if(mobile_no != null ){
     const otpdate = Date.now()
    await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-
+    const country = find({})
     const userdata = new User({
         country_code,mobile_no,otp,otp_expired    	           
     })
@@ -98,18 +98,21 @@ else if (email != null){
 
 
 exports.social_signup = async(req,res)=>{
-const {name,email,social_id,type} = req.body
-if(!email || !type ){
-    return res.status(401).json({status:1,message:"please fill field properly"})
-}
+    if(!req?.body?.email  ){
+        return res.status(401).json({status:1,message:"please fill field properly"})
+    }
+    if(!req?.body?.type ) {
+        return res.status(401).json({status:1,message:"please fill field properly"})
+    }
+    const {name,email,social_id,type} = req?.body
 const check_user = await User.find({email:email})
 const keysecret = process.env.UserSecretkey
 if(check_user.length>0){
     let token = jwt.sign({ id:check_user._id,email:check_user.email},keysecret);
     const data = {
-        user_id: check_user._id  ,
-        name:check_user.name ? check_user.name : "",
-        email:check_user.email ? check_user.email : "",
+        user_id: check_user[0]._id  ,
+        name:check_user[0].name ? check_user[0].name : "",
+        email:check_user[0].email ? check_user[0].email : "",
         token:token
     }
 res.status(409).json({status:1,message:"already registerd user",data})
@@ -132,7 +135,7 @@ else{
 }
 
 exports.LoginUser = async(req,res)=>{
-    const {email,password,fcm_id,device_id} = req.body
+    const {email,password,fcm_id,device_id} = req?.body
     if(email && password && fcm_id && device_id){
         var user = null
         if(isNaN(email)){
@@ -144,8 +147,9 @@ exports.LoginUser = async(req,res)=>{
         else {
              user = await User.find({username:email})
         }
-        if(user != null) {
-            if(bcrypt.compare(password,user.password)==false){
+        if(user.length>0) {
+            console.log(user);
+            if(bcrypt.compare(`'${password}'`,user[0].password)==false){
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
@@ -169,7 +173,7 @@ exports.LoginUser = async(req,res)=>{
 
 //api for registration user 
 exports.send_otp = async(req,res)=>{
-const {mobile_no} = req.body
+const {mobile_no} = req?.body
 const phoneno = /^\d{10}$/;
     if(mobile_no.match(phoneno) == null ){
         return res.status(406).json({status:0,message:"please povide a valide number"})
@@ -195,7 +199,7 @@ else{
 }
 
 exports.resend_otp = async(req,res)=>{
-    const {mobile_no} = req.body
+    const {mobile_no} = req?.body
     const phoneno = /^\d{10}$/;
         if(mobile_no.match(phoneno) == null ){
             return res.status(406).json({status:0,message:"please povide a valide number"})
@@ -222,7 +226,7 @@ exports.resend_otp = async(req,res)=>{
     
 
 exports.user_details = async(req,res)=>{
-    const {keyword} =  req.body
+    const {keyword} =  req?.body
 try {
     
     if(!keyword) {
@@ -248,7 +252,7 @@ try {
 exports.get_my_accounts = async(req,res)=>{
     try {
         var result = []
-        const {user_id } = req.body
+        const {user_id } = req?.body
         if(!user_id){
             return res.status(406).json({status:0,message:"please give a user id"})
         }  
@@ -280,13 +284,13 @@ exports.get_all_users = async(req,res)=>{
     try {
         
     
-    const {user_id } = req.body
+    const {user_id } = req?.body
     var result = []
     if(!user_id){
         return res.status(406).json({status:0,message:"please give a user id"})
     }  
     var user = null
-    if(req.body.keyword && req.body.keyword != '' ){
+    if(req?.body?.keyword && req?.body?.keyword != '' ){
          user = await find({_id:user_id,status:1,username:`/${keyword}/i`})
 
     }else{
@@ -317,10 +321,10 @@ exports.get_all_users = async(req,res)=>{
 
 exports.check_otp  = async(req,res)=>{
     try {
-        if(!req.body.user_id || req.body.user_id == '' ){
+        if(!req?.body?.user_id || req?.body?.user_id == '' ){
             return res.status(406).json({status:0,message:"please give a user id"})
         }
-        const {user_id,otp} = req.body
+        const {user_id,otp} = req?.body
 
         const user = await User.find({_id:user_id})
         if(user.length>0){
@@ -341,10 +345,10 @@ exports.check_otp  = async(req,res)=>{
 }
 exports.check_username = async(req,res)=>{
     try {
-        if(!req.body.username || req.body.username == ''){ 
+        if(!req?.body?.username || req?.body?.username == ''){ 
             return  res.status(406).json({status:0,message:"please give username"})
         }
-        const {username} = req.body
+        const {username} = req?.body
         const user = await User.find({username:username})
         if(user.length>0){
             return res.status(402).json({status:0,message:"This user name is already our database"})
@@ -361,10 +365,10 @@ exports.update_username = async(req,res) =>{
     try {
         
    
-    if(!req.body.username || req.body.username == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.username || req?.body?.username == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username"})
     }
-    const {username,user_id} = req.body
+    const {username,user_id} = req?.body
     const user = await User.find({username:username})
     if(user.length>0){
         return res.status(402).json({status:0,message:"This user name is already our database"})
@@ -383,10 +387,10 @@ exports.update_mobile_no = async(req,res) =>{
     try {
         
     
-    if(!req.body.mobile_no || req.body.mobile_no == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.mobile_no || req?.body?.mobile_no == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username and mobile no"})
     }
-    const user = await User.findOneAndUpdate({_id:req.body.user_id},{mobile_no:mobile_no})
+    const user = await User.findOneAndUpdate({_id:req?.body?.user_id},{mobile_no:mobile_no})
     if(user.length>0){
         return res.status(201).json({status:1,message:"mobile number updated successfully"})
     }
@@ -398,7 +402,7 @@ exports.update_mobile_no = async(req,res) =>{
 
 exports.update_page_name = async(req,res) =>{
    try {
-    if(!req.body.page_name || req.body.page_name == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.page_name || req?.body?.page_name == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username or page name"})
     }
 
@@ -414,7 +418,7 @@ exports.update_page_name = async(req,res) =>{
 
 exports.update_privacy = async(req,res) =>{
     try {
-        if(!req.body.allow_find_me || req.body.allow_find_me  == ''|| !req.body.private_account || req.body.private_account  == '' || req.body.user_id == '' || !req.body.user_id){ 
+        if(!req?.body?.allow_find_me || req?.body?.allow_find_me  == ''|| !req?.body?.private_account || req?.body?.private_account  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
         const updateuser = await User.findOneAndUpdate({_id:user_id},{allow_find_me:allow_find_me,private_account:private_account},{new:true})
@@ -429,7 +433,7 @@ exports.update_privacy = async(req,res) =>{
 
 exports.get_user_safeties = async(req,res) =>{
   try {
-    if( req.body.user_id == '' || !req.body.user_id){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const safeties = await safety.find({user_id:user_id})
@@ -446,7 +450,7 @@ exports.get_user_safeties = async(req,res) =>{
 }
 exports.update_safeties = async(req,res) =>{
 try {
-    if(!req.body.is_allow_comments || req.body.is_allow_comments  == ''|| !req.body.is_allow_downloads || req.body.is_allow_downloads  == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.is_allow_comments || req?.body?.is_allow_comments  == ''|| !req?.body?.is_allow_downloads || req?.body?.is_allow_downloads  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give prorpery parameter"})
     }
     const safeties = await safety.find({user_id:user_id})
@@ -466,7 +470,7 @@ try {
 
 exports.update_notification_settings = (req,res) =>{
     try {
-        if(!req.body.is_likes || req.body.is_likes  == ''|| !req.body.is_mentions || req.body.is_mentions  == ''|| !req.body.is_direct_messages || req.body.is_direct_messages  == ''|| !req.body.is_recommended_broadcasts || req.body.is_recommended_broadcasts  == ''|| !req.body.is_customized_updates || req.body.is_customized_updates  == '' || req.body.user_id == '' || !req.body.user_id){ 
+        if(!req?.body?.is_likes || req?.body?.is_likes  == ''|| !req?.body?.is_mentions || req?.body?.is_mentions  == ''|| !req?.body?.is_direct_messages || req?.body?.is_direct_messages  == ''|| !req?.body?.is_recommended_broadcasts || req?.body?.is_recommended_broadcasts  == ''|| !req?.body?.is_customized_updates || req?.body?.is_customized_updates  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
         //notification setting
@@ -478,7 +482,7 @@ exports.update_notification_settings = (req,res) =>{
 
 exports.get_notification_settings = (req,res) =>{
     try {
-        if( req.body.user_id == '' || !req.body.user_id){ 
+        if( req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give username and mobile no"})
         }
         //notification settings
@@ -490,7 +494,7 @@ exports.get_notification_settings = (req,res) =>{
 
 exports.getProfile = async(req,res) =>{
     try {
-        if(!req.body.follower_id || req.body.follower_id == '' || req.body.login_id == '' || !req.body.login_id){ 
+        if(!req?.body?.follower_id || req?.body?.follower_id == '' || req?.body?.login_id == '' || !req?.body?.login_id){ 
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         const user = await User.find({_id:follower_id})
@@ -502,7 +506,7 @@ exports.getProfile = async(req,res) =>{
 
 exports.update_location = async(req,res) =>{
    try {
-    if( req.body.user_id == '' || !req.body.user_id || req.body.lat == '' || !req.body.lat || req.body.long == '' || !req.body.long){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.lat == '' || !req?.body?.lat || req?.body?.long == '' || !req?.body?.long){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
     const user = await User.find({_id:user_id})
@@ -523,11 +527,11 @@ exports.update_location = async(req,res) =>{
 
 exports.following_list = async(req,res) =>{
    try {
-    if( req.body.user_id == '' || !req.body.user_id ){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({follower_id:req.body.user_id}).populate("user_id")
+    flwdata = await Follow.find({follower_id:req?.body?.user_id}).populate("user_id")
     const data = []
     flwdata?.map((g)=>{
         g?.user_id?.map((f)=>{
@@ -567,11 +571,11 @@ exports.following_list = async(req,res) =>{
 }
 exports.follow_list = async(req,res) =>{
   try {
-    if( req.body.user_id == '' || !req.body.user_id ){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({user_id:req.body.user_id}).populate("follwer_id")
+    flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follwer_id")
     const data = []
     flwdata?.map((g)=>{
         g?.follower_id?.map((e)=>{
@@ -579,7 +583,7 @@ exports.follow_list = async(req,res) =>{
             if(e.profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/profile/${e.profile_image}`)){
+                if(fs.existsSync(`${path}/${e.profile_image}`)){
                     var filepath = `${path}/${e.profile_image}`
                 }
                 else {
@@ -613,7 +617,7 @@ exports.follow_list = async(req,res) =>{
 
 exports.pending_follow_request = async(req,res)=>{
     try {
-        if( req.body.user_id == '' || !req.body.user_id ){ 
+        if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
             return  res.status(406).json({status:0,message:"please give a proper parameter"})
         }
         const flwdata = await Follow.find({user_id:user_id,status:0}).populate("follower_id")
@@ -662,11 +666,11 @@ exports.pending_follow_request = async(req,res)=>{
 
 exports.to_follow = async(req,res)=>{
     try {
-        if( req.body.user_id == '' || !req.body.user_id || req.body.follower_id == '' || !req.body.follower_id ){ 
+        if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
             return  res.status(406).json({status:0,message:"please give a proper parameter"})
         } 
-        const user_id =  req.body.user_id
-        const follower_id =  req.body.follower_id
+        const user_id =  req?.body?.user_id
+        const follower_id =  req?.body?.follower_id
         if(user_id == follower_id){
             return  res.status(406).json({status:0,message:"please follow another user"})
         }
@@ -738,10 +742,10 @@ exports.to_follow = async(req,res)=>{
 
 exports.to_unfollow = async(req,res) =>{
     try {
-        if( req.body.user_id == '' || !req.body.user_id || req.body.follower_id == '' || !req.body.follower_id ){ 
+        if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
             return  res.status(406).json({status:0,message:"please give a proper parameter"})
         } 
-        const user_data = User.find({_id:req.body.user_id})
+        const user_data = User.find({_id:req?.body?.user_id})
         if(user_data.length>0){
             await Follow.findOneAndDelete({user_id:user_id,follower_id:follower_id},{new:true})
             return  res.status(201).json({status:1,message:"unFollow successfully!"})

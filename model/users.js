@@ -67,6 +67,10 @@ const Schema = new  mongoose.Schema({
     remember_token : {
         type:Date,
     },
+    country_id : {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"countries"
+    },
     language_id : {
         type:mongoose.Schema.Types.ObjectId,
         ref:"languages"

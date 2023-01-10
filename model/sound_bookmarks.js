@@ -1,15 +1,15 @@
 const mongoose = require("mongoose")
-
 const Schema = new  mongoose.Schema({
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'Users',
+        ref : 'users',
         require:true
     },
-    keyword : [{
-        type:String,
+    sound_id : {
+        type:mongoose.Schema.Types.ObjectId,
+        ref : 'songs',
         require:true
-    }],
+    },
     status : {
         type:Boolean,
         default:true
