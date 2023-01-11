@@ -1,3 +1,4 @@
+const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
@@ -66,6 +67,10 @@ const Schema = new  mongoose.Schema({
     remember_token : {
         type:Date,
     },
+    country_id : {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"countries"
+    },
     language_id : {
         type:mongoose.Schema.Types.ObjectId,
         ref:"languages"
@@ -101,24 +106,10 @@ const Schema = new  mongoose.Schema({
         type:Boolean,
         default:true,
         require:true
-    },
-    deleted_at : {
-        type:Date,
-        default:null
-        
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
 
-})
+},{timestamps:true})
+Schema.plugin(softDeletePlugin)
 
 const Users = new mongoose.model("Users",Schema)
 module.exports = Users;

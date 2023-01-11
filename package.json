@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "2factor": "^1.0.6",
+    "axios": "^1.2.2",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
@@ -29,6 +30,7 @@
     "mongoose": "^6.8.1",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.8.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "soft-delete-plugin-mongoose": "^1.0.15"
   }
 }

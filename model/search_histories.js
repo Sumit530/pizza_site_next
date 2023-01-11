@@ -6,24 +6,15 @@ const Schema = new  mongoose.Schema({
         ref : 'Users',
         require:true
     },
-    keyword : {
+    keyword : [{
         type:String,
         require:true
-    },
+    }],
     status : {
         type:Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+},
+{timestamps:true})
 const search_histories = new mongoose.model("search_histories",Schema)
 module.exports = search_histories;

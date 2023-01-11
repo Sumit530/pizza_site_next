@@ -10,17 +10,8 @@ const Schema = new  mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref : 'hashtags',
         require:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+},
+{timestamps:true})
 const hashtag_data = new mongoose.model("hashtag_data",Schema)
 module.exports = hashtag_data;

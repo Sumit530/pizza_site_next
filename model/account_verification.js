@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-
+const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const Schema = new  mongoose.Schema({
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
@@ -65,23 +65,10 @@ const Schema = new  mongoose.Schema({
         type:Boolean,
         require:true,
         default:false
-    },
-    deleted_at : {
-        type:Date,
-        default:null
-        
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
 
-})
+},
+{timestamps:true})
+Schema.plugin(softDeletePlugin)
 const account_verification = new mongoose.model("account_verifications",Schema)
 module.exports = account_verification;

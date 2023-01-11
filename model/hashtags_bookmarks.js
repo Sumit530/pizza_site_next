@@ -14,18 +14,11 @@ const Schema = new  mongoose.Schema({
     status : {
         type : Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
 
+},
+{
+timestamps:true
 })
 const hashtags_bookmarks = new mongoose.model("hashtags_bookmarks",Schema)
 module.exports = hashtags_bookmarks;

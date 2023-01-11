@@ -11,17 +11,8 @@ const Schema = new  mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref : 'User',
         require:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+
+},{timestamps:true})
 const block_user = new mongoose.model("block_user",Schema)
 module.exports = block_user;

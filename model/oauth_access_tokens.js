@@ -22,21 +22,12 @@ const Schema = new  mongoose.Schema({
         type:Number,
         require:true
     },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
-    },
     expires_at : {
         type:Date,
         default:null
         
     }
-})
+},
+{timestamps:true})
 const oauth_access_tokens = new mongoose.model("oauth_access_tokens",Schema)
 module.exports = oauth_access_tokens;

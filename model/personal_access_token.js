@@ -23,16 +23,8 @@ const Schema = new  mongoose.Schema({
     last_used_at : {
         type:Date,
 
-    },
-    created_at : {
-        type:Date,
-        default:null
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-    
-})
+},
+{timestamps:true})
+const personal_access_token = new mongoose.model("personal_access_token",Schema)
+module.exports = personal_access_token;

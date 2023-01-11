@@ -14,18 +14,9 @@ const Schema = new  mongoose.Schema({
     status : {
         type:Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
 
-})
+},
+{timestamps:true})
 const video_favorites = new mongoose.model("video_favorites",Schema)
 module.exports = video_favorites;

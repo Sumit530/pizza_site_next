@@ -4,22 +4,24 @@ const nodemailer = require('nodemailer');
 const { validate} =   require('deep-email-validator')
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs");
-const notification_setting = require("../model/notifications")
+const Notification = require("../model/notifications")
 const safety = require("../model/safeties")
 const Follow = require("../model/followers")
 require("dotenv").config()
 const TwoFactor = new (require('2factor'))(process.env.API_KEY)
+const fs = require("fs");
+const { default: axios } = require("axios");
 
 
 exports.RegiserUser = async(req,res) =>{
-const {country_code} = req.body
+const {country_code} = req?.body
 let email = null;
 let mobile_no = null;
-if(req.body.email){
-email = req.body.email
+if(req?.body?.email){
+email = req?.body?.email
 }
-if(req.body.mobile_no){
-mobile_no = req.body.mobile_no
+if(req?.body?.mobile_no){
+mobile_no = req?.body?.mobile_no
 }
 
 if(mobile_no != null ){
@@ -36,7 +38,7 @@ if(mobile_no != null ){
     const otpdate = Date.now()
    await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-
+    const country = find({})
     const userdata = new User({
         country_code,mobile_no,otp,otp_expired    	           
     })
@@ -96,18 +98,21 @@ else if (email != null){
 
 
 exports.social_signup = async(req,res)=>{
-const {name,email,social_id,type} = req.body
-if(!email || !type ){
-    return res.status(401).json({status:1,message:"please fill field properly"})
-}
+    if(!req?.body?.email  ){
+        return res.status(401).json({status:1,message:"please fill field properly"})
+    }
+    if(!req?.body?.type ) {
+        return res.status(401).json({status:1,message:"please fill field properly"})
+    }
+    const {name,email,social_id,type} = req?.body
 const check_user = await User.find({email:email})
 const keysecret = process.env.UserSecretkey
 if(check_user.length>0){
     let token = jwt.sign({ id:check_user._id,email:check_user.email},keysecret);
     const data = {
-        user_id: check_user._id  ,
-        name:check_user.name ? check_user.name : "",
-        email:check_user.email ? check_user.email : "",
+        user_id: check_user[0]._id  ,
+        name:check_user[0].name ? check_user[0].name : "",
+        email:check_user[0].email ? check_user[0].email : "",
         token:token
     }
 res.status(409).json({status:1,message:"already registerd user",data})
@@ -130,7 +135,7 @@ else{
 }
 
 exports.LoginUser = async(req,res)=>{
-    const {email,password,fcm_id,device_id} = req.body
+    const {email,password,fcm_id,device_id} = req?.body
     if(email && password && fcm_id && device_id){
         var user = null
         if(isNaN(email)){
@@ -142,12 +147,13 @@ exports.LoginUser = async(req,res)=>{
         else {
              user = await User.find({username:email})
         }
-        if(user != null) {
-            if(bcrypt.compare(password,user.password)==false){
+        if(user.length>0) {
+            console.log(user);
+            if(bcrypt.compare(`'${password}'`,user[0].password)==false){
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
-                const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id})
+                const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
                 const token = jwt.sign({id:finaluser._id,email:finaluser.email},keysecret)
                 const data = {
                     user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
@@ -167,7 +173,7 @@ exports.LoginUser = async(req,res)=>{
 
 //api for registration user 
 exports.send_otp = async(req,res)=>{
-const {mobile_no} = req.body
+const {mobile_no} = req?.body
 const phoneno = /^\d{10}$/;
     if(mobile_no.match(phoneno) == null ){
         return res.status(406).json({status:0,message:"please povide a valide number"})
@@ -180,7 +186,7 @@ if(finaluser.length>0){
     await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otpdate = Date.now()
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-    const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired})
+    const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
     const data = {
         user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
     }
@@ -193,7 +199,7 @@ else{
 }
 
 exports.resend_otp = async(req,res)=>{
-    const {mobile_no} = req.body
+    const {mobile_no} = req?.body
     const phoneno = /^\d{10}$/;
         if(mobile_no.match(phoneno) == null ){
             return res.status(406).json({status:0,message:"please povide a valide number"})
@@ -206,7 +212,7 @@ exports.resend_otp = async(req,res)=>{
         await TwoFactor.sendOTP(mobile_no,{otp:otp})
         const otpdate = Date.now()
         const otp_expired = moment(otpdate).add(30, 'm').toDate();
-        const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired})
+        const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
         const data = {
             user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
         }
@@ -220,20 +226,20 @@ exports.resend_otp = async(req,res)=>{
     
 
 exports.user_details = async(req,res)=>{
-    const {keyword} =  req.body
+    const {keyword} =  req?.body
 try {
     
     if(!keyword) {
         return res.status(402).json({status:0,message:"please provide a keyword"})
     } 
     var user = null
-    if(isNaN(keyword)){
-        user = await User.find({mobile_no:keyword})
+    if(isNaN(keyword) == false){
+        user = await User.find({mobile_no: {$regex:keyword} })
     }
     else if(keyword.match(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i) != null){
-        user = await User.find({email:keyword})
+        user = await User.find({email:{$regex:keyword}})
     }
-    if(user == null){
+    if(user == null || user.length<=0){
         res.status(406).json({status:0,message:"user not found"})
     }
     else {
@@ -246,7 +252,7 @@ try {
 exports.get_my_accounts = async(req,res)=>{
     try {
         var result = []
-        const {user_id } = req.body
+        const {user_id } = req?.body
         if(!user_id){
             return res.status(406).json({status:0,message:"please give a user id"})
         }  
@@ -278,13 +284,13 @@ exports.get_all_users = async(req,res)=>{
     try {
         
     
-    const {user_id } = req.body
+    const {user_id } = req?.body
     var result = []
     if(!user_id){
         return res.status(406).json({status:0,message:"please give a user id"})
     }  
     var user = null
-    if(req.body.keyword && req.body.keyword != '' ){
+    if(req?.body?.keyword && req?.body?.keyword != '' ){
          user = await find({_id:user_id,status:1,username:`/${keyword}/i`})
 
     }else{
@@ -315,15 +321,15 @@ exports.get_all_users = async(req,res)=>{
 
 exports.check_otp  = async(req,res)=>{
     try {
-        if(!req.body.user_id || req.body.user_id == '' ){
+        if(!req?.body?.user_id || req?.body?.user_id == '' ){
             return res.status(406).json({status:0,message:"please give a user id"})
         }
-        const {user_id,otp} = req.body
+        const {user_id,otp} = req?.body
 
         const user = await User.find({_id:user_id})
         if(user.length>0){
             if(user.otp == otp){
-                await User.findOneAndUpdate({_id:user_id},{otp:'',otp_expired:''})
+                await User.findOneAndUpdate({_id:user_id},{otp:'',otp_expired:''},{new:true})
                 return res.status(201).json({status:1,message:"otp match successfully"})
             }
             else{
@@ -339,10 +345,10 @@ exports.check_otp  = async(req,res)=>{
 }
 exports.check_username = async(req,res)=>{
     try {
-        if(!req.body.username || req.body.username == ''){ 
+        if(!req?.body?.username || req?.body?.username == ''){ 
             return  res.status(406).json({status:0,message:"please give username"})
         }
-        const {username} = req.body
+        const {username} = req?.body
         const user = await User.find({username:username})
         if(user.length>0){
             return res.status(402).json({status:0,message:"This user name is already our database"})
@@ -359,16 +365,16 @@ exports.update_username = async(req,res) =>{
     try {
         
    
-    if(!req.body.username || req.body.username == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.username || req?.body?.username == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username"})
     }
-    const {username,user_id} = req.body
+    const {username,user_id} = req?.body
     const user = await User.find({username:username})
     if(user.length>0){
         return res.status(402).json({status:0,message:"This user name is already our database"})
     }
     else {
-        await User.findOneAndUpdate({_id:user_id},{username:username})
+        await User.findOneAndUpdate({_id:user_id},{username:username},{new:true})
         return res.status(201).json({status:1,message:"username updated successfully"})
     }
 } catch (error) {
@@ -381,10 +387,10 @@ exports.update_mobile_no = async(req,res) =>{
     try {
         
     
-    if(!req.body.mobile_no || req.body.mobile_no == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.mobile_no || req?.body?.mobile_no == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username and mobile no"})
     }
-    const user = await User.findOneAndUpdate({_id:req.body.user_id},{mobile_no:mobile_no})
+    const user = await User.findOneAndUpdate({_id:req?.body?.user_id},{mobile_no:mobile_no})
     if(user.length>0){
         return res.status(201).json({status:1,message:"mobile number updated successfully"})
     }
@@ -396,11 +402,11 @@ exports.update_mobile_no = async(req,res) =>{
 
 exports.update_page_name = async(req,res) =>{
    try {
-    if(!req.body.page_name || req.body.page_name == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.page_name || req?.body?.page_name == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username or page name"})
     }
 
-    const updateuser = await User.findOneAndUpdate({_id:user_id},{page_name:page_name})
+    const updateuser = await User.findOneAndUpdate({_id:user_id},{page_name:page_name},{new:true})
     if(updateuser.length>0){
         return res.status(201).json({status:1,message:"page name updated successfully"})
     }
@@ -412,10 +418,10 @@ exports.update_page_name = async(req,res) =>{
 
 exports.update_privacy = async(req,res) =>{
     try {
-        if(!req.body.allow_find_me || req.body.allow_find_me  == ''|| !req.body.private_account || req.body.private_account  == '' || req.body.user_id == '' || !req.body.user_id){ 
+        if(!req?.body?.allow_find_me || req?.body?.allow_find_me  == ''|| !req?.body?.private_account || req?.body?.private_account  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
-        const updateuser = await User.findOneAndUpdate({_id:user_id},{allow_find_me:allow_find_me,private_account:private_account})
+        const updateuser = await User.findOneAndUpdate({_id:user_id},{allow_find_me:allow_find_me,private_account:private_account},{new:true})
         if(updateuser.length>0){
             return res.status(201).json({status:1,message:"privacy updated successfully"})
         }
@@ -427,7 +433,7 @@ exports.update_privacy = async(req,res) =>{
 
 exports.get_user_safeties = async(req,res) =>{
   try {
-    if( req.body.user_id == '' || !req.body.user_id){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const safeties = await safety.find({user_id:user_id})
@@ -444,12 +450,12 @@ exports.get_user_safeties = async(req,res) =>{
 }
 exports.update_safeties = async(req,res) =>{
 try {
-    if(!req.body.is_allow_comments || req.body.is_allow_comments  == ''|| !req.body.is_allow_downloads || req.body.is_allow_downloads  == '' || req.body.user_id == '' || !req.body.user_id){ 
+    if(!req?.body?.is_allow_comments || req?.body?.is_allow_comments  == ''|| !req?.body?.is_allow_downloads || req?.body?.is_allow_downloads  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give prorpery parameter"})
     }
     const safeties = await safety.find({user_id:user_id})
     if(safeties.length>0){
-        const updatesafeties = await safety.findOneAndUpdate({user_id:user_id},{is_allow_comments:is_allow_comments,is_allow_downloads:is_allow_downloads})
+        const updatesafeties = await safety.findOneAndUpdate({user_id:user_id},{is_allow_comments:is_allow_comments,is_allow_downloads:is_allow_downloads},{new:true})
         return res.status(201).json({status:1,message:"safeties updated successfully",data:updatesafeties})
     }
     else{
@@ -464,7 +470,7 @@ try {
 
 exports.update_notification_settings = (req,res) =>{
     try {
-        if(!req.body.is_likes || req.body.is_likes  == ''|| !req.body.is_mentions || req.body.is_mentions  == ''|| !req.body.is_direct_messages || req.body.is_direct_messages  == ''|| !req.body.is_recommended_broadcasts || req.body.is_recommended_broadcasts  == ''|| !req.body.is_customized_updates || req.body.is_customized_updates  == '' || req.body.user_id == '' || !req.body.user_id){ 
+        if(!req?.body?.is_likes || req?.body?.is_likes  == ''|| !req?.body?.is_mentions || req?.body?.is_mentions  == ''|| !req?.body?.is_direct_messages || req?.body?.is_direct_messages  == ''|| !req?.body?.is_recommended_broadcasts || req?.body?.is_recommended_broadcasts  == ''|| !req?.body?.is_customized_updates || req?.body?.is_customized_updates  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
         //notification setting
@@ -476,7 +482,7 @@ exports.update_notification_settings = (req,res) =>{
 
 exports.get_notification_settings = (req,res) =>{
     try {
-        if( req.body.user_id == '' || !req.body.user_id){ 
+        if( req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give username and mobile no"})
         }
         //notification settings
@@ -488,7 +494,7 @@ exports.get_notification_settings = (req,res) =>{
 
 exports.getProfile = async(req,res) =>{
     try {
-        if(!req.body.follower_id || req.body.follower_id == '' || req.body.login_id == '' || !req.body.login_id){ 
+        if(!req?.body?.follower_id || req?.body?.follower_id == '' || req?.body?.login_id == '' || !req?.body?.login_id){ 
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         const user = await User.find({_id:follower_id})
@@ -500,12 +506,12 @@ exports.getProfile = async(req,res) =>{
 
 exports.update_location = async(req,res) =>{
    try {
-    if( req.body.user_id == '' || !req.body.user_id || req.body.lat == '' || !req.body.lat || req.body.long == '' || !req.body.long){ 
+    if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.lat == '' || !req?.body?.lat || req?.body?.long == '' || !req?.body?.long){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
     const user = await User.find({_id:user_id})
     if(user.length>0){
-        const locationupdate = await safety.findOneAndUpdate({user_id:user_id},{lat:lat,long:long})
+        const locationupdate = await safety.findOneAndUpdate({user_id:user_id},{lat:lat,long:long},{new:true})
         return res.status(201).json({status:1,message:"location updated successfully",data:locationupdate})
     }
     else{
@@ -520,16 +526,235 @@ exports.update_location = async(req,res) =>{
 }
 
 exports.following_list = async(req,res) =>{
-    if( req.body.user_id == '' || !req.body.user_id ){ 
+   try {
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({follower_id:req.body.user_id})
-    if(user.length>0){
+    flwdata = await Follow.find({follower_id:req?.body?.user_id}).populate("user_id")
+    const data = []
+    flwdata?.map((g)=>{
+        g?.user_id?.map((f)=>{
 
-        return res.status(201).json({status:1,message:"location updated successfully",data:locationupdate})
+            if(e.profile_image != ''){
+                
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/profile/${e.profile_image}`)){
+                    var filepath = `${path}/${e.profile_image}`
+                }
+                else {
+                    var filepath = ''
+                }
+            }else{
+                var filepath = ''
+            }
+            data.push({
+                id:e._id,
+                user_id:e.user_id,
+                name:e.name,
+                username:e.username,
+                private_account:e.private_account,
+                profile_image:filepath
+            })
+        })
+    })
+    if(data.length>0){
+        return res.status(201).json({status:1,message:" follower found successfully",data:data})
     }
     else{
-        return res.status(402).json({status:0,message:"user safety not found"})
+        return res.status(402).json({status:0,message:"user not have followers"})
+    }
+   } catch (error) {
+    res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on update get follower list"); 
+   }
+}
+exports.follow_list = async(req,res) =>{
+  try {
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+
+    flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follwer_id")
+    const data = []
+    flwdata?.map((g)=>{
+        g?.follower_id?.map((e)=>{
+
+            if(e.profile_image != ''){
+                
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`${path}/${e.profile_image}`)){
+                    var filepath = `${path}/${e.profile_image}`
+                }
+                else {
+                    var filepath = ''
+                }
+            }else{
+                var filepath = ''
+            }
+            data.push({
+                id:e._id,
+                user_id:e.user_id,
+                name:e.name,
+                username:e.username,
+                private_account:e.private_account,
+                profil_image:filepath
+            })
+        })
+    })
+    if(data.length>0){
+        return res.status(201).json({status:1,message:"follower found successfully",data:data})
+    }
+    else{
+        return res.status(402).json({status:0,message:"user not have followers"})
+    }
+  } catch (error) {
+     res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on update get following list"); 
+  }
+}
+
+
+exports.pending_follow_request = async(req,res)=>{
+    try {
+        if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})
+        }
+        const flwdata = await Follow.find({user_id:user_id,status:0}).populate("follower_id")
+        if(flwdata.length>0){
+            const data = []
+            flwdata?.map((g)=>{
+                g?.follower_id?.map((e)=>{
+        
+                    if(e.profile_image != ''){
+                        
+                        const path = process.env.PUBLICPROFILEURL
+                        if(fs.existsSync(`uploads/profile/${e.profile_image}`)){
+                            var filepath = `${path}/${e.profile_image}`
+                        }
+                        else {
+                            var filepath = ''
+                        }
+                    }else{
+                        var filepath = ''
+                    }
+                    data.push({
+                        id:e._id,
+                        user_id:e.user_id,
+                        name:e.name,
+                        username:e.username,
+                        private_account:e.private_account,
+                        profil_image:filepath
+                    })
+                })
+            })
+            if(data.length>0){
+                return res.status(201).json({status:1,message:"pending request found successfully",data:data})
+            }
+            else{
+                return res.status(402).json({status:0,message:"user not have pending request"})
+            }
+        }
+        else{
+            return res.status(402).json({status:0,message:"user not have pending request"})
+        }   
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on update get pending follow request list"); 
+    }
+}
+
+exports.to_follow = async(req,res)=>{
+    try {
+        if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})
+        } 
+        const user_id =  req?.body?.user_id
+        const follower_id =  req?.body?.follower_id
+        if(user_id == follower_id){
+            return  res.status(406).json({status:0,message:"please follow another user"})
+        }
+        const user_data = await User.find({_id:user_id})
+        if(user_data.length>0){
+           const follower_data = await Follow.find({user_id:user_id,follower_id:follower_id})
+            if(follower_data.length>0){
+                return  res.status(406).json({status:0,message:"already following"})
+            }
+            else{
+                const follower_user_data = await User.find({_id:user_id})
+                if(follower_user_data[0].device_id != "" ){
+                    const notification_id = Math.floor(1000 + Math.random() * 9000)
+                    const find_receiver_id = follower_user_data[0].device_id
+                    const fcms = []
+                    fcms.push(find_receiver_id)
+                    const title = `${user_data[0].name} send follow request`
+                    const message = `${user_data[0].name} send follow request at ${moment().format("D-MM-YYYY hh:mm:ss a")}`
+                    if(find_receiver_id != ""){
+                        const img = "";
+                        const field = {
+                            registratin_ids : [
+                                find_receiver_id
+                            ],
+                            data: {
+                                message : title,
+                                body:message,
+                                content : message,
+                                notification_id:notification_id,
+                                type:1,
+                                id:follower_id,
+                                image:img,
+                                sound:1,
+                                vibration:1
+                            }
+                        }
+                        const headers = [
+                            'Authorization: key=AAAAzoC3TFA:APA91bHSq2d1ECf3rUcKN1pGCSj6NKOV04kgNCMac_iH04FMQ6n3iWCYbrWuKdRCL9dx7kkCpN8tDpSzoA49jSk1TuwdIEtB07ObVvHkKeQuxuAlhH3TnQfjH5-_vPqmbHmCHy5AZlvl',
+                                'Content-Type: application/json'
+                        ]
+                        axios.post("https://fcm.googleapis.com/fcm/send",{
+                            headers:headers,
+                            body:field
+                        }).then(async(e)=>{
+                            const notifcationdata = new Notification({
+                                user_id:user_id,
+                                receiver_id :follower_id,
+                                type:3
+                            })
+                            const notification = await notifcationdata.save()
+                        })
+                    }
+                }
+                const followerdata = new Follow({
+                    user_id:user_id,
+                    follower_id:follower_id
+                })
+                const newfollower = await followerdata.save()
+                return res.status(201).json({status:1,message:"Follow successfully!"})
+            } 
+        }else{
+            return res.status(409).json({status:0,message:"This user not exist!!"})
+        }
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on to follow user"); 
+    }
+}
+
+exports.to_unfollow = async(req,res) =>{
+    try {
+        if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})
+        } 
+        const user_data = User.find({_id:req?.body?.user_id})
+        if(user_data.length>0){
+            await Follow.findOneAndDelete({user_id:user_id,follower_id:follower_id},{new:true})
+            return  res.status(201).json({status:1,message:"unFollow successfully!"})
+        }
+        else{
+            return res.status(409).json({status:0,message:"This user not exist!!"})
+        }
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on to unfollow user"); 
     }
 }

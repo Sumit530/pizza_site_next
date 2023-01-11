@@ -15,17 +15,8 @@ const Schema = new  mongoose.Schema({
     status : {
         type : Boolean,
         default:true
-    },
-    created_at : {
-        type:Date,
-        default:Date.now()
-        
-    },
-    updated_at : {
-        type:Date,
-        default:null
-        
     }
-})
+},
+{timestamps:true})
 const followers = new mongoose.model("followers",Schema)
 module.exports = followers;
