@@ -4,68 +4,88 @@ const mongoose = require("mongoose")
 const Schema = new  mongoose.Schema({
     social_id : {
         type:String,
+        default:''
     },
     name:{
-        type:String
+        type:String,
+        default:''
     },
     email:{
-        type:String
+        type:String,
+        default:''
     },
     username:{
-        type:String
+        type:String,
+        default:''
     },
     password:{
-        type:String
+        type:String,
+        require:true
     },
     country_code:{
-        type:String
+        type:String,
+        default:''
     },
     mobile_no:{
-        type:String
+        type:String,
+        default:''
     },
     page_name:{
-        type:String
+        type:String,
+        default:''
     },
     gender:{
-        type:String
+        type:String,
+        default:''
     },
     dob : {
-        type:Date
+        type:Date,
+        default:null
 
     },
     otp : {
         type:String
     },
     device_id :{
-        type:String
+        type:String,
+        default:''
     },
     fcm_id :{
-        type:String
+        type:String,
+        default:''
     },
     otp_expired : {
         type:String,
     },
     profile_image : {
         type:String,
+        default:'',
+        require:true
     },
     website : {
         type:String,
+        default:''
     },
     
     referral_code : {
         type:String,
+        default:''
     },
     iat : {
         type:String,
+        default:''
     },
     long : {
         type:String,
+        default:''
     },
     email_verified_at : {
-        type:Date,
+        type:String,
+        default:''
     },
     remember_token : {
-        type:Date,
+        type:String,
+        default:''
     },
     country_id : {
         type:mongoose.Schema.Types.ObjectId,

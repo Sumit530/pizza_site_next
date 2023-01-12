@@ -1,8 +1,8 @@
 var admin = require("firebase-admin");
-var fcm = require('fcm-notification');
-var serviceAccount = require("../config/privateKey.json");
-const certPath = admin.credential.cert(serviceAccount);
-var FCM = new fcm(certPath);
+// var fcm = require('fcm-notification');
+// var serviceAccount = '' // require("../config/privateKey.json");
+// const certPath = admin.credential.cert(serviceAccount);
+// var FCM = new fcm(certPath);
 
 exports.sendPushNotification= (fcm_token, title, body,content,notification_id,type,user_id,image,sound,vibrate) => {
 
@@ -24,13 +24,13 @@ exports.sendPushNotification= (fcm_token, title, body,content,notification_id,ty
             token: fcm_token
         };
 
-        FCM.send(message, function(err, resp) {
-            if(err){
-                throw err;
-            }else{
-                console.log('Successfully sent notification');
-            }
-        });
+        // FCM.send(message, function(err, resp) {
+        //     if(err){
+        //         throw err;
+        //     }else{
+        //         console.log('Successfully sent notification');
+        //     }
+        // });
 
     }catch(err){
         throw err;

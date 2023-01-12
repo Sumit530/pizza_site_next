@@ -5,6 +5,7 @@ const { validate} =   require('deep-email-validator')
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs");
 const Notification = require("../model/notifications")
+const NotificationSetting = require("../model/notification_settings")
 const safety = require("../model/safeties")
 const Follow = require("../model/followers")
 require("dotenv").config()
@@ -13,9 +14,9 @@ const fs = require("fs");
 const { default: axios } = require("axios");
 
 
-exports.RegiserUser = async(req,res) =>{
+exports.registration = async(req,res) =>{
 const {country_code} = req?.body
-let email = null;
+var email = null;
 let mobile_no = null;
 if(req?.body?.email){
 email = req?.body?.email
@@ -36,18 +37,32 @@ if(mobile_no != null ){
     }
     const otp = Math.floor(1000 + Math.random() * 9000)
     const otpdate = Date.now()
-   await TwoFactor.sendOTP(mobile_no,{otp:otp})
+ //  await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-    const country = find({})
     const userdata = new User({
         country_code,mobile_no,otp,otp_expired    	           
     })
-    
-    const finaluser = await userdata.save()
+    let finaluser = await userdata.save()
+    const notification_data = new Notification({
+        user_id:finaluser._id
+    })
+    await notification_data.save()
+    const notification_setting_data = new NotificationSetting({
+        user_id:finaluser._id
+    })
+    await notification_setting_data.save()
     const safeties = new safety({
         user_id: finaluser._id
     })
     await safeties.save()
+    finaluser = {
+        user_id:finaluser._id,
+        name:finaluser.name,
+        country_code:finaluser.country_code,
+        mobile_no :finaluser.mobile_no,
+        email:finaluser.name,
+
+    }
     res.status(201).json({data:finaluser,status:1,message:"registration successfull"})
     }
     
@@ -89,7 +104,12 @@ else if (email != null){
             const userdata = new User({
                 country_code,email,otp,otp_expired    	           
             })
+          
             const finaluser = await userdata.save()
+            const notification_setting_data = new NotificationSetting({
+                user_id:finaluser._id
+            })
+            await notification_setting_data.save()
             res.status(201).json({data:finaluser,status:1,message:"email send successfully"})
         }})
 }
@@ -108,7 +128,7 @@ exports.social_signup = async(req,res)=>{
 const check_user = await User.find({email:email})
 const keysecret = process.env.UserSecretkey
 if(check_user.length>0){
-    let token = jwt.sign({ id:check_user._id,email:check_user.email},keysecret);
+    let token = jwt.sign({ id:check_user[0]._id,email:check_user.email},keysecret);
     const data = {
         user_id: check_user[0]._id  ,
         name:check_user[0].name ? check_user[0].name : "",
@@ -138,8 +158,9 @@ exports.LoginUser = async(req,res)=>{
     const {email,password,fcm_id,device_id} = req?.body
     if(email && password && fcm_id && device_id){
         var user = null
-        if(isNaN(email)){
-             user = await User.find({mobile_no:email})
+        if(!isNaN(email)){
+             user = await User.find({mobile_no:7041938623})
+            
         }
         else if(email.match(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i) != null){
              user = await User.find({email:email})
@@ -148,15 +169,15 @@ exports.LoginUser = async(req,res)=>{
              user = await User.find({username:email})
         }
         if(user.length>0) {
-            console.log(user);
             if(bcrypt.compare(`'${password}'`,user[0].password)==false){
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
+                 const keysecret = process.env.UserSecretkey
                 const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
-                const token = jwt.sign({id:finaluser._id,email:finaluser.email},keysecret)
+                const token = jwt.sign({id:update._id,email:update.email},keysecret)
                 const data = {
-                    user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
+                    user_id:update._id,name:update.name ? update.name : "" ,country_code:update.country_code,mobile_no : update.mobile_no ? update.mobile_no : "",email : update.email ? update.email :"",language_id:update.language_id,token:token
                 }
                 res.status(201).json({status:1,message:"logged in successfully",data:data})
             }
@@ -186,9 +207,9 @@ if(finaluser.length>0){
     await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otpdate = Date.now()
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-    const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
+    const updateuser = await User.findOneAndUpdate({_id:finaluser[0]._id},{otp:otp,otp_expired:otp_expired},{new:true})
     const data = {
-        user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
+        user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code:finaluser[0].country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
     }
     res.status(201).json({status:1,message:"otp send successfully",data})
    
@@ -234,11 +255,12 @@ try {
     } 
     var user = null
     if(isNaN(keyword) == false){
-        user = await User.find({mobile_no: {$regex:keyword} })
+       var user = await User.find({mobile_no: `/${keyword}/` })
     }
     else if(keyword.match(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i) != null){
-        user = await User.find({email:{$regex:keyword}})
+        var user = await User.find({email:`/${keyword}/`})
     }
+    
     if(user == null || user.length<=0){
         res.status(406).json({status:0,message:"user not found"})
     }
@@ -247,6 +269,7 @@ try {
     }
 } catch (error) {
     res.status(501).json({status:0,message:"internal server error"})
+    console.log(error)
 }
 }
 exports.get_my_accounts = async(req,res)=>{
@@ -257,6 +280,7 @@ exports.get_my_accounts = async(req,res)=>{
             return res.status(406).json({status:0,message:"please give a user id"})
         }  
         const user = await User.find({_id:user_id})
+        console.log(user)
         if(user.length>0){
             var data = null
             user.map((e)=>{
@@ -267,7 +291,7 @@ exports.get_my_accounts = async(req,res)=>{
                     var profile = ''
                 }
                 data = {
-                    id:user._id,name:user.name ? user.name : "",username:user.username ? user.username : "",email:user.email ? user.email : ""  ,country_code:user.country_code ? user.country_code : "",dob:user.dob ? user.dob : "",private_account:user.private_account ? user.private_account : "",language_id:user.language_id ? user.language_id : "",is_vip:user.is_vip ? user.is_vip : "",wallet:user.wallet ? user.wallet : "",profile_image:profile
+                    id:user[0]._id,name:user[0].name ? user[0].name : "",username:user[0].username ? user[0].username : "",email:user[0].email ? user[0].email : ""  ,country_code:user[0].country_code ? user[0].country_code : "",dob:user[0].dob ? user[0].dob : "",private_account:user[0].private_account ? user[0].private_account : "",language_id:user[0].language_id ? user[0].language_id : "",is_vip:user[0].is_vip ? user[0].is_vip : "",wallet:user[0].wallet ? user[0].wallet : "",profile_image:profile
                 }
                 result.push(data)
             })
@@ -291,12 +315,13 @@ exports.get_all_users = async(req,res)=>{
     }  
     var user = null
     if(req?.body?.keyword && req?.body?.keyword != '' ){
-         user = await find({_id:user_id,status:1,username:`/${keyword}/i`})
+         user = await User.find({_id:user_id,status:1,username:`/${req?.body?.keyword}/i`})
 
     }else{
-         user = await find({_id:user_id,status:1})
+         user = await User.find({_id:user_id,status:1})
     }
-    if(user != null){
+    console.log(user)
+    if( user != null && user.length > 0){
         user.map((e)=>{
             if(e.profile_image != ''){
                 var profile = `${process.env.PUBLICPROFILEURL}/${e.profile}`
@@ -314,7 +339,7 @@ exports.get_all_users = async(req,res)=>{
     return res.status(406).json({status:0,message:"No data found.!"})
 } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on get my account"); 
+    console.log("server error on get my account" + error); 
 }
 
 }
@@ -328,7 +353,7 @@ exports.check_otp  = async(req,res)=>{
 
         const user = await User.find({_id:user_id})
         if(user.length>0){
-            if(user.otp == otp){
+            if(user[0].otp == otp){
                 await User.findOneAndUpdate({_id:user_id},{otp:'',otp_expired:''},{new:true})
                 return res.status(201).json({status:1,message:"otp match successfully"})
             }
@@ -351,10 +376,10 @@ exports.check_username = async(req,res)=>{
         const {username} = req?.body
         const user = await User.find({username:username})
         if(user.length>0){
-            return res.status(402).json({status:0,message:"This user name is already our database"})
+            return res.status(402).json({status:1,message:"This user name is already our database"})
         }
         else {
-
+            return res.status(402).json({status:0,message:"This user name is not in our database"})
         }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
@@ -382,6 +407,27 @@ exports.update_username = async(req,res) =>{
     console.log("server error on update username"); 
 }
 }
+exports.update_password = async(req,res) =>{
+    try {
+        
+   
+    if(!req?.body?.password || req?.body?.password == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
+        return  res.status(406).json({status:0,message:"please give username"})
+    }
+    const {password,user_id} = req?.body
+    const user = await User.find({_id:user_id})
+    if(user.length>0){
+        await User.findOneAndUpdate({_id:user_id},{password:password},{new:true})
+        return res.status(201).json({status:1,message:"password updated successfully"})
+    }
+    else {
+        return res.status(402).json({status:0,message:"This user not in our database "})
+    }
+} catch (error) {
+    res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on update username"); 
+}
+}
 
 exports.update_mobile_no = async(req,res) =>{
     try {
@@ -390,8 +436,8 @@ exports.update_mobile_no = async(req,res) =>{
     if(!req?.body?.mobile_no || req?.body?.mobile_no == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username and mobile no"})
     }
-    const user = await User.findOneAndUpdate({_id:req?.body?.user_id},{mobile_no:mobile_no})
-    if(user.length>0){
+    const user = await User.findOneAndUpdate({_id:req?.body?.user_id},{mobile_no:req?.body?.mobile_no})
+    if(Object.keys(user).length>0){
         return res.status(201).json({status:1,message:"mobile number updated successfully"})
     }
 } catch (error) {
@@ -421,8 +467,8 @@ exports.update_privacy = async(req,res) =>{
         if(!req?.body?.allow_find_me || req?.body?.allow_find_me  == ''|| !req?.body?.private_account || req?.body?.private_account  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
-        const updateuser = await User.findOneAndUpdate({_id:user_id},{allow_find_me:allow_find_me,private_account:private_account},{new:true})
-        if(updateuser.length>0){
+        const updateuser = await User.findOneAndUpdate({_id:req?.body?.user_id},{allow_find_me:req?.body?.allow_find_me,private_account:req?.body?.private_account},{new:true})
+        if(Object.keys(updateuser).length>0){
             return res.status(201).json({status:1,message:"privacy updated successfully"})
         }
     } catch (error) {
@@ -436,7 +482,7 @@ exports.get_user_safeties = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const safeties = await safety.find({user_id:user_id})
+    const safeties = await safety.find({user_id:req?.body?.user_id})
     if(safeties.length>0){
         return res.status(201).json({status:1,message:"found safeties",data:safeties})
     }
@@ -453,9 +499,9 @@ try {
     if(!req?.body?.is_allow_comments || req?.body?.is_allow_comments  == ''|| !req?.body?.is_allow_downloads || req?.body?.is_allow_downloads  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give prorpery parameter"})
     }
-    const safeties = await safety.find({user_id:user_id})
+    const safeties = await safety.find({user_id:req?.body?.user_id})
     if(safeties.length>0){
-        const updatesafeties = await safety.findOneAndUpdate({user_id:user_id},{is_allow_comments:is_allow_comments,is_allow_downloads:is_allow_downloads},{new:true})
+        const updatesafeties = await safety.findOneAndUpdate({user_id:req?.body?.user_id},{is_allow_comments:req?.body?.is_allow_comments,is_allow_downloads:req?.body?.is_allow_downloads},{new:true})
         return res.status(201).json({status:1,message:"safeties updated successfully",data:updatesafeties})
     }
     else{
@@ -468,24 +514,60 @@ try {
 }
 }
 
-exports.update_notification_settings = (req,res) =>{
+exports.update_notification_settings = async(req,res) =>{
     try {
-        if(!req?.body?.is_likes || req?.body?.is_likes  == ''|| !req?.body?.is_mentions || req?.body?.is_mentions  == ''|| !req?.body?.is_direct_messages || req?.body?.is_direct_messages  == ''|| !req?.body?.is_recommended_broadcasts || req?.body?.is_recommended_broadcasts  == ''|| !req?.body?.is_customized_updates || req?.body?.is_customized_updates  == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
+        if(!req?.body?.is_likes || req?.body?.is_likes  == ''){ 
             return  res.status(406).json({status:0,message:"please give prorpery parameter"})
         }
-        //notification setting
+        if(!req?.body?.is_customized_updates || req?.body?.is_customized_updates  == '' ){ 
+            return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+        }
+        if(req?.body?.user_id == '' || !req?.body?.user_id){ 
+            return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+        }
+        if(!req?.body?.is_direct_messages || req?.body?.is_direct_messages  == ''){ 
+            return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+        }
+        if(!req?.body?.is_mentions || req?.body?.is_mentions  == ''){ 
+            return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+        }
+        if(!req?.body?.is_recommended_broadcasts || req?.body?.is_recommended_broadcasts  == ''){ 
+            return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+        }
+        
+       const  notifcationdata = await NotificationSetting.find({user_id:req?.body?.user_id})
+       if(notifcationdata.length > 0){
+        const notifcation_data = new NotificationSetting({
+            user_id:req?.body?.user_id,
+            is_likes:req?.body?.is_likes,
+            is_customized_updates:req?.body?.is_customized_updates,
+            is_direct_messages:req?.body?.is_direct_messages,
+            is_mentions:req?.body?.is_mentions,
+            is_recommended_broadcasts:req?.body?.is_recommended_broadcasts,  
+        })
+        await notifcation_data.save()
+        return res.status(201).json({status:1,message:"notification setting updated successfully"})
+       }else{
+        return res.status(402).json({status:0,message:"user notification data not found"})
+       }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update notification setting"); 
+        console.log("server error on update notification setting"); 
     }
 }
 
-exports.get_notification_settings = (req,res) =>{
+exports.get_notification_settings = async(req,res) =>{
     try {
         if( req?.body?.user_id == '' || !req?.body?.user_id){ 
             return  res.status(406).json({status:0,message:"please give username and mobile no"})
         }
-        //notification settings
+        const  notifcationdata = await NotificationSetting.find({user_id:req?.body?.user_id})
+        if(notifcationdata.length > 0){
+
+            return res.status(201).json({status:1,message:"notification data got successfully",data:notifcationdata})
+           }else{
+            return res.status(402).json({status:0,message:"user notification data not found"})
+           }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
     console.log("server error on update get notification setting"); 
@@ -509,9 +591,9 @@ exports.update_location = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.lat == '' || !req?.body?.lat || req?.body?.long == '' || !req?.body?.long){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    const user = await User.find({_id:user_id})
+    const user = await User.find({_id:req?.body?.user_id})
     if(user.length>0){
-        const locationupdate = await safety.findOneAndUpdate({user_id:user_id},{lat:lat,long:long},{new:true})
+        const locationupdate = await safety.findOneAndUpdate({user_id:req?.body?.user_id},{lat:req?.body?.lat,long:req?.body?.long},{new:true})
         return res.status(201).json({status:1,message:"location updated successfully",data:locationupdate})
     }
     else{
@@ -534,13 +616,13 @@ exports.following_list = async(req,res) =>{
     flwdata = await Follow.find({follower_id:req?.body?.user_id}).populate("user_id")
     const data = []
     flwdata?.map((g)=>{
-        g?.user_id?.map((f)=>{
+        
 
-            if(e.profile_image != ''){
+            if(g?.user_id.profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/profile/${e.profile_image}`)){
-                    var filepath = `${path}/${e.profile_image}`
+                if(fs.existsSync(`uploads/profile/${g?.user_id.profile_image}`)){
+                    var filepath = `${path}/${g?.user_id.profile_image}`
                 }
                 else {
                     var filepath = ''
@@ -556,7 +638,7 @@ exports.following_list = async(req,res) =>{
                 private_account:e.private_account,
                 profile_image:filepath
             })
-        })
+        
     })
     if(data.length>0){
         return res.status(201).json({status:1,message:" follower found successfully",data:data})
@@ -578,13 +660,13 @@ exports.follow_list = async(req,res) =>{
     flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follwer_id")
     const data = []
     flwdata?.map((g)=>{
-        g?.follower_id?.map((e)=>{
+       
 
-            if(e.profile_image != ''){
+            if(e.user_id.profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`${path}/${e.profile_image}`)){
-                    var filepath = `${path}/${e.profile_image}`
+                if(fs.existsSync(`${path}/${g?.user_id.profile_image}`)){
+                    var filepath = `${path}/${g?.user_id.profile_image}`
                 }
                 else {
                     var filepath = ''
@@ -600,7 +682,7 @@ exports.follow_list = async(req,res) =>{
                 private_account:e.private_account,
                 profil_image:filepath
             })
-        })
+        
     })
     if(data.length>0){
         return res.status(201).json({status:1,message:"follower found successfully",data:data})
