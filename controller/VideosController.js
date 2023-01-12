@@ -934,7 +934,7 @@ exports.private_position_video_list = async(req,res)=>{
     }
     var video_details = await videos.find({_id:req?.body?.video_id}).populate("user_id")
     if(video_details.length>0){
-        
+            
     }
 
 }
