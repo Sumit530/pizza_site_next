@@ -19,7 +19,7 @@ const fs = require('fs')
 const notifications = require("../model/notifications")
 const moment = require("moment")
 const push_message = require("../push-message/notification")
-
+require("dotenv").config()
 
 
 exports.upload_video = async(req,res)=>{
@@ -29,7 +29,7 @@ exports.upload_video = async(req,res)=>{
     if( req?.body?.is_view == '' || !req?.body?.is_view ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    if( req?.body?.is_allow_comment == '' || !req?.body?.is_allow_comment ){ 
+    if( req?.body?.is_allow_comments == '' || !req?.body?.is_allow_comments ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
     if( req?.body?.is_allow_duet == '' || !req?.body?.is_allow_duet ){ 
@@ -62,7 +62,8 @@ if(req?.files?.video_file ){
     })
     const video = await video_data.save()
     var video_id = video._id
-    if(req?.body?.mention_ids != ''){
+    console.log(req?.body?.mention_ids)
+    if(req?.body?.mention_ids && req?.body?.mention_ids != ''){
         const mention_user_id = req?.body?.mention_ids.split(",") 
         const user_data = await Users.find({_id:user_id}).select("name")
         mention_user_id?.map(async(e)=>{
@@ -88,7 +89,7 @@ if(req?.files?.video_file ){
             }
         })
     }
-    if(req?.body?.hashtag_ids){
+    if(req?.body?.hashtag_ids && req?.body?.hashtag_ids != ''){
         const hashtag_ids =  req?.body?.hashtag_ids.split(",")
         hashtag_ids?.map(async(e)=>{
             const hashtag_data = new Hashtag({
@@ -98,7 +99,7 @@ if(req?.files?.video_file ){
             await hashtag_data.save() 
         })
     }
-    return res.status(201).json({data:data ,status:1,message:"video uploaded successfully"})
+    return res.status(201).json({status:1,message:"video uploaded successfully"})
 }else{
     return res.status(402).json({status:0,message:"please upload a video file"})
 }
@@ -238,7 +239,7 @@ exports.video_list = async(req,res) =>{
         var total_likes = 0
         var total_comments = 0
         const unshuffle_video_data = await videos.aggregate([
-            {$match:{is_view:1,is_save_to_device:0}},
+            // {$match:{is_view:1,is_save_to_device:0}},
             {
                 $lookeup :
                  {
@@ -415,7 +416,7 @@ exports.video_list = async(req,res) =>{
         .map(value => ({ value, sort: Math.random() }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value)
-        video_data?.map((f)=>{
+        video_data?.map(async(f)=>{
             const video_interest = await videos.count({user_id:req?.body?.user_id,video_id:f._id})
             if(video_interest == 0 || video_interest == '0' ){
                 const user_data = await User.find({_id:f.user_id})
@@ -640,7 +641,7 @@ exports.video_details = async(req,res) => {
 }
 }
 
-exports.add_video_like = (req,res)=>{
+exports.add_video_like = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
@@ -648,7 +649,7 @@ exports.add_video_like = (req,res)=>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    var user_data =await Users.find({_id:req?.body?.user_id})
+    var user_data = await Users.find({_id:req?.body?.user_id})
     if(user_data.length >0){
         const like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
         if(like_data.length>0){
@@ -712,7 +713,7 @@ exports.remove_video_like = async(req,res)=>{
     }
 }
 
-exports.get_video_likes = (req,res)=>{
+exports.get_video_likes = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
@@ -722,7 +723,7 @@ exports.get_video_likes = (req,res)=>{
             var data = []
     var video_likes_data = await VideoLikes.find({video_id: req?.body?.video_id}).populate("user_id")
     if(video_like_data.length>0){
-        video_like_data?.map((e)=>{
+        video_like_data?.map(async(e)=>{
 
             if(Object.keys(e.user_id).length > 0){
                 if(e.user_id.profile_image != ''){
@@ -751,7 +752,7 @@ exports.get_video_likes = (req,res)=>{
 
         data.push({
             id:e._id,
-            user_id : e.user_id._id
+            user_id : e.user_id._id,
             name:user_name,
             username : user_username,
             profile_image:profile_image
@@ -778,7 +779,7 @@ exports.add_video_comments = async(req,res)=>{
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
                 mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
-                comment : req?.body?.comment ? req?.body?.comment : ''
+                comment : req?.body?.comment ? req?.body?.comment : '',
                 parent_id : 0
             })
             await video_comment.save()
@@ -814,7 +815,7 @@ exports.add_video_comments = async(req,res)=>{
     }
 }
 
-exports.add_parent_comment = (req,res)=>{
+exports.add_parent_comment = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
@@ -835,7 +836,7 @@ exports.add_parent_comment = (req,res)=>{
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
                 mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
-                comment : req?.body?.comment ? req?.body?.comment : ''
+                comment : req?.body?.comment ? req?.body?.comment : '',
                 parent_id : req?.body?.comment_id
             })
             await video_comment.save()
@@ -862,7 +863,7 @@ exports.private_position_video_list = async(req,res)=>{
         var data = []
     const video_data  = await videos.find({user_id:req?.body?.user_id,is_view:3,is_save_to_device:0,video_id:{$ne:req?.body?.video_id}}).populate("user_id").populate("song_id").sort({createdAt:-1})
     if(video_data.length > 0 ){
-        video_data?.map((e)=>{
+        video_data?.map(async(e)=>{
             if(Object.keys(e.user_id).length > 0){
                 if(e.user_id.profile_image != ''){
                     const path = process.env.PUBLICPOROFILEIMAGEURL

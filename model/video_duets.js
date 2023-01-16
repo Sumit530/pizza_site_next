@@ -19,5 +19,5 @@ const Schema = new  mongoose.Schema({
 },{
     timestamps:true
 })
-const video_likes = new mongoose.model("video_likes",Schema)
-module.exports = video_likes;
+const video_duets = new mongoose.model("video_duets",Schema)
+module.exports = video_duets;

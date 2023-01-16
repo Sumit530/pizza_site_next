@@ -4,12 +4,12 @@ const Schema = new  mongoose.Schema({
 
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'users',
         require:true
     },
     follower_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'users',
         require:true
     },
     status : {

@@ -14,6 +14,7 @@ const fs = require("fs");
 const { default: axios } = require("axios");
 
 
+
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
 var email = null;
@@ -126,7 +127,7 @@ exports.social_signup = async(req,res)=>{
     }
     const {name,email,social_id,type} = req?.body
 const check_user = await User.find({email:email})
-const keysecret = process.env.UserSecretkey
+const keysecret = process.env.USER_SECRET
 if(check_user.length>0){
     let token = jwt.sign({ id:check_user[0]._id,email:check_user.email},keysecret);
     const data = {
@@ -173,7 +174,7 @@ exports.LoginUser = async(req,res)=>{
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
-                 const keysecret = process.env.UserSecretkey
+                 const keysecret = process.env.USER_SECRET
                 const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
                 const token = jwt.sign({id:update._id,email:update.email},keysecret)
                 const data = {
@@ -215,7 +216,7 @@ if(finaluser.length>0){
    
 }
 else{
-    res.status(409n ).json({status:0,message:"user not found"})
+    res.status(409).json({status:0,message:"user not found"})
 }
 }
 
@@ -235,13 +236,13 @@ exports.resend_otp = async(req,res)=>{
         const otp_expired = moment(otpdate).add(30, 'm').toDate();
         const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
         const data = {
-            user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
+            user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id
         }
         res.status(201).json({status:1,message:"otp send successfully",data})
        
     }
     else{
-        res.status(409n ).json({status:0,message:"user not found"})
+        res.status(409).json({status:0,message:"user not found"})
     }
     }
     
@@ -593,8 +594,8 @@ exports.update_location = async(req,res) =>{
     }
     const user = await User.find({_id:req?.body?.user_id})
     if(user.length>0){
-        const locationupdate = await safety.findOneAndUpdate({user_id:req?.body?.user_id},{lat:req?.body?.lat,long:req?.body?.long},{new:true})
-        return res.status(201).json({status:1,message:"location updated successfully",data:locationupdate})
+        const locationupdate = await User.findOneAndUpdate({user_id:req?.body?.user_id},{lat:req?.body?.lat,long:req?.body?.long},{new:true})
+        return res.status(201).json({status:1,message:"location updated successfully"})
     }
     else{
         return res.status(402).json({status:0,message:"user safety not found"})
@@ -612,8 +613,9 @@ exports.following_list = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-
+    const user = await User.find({_id:req.body.user_id})
     flwdata = await Follow.find({follower_id:req?.body?.user_id}).populate("user_id")
+    console.log(flwdata)
     const data = []
     flwdata?.map((g)=>{
         
@@ -648,7 +650,7 @@ exports.following_list = async(req,res) =>{
     }
    } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update get follower list"); 
+    console.log("server error on  get follower list" + error); 
    }
 }
 exports.follow_list = async(req,res) =>{
@@ -657,7 +659,7 @@ exports.follow_list = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follwer_id")
+    flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follower_id")
     const data = []
     flwdata?.map((g)=>{
        
@@ -692,7 +694,7 @@ exports.follow_list = async(req,res) =>{
     }
   } catch (error) {
      res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update get following list"); 
+    console.log("server error on update get following list" + error); 
   }
 }
 
@@ -764,51 +766,51 @@ exports.to_follow = async(req,res)=>{
             }
             else{
                 const follower_user_data = await User.find({_id:user_id})
-                if(follower_user_data[0].device_id != "" ){
-                    const notification_id = Math.floor(1000 + Math.random() * 9000)
-                    const find_receiver_id = follower_user_data[0].device_id
-                    const fcms = []
-                    fcms.push(find_receiver_id)
-                    const title = `${user_data[0].name} send follow request`
-                    const message = `${user_data[0].name} send follow request at ${moment().format("D-MM-YYYY hh:mm:ss a")}`
-                    if(find_receiver_id != ""){
-                        const img = "";
-                        const field = {
-                            registratin_ids : [
-                                find_receiver_id
-                            ],
-                            data: {
-                                message : title,
-                                body:message,
-                                content : message,
-                                notification_id:notification_id,
-                                type:1,
-                                id:follower_id,
-                                image:img,
-                                sound:1,
-                                vibration:1
-                            }
-                        }
-                        const headers = [
-                            'Authorization: key=AAAAzoC3TFA:APA91bHSq2d1ECf3rUcKN1pGCSj6NKOV04kgNCMac_iH04FMQ6n3iWCYbrWuKdRCL9dx7kkCpN8tDpSzoA49jSk1TuwdIEtB07ObVvHkKeQuxuAlhH3TnQfjH5-_vPqmbHmCHy5AZlvl',
-                                'Content-Type: application/json'
-                        ]
-                        axios.post("https://fcm.googleapis.com/fcm/send",{
-                            headers:headers,
-                            body:field
-                        }).then(async(e)=>{
-                            const notifcationdata = new Notification({
-                                user_id:user_id,
-                                receiver_id :follower_id,
-                                type:3
-                            })
-                            const notification = await notifcationdata.save()
-                        })
-                    }
-                }
+                // if(follower_user_data[0].device_id != "" ){
+                //     const notification_id = Math.floor(1000 + Math.random() * 9000)
+                //     const find_receiver_id = follower_user_data[0].device_id
+                //     const fcms = []
+                //     fcms.push(find_receiver_id)
+                //     const title = `${user_data[0].name} send follow request`
+                //     const message = `${user_data[0].name} send follow request at ${moment().format("D-MM-YYYY hh:mm:ss a")}`
+                //     if(find_receiver_id != ""){
+                //         const img = "";
+                //         const field = {
+                //             registratin_ids : [
+                //                 find_receiver_id
+                //             ],
+                //             data: {
+                //                 message : title,
+                //                 body:message,
+                //                 content : message,
+                //                 notification_id:notification_id,
+                //                 type:1,
+                //                 id:follower_id,
+                //                 image:img,
+                //                 sound:1,
+                //                 vibration:1
+                //             }
+                //         }
+                //         const headers = [
+                //             'Authorization: key=AAAAzoC3TFA:APA91bHSq2d1ECf3rUcKN1pGCSj6NKOV04kgNCMac_iH04FMQ6n3iWCYbrWuKdRCL9dx7kkCpN8tDpSzoA49jSk1TuwdIEtB07ObVvHkKeQuxuAlhH3TnQfjH5-_vPqmbHmCHy5AZlvl',
+                //                 'Content-Type: application/json'
+                //         ]
+                //         axios.post("https://fcm.googleapis.com/fcm/send",{
+                //             headers:headers,
+                //             body:field
+                //         }).then(async(e)=>{
+                //             const notifcationdata = new Notification({
+                //                 user_id:mongoose.Types.ObjectId(user_id),
+                //                 receiver_id :mongoose.Types.ObjectId(follower_id),
+                //                 type:3
+                //             })
+                //             const notification = await notifcationdata.save()
+                //         })
+                //     }
+                // }
                 const followerdata = new Follow({
-                    user_id:user_id,
-                    follower_id:follower_id
+                    user_id:mongoose.Types.ObjectId(user_id),
+                    follower_id:mongoose.Types.ObjectId(follower_id),
                 })
                 const newfollower = await followerdata.save()
                 return res.status(201).json({status:1,message:"Follow successfully!"})
@@ -817,8 +819,8 @@ exports.to_follow = async(req,res)=>{
             return res.status(409).json({status:0,message:"This user not exist!!"})
         }
     } catch (error) {
-        res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on to follow user"); 
+        res.status(502).json({status:0,message:"internal server error" })
+        console.log("server error on to follow user" + error); 
     }
 }
 
@@ -827,9 +829,9 @@ exports.to_unfollow = async(req,res) =>{
         if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
             return  res.status(406).json({status:0,message:"please give a proper parameter"})
         } 
-        const user_data = User.find({_id:req?.body?.user_id})
+        const user_data = await User.find({_id:req?.body?.user_id})
         if(user_data.length>0){
-            await Follow.findOneAndDelete({user_id:user_id,follower_id:follower_id},{new:true})
+            await Follow.findOneAndDelete({user_id:req?.body?.user_id,follower_id:req?.body?.follower_id},{new:true})
             return  res.status(201).json({status:1,message:"unFollow successfully!"})
         }
         else{
@@ -837,6 +839,6 @@ exports.to_unfollow = async(req,res) =>{
         }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on to unfollow user"); 
+        console.log("server error on to unfollow user" + error); 
     }
 }
