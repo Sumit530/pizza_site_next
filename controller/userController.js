@@ -704,7 +704,7 @@ exports.pending_follow_request = async(req,res)=>{
         if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
             return  res.status(406).json({status:0,message:"please give a proper parameter"})
         }
-        const flwdata = await Follow.find({user_id:user_id,status:0}).populate("follower_id")
+        const flwdata = await Follow.find({user_id:req?.body?.user_id,status:0}).populate("follower_id")
         if(flwdata.length>0){
             const data = []
             flwdata?.map((g)=>{
