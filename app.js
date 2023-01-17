@@ -8,7 +8,7 @@ const fs =require("fs")
 const path = require("path")
 const bodyparser= require("body-parser")
 const server = https.createServer(
-//    {
+  //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
 //   cert:fs.readFileSync(path.join(__dirname,"cert",'cert.pem')),
 // },
@@ -18,10 +18,14 @@ const io = require("socket.io")(server, {
     origin: '*'
   }
 });
+const rootsocket = require("./socket/socket")(io) 
 const { ExpressPeerServer } = require("peer");
 const peerServer = ExpressPeerServer(server, {
   debug: true,
 });
+app.get("/",(req,res)=>{
+  res.render('index')
+})
 
 app.use("/peerjs", peerServer);
 app.use(express.static("public"));
@@ -29,16 +33,16 @@ require("./db/connection")
 app.use('/api',router)
 const { v4: uuidv4 } = require("uuid");     
 app.set("view engine", "ejs");
-io.on("connection", (socket) => {
-    console.log("join")
-    socket.on("join-room", (roomId, userId, userName) => {
-    socket.join(roomId);
-    socket.broadcast.to(roomId).emit('user-connected', userId)
-    socket.on("message", (message) => {
-      io.to(roomId).emit("createMessage", message, userName);
-    });
-  }); 
-});
+// io.on("connection", (socket) => {
+//     console.log("join")
+//     socket.on("join-room", (roomId, userId, userName) => {
+//     socket.join(roomId);
+//     socket.broadcast.to(roomId).emit('user-connected', userId)
+//     socket.on("message", (message) => {
+//       io.to(roomId).emit("createMessage", message, userName);
+//     });
+//   }); 
+// });
 
 
 

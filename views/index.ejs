@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Socket.io Chat Server</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container-fluid">
+            
+            <ul class="list-group" id="messages"></ul>
+            
+        </div>
+        <div style="position: fixed; bottom:0;width:100vw;">
+            
+                <input type="text" name="" id="chat" class="form-control" placeholder="Enter the chat id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
+                <button id="join" >semd</button>
+                <button id="leave" >leave</button>
+            
+        </div>
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Bootstrap JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io();
+            const userid = prompt("enter user name")
+            const chatid = prompt("enter chatid")
+
+            socket.emit('joinchat', chatid,userid);
+            $("#chat").keypress(function(){
+                socket.emit("typing",userid,chatid)
+            })
+            socket.on('typing',function(user_id){
+                console.log(user_id + " is typing")
+            })
+            $("#leave").click(function(){
+                socket.emit("leavechat",chatid)
+            })
+            // $('#join').click(function(){
+            //     var chatid = $('#msg').val();
+            //     var userid = $('#name').val();
+            //     if(chatid.length > 0 && userid.length > 0)
+                    
+            //     else
+            //         console.log("Enter a valid chat id and name :)");
+            //     $('#m').val("");
+               
+            //     return false;
+            // });
+            // socket.on('chat message', function(msg){
+            //     $("#messages").append('<li class="list-group-item">'+msg+'</li>');
+            // });
+        </script>
+    </body>
+</html>
