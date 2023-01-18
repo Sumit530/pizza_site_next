@@ -27,6 +27,8 @@
         <script src="/socket.io/socket.io.js"></script>
         <script>
             var socket = io();
+
+            
             $('form').submit(function(){
                 var msg = $('#m').val();
                 if(msg.length > 0)

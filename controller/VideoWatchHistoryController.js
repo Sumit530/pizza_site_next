@@ -1,7 +1,7 @@
 const Users = require("../model/users")
 const videos = require("../model/videos")
 const videoData = require("../model/video_data")
-
+const videoWatchHistories =  require("../model/video_watch_histories")
 const fs = require('fs')
 const e = require("express")
 
@@ -35,7 +35,7 @@ exports.get_watch_video_history = async(req,res)=>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
         var data = []
-    const video_watch_data = await videoWatchHistories.find({video_id:req?.body?.video_id}).polulate("user_id")
+    const video_watch_data = await videoWatchHistories.find({video_id:req?.body?.video_id}).populate("user_id")
     if(video_watch_data.length> 0){
         video_watch_data?.map((e)=>{
             

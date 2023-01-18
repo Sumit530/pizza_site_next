@@ -39,10 +39,12 @@ const Schema = new  mongoose.Schema({
         {type:mongoose.Schema.Types.ObjectId,ref:'users'}
     ],
     cover_image : {
-        type:String
+        type:String,
+        require:true
     },
     file_name:{
-        type:String
+        type:String,
+        require:true
     },
     status : {
         type:Boolean,

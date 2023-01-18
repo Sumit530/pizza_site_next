@@ -2,15 +2,15 @@ const video_bookmarks = require("../model/video_bookmarks")
 const VideoWatchHistory = require("../model/video_watch_histories")
 const VideoLikes = require("../model/video_likes")
 const VideoComments = require("../model/videos_comments")
-const Videos = require("../model/Videos")
-const User = require("../model/User")
+const Videos = require("../model/videos")
+const User = require("../model/users")
 
 exports.add_video_bookmark =async(req,res)=>{
     try {
-        if(req?.body?.user_id){
+        if(!req?.body?.user_id || req?.body?.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        if(req?.body?.video_id){
+        if(!req?.body?.video_id || req?.body?.video_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         const user = await User.find({_id:req?.body?.user_id})
@@ -33,16 +33,16 @@ exports.add_video_bookmark =async(req,res)=>{
         }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on add video bookmark");  
+        console.log("server error on add video bookmark" + error);  
     }
 }
 
 exports.remove_video_bookmark = async(req,res)=>{
     try {
-        if(req?.body?.user_id){
+        if(!req?.body?.user_id || req?.body?.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        if(req?.body?.video_id){
+        if(!req?.body?.video_id || req?.body?.video_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         
@@ -57,6 +57,6 @@ exports.remove_video_bookmark = async(req,res)=>{
             }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on add video bookmark");  
+        console.log("server error on add video bookmark" + error);  
     }
 }

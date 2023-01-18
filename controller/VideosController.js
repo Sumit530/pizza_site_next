@@ -59,8 +59,11 @@ if(req?.files?.video_file ){
         is_view,
         is_save_to_device : is_save_to_device   ? is_save_to_device  : '',
         friends_id : friends_id ? friends_id : '',
+        cover_image : req?.files?.cover_image[0].filename,
+        file_name : req?.files?.video_file[0].filename
     })
     const video = await video_data.save()
+    console.log(video)
     var video_id = video._id
     console.log(req?.body?.mention_ids)
     if(req?.body?.mention_ids && req?.body?.mention_ids != ''){
@@ -123,7 +126,7 @@ exports.video_list = async(req,res) =>{
                     const video_data = await videos.find({user_id:e.follower_id,is_view:1,is_save_to_device:0}).populate("song_id").populate("user_id")
                     if(video_data.length> 0){
                         var s = []
-                        const val = video_data?.map(async(f)=>{
+                        const promisedata = video_data?.map(async(f)=>{
                             const video_interest = await videos.count({user_id:req?.body?.user_id,video_id:f._id})
                             if(video_interest == 0 || video_interest == '0' ){
                                 if(Object.keys(f.user_id).length > 0){
@@ -224,8 +227,11 @@ exports.video_list = async(req,res) =>{
                                      
                             }
                         })
+                        Promise.all(promisedata).then((e)=>{
+
+                            return res.status(201).json({data:e, status:1,message:"data got successfully"})
+                        })
                         console.log(data)
-                        return res.status(201).json({data:data, status:1,message:"data got successfully"})
                     }else{
                         return res.status(402).json({status:0,message:"no data found"})
                     }
@@ -247,8 +253,8 @@ exports.video_list = async(req,res) =>{
             .map(value => ({ value, sort: Math.random() }))
             .sort((a, b) => a.sort - b.sort)
             .map(({ value }) => value)
-           video_data?.map(async(f)=>{
-                const video_interest = await videos.count({user_id:req?.body?.user_id,video_id:f._id})
+                 const promisedata =  video_data?.map(async(f)=>{
+                     const video_interest = await videos.count({user_id:req?.body?.user_id,video_id:f._id})
                            
                             if(video_interest == 0 || video_interest == '0' ){
                                 const user_data = await Users.find({_id:f.user_id})
@@ -291,6 +297,7 @@ exports.video_list = async(req,res) =>{
                                         var cover_image   = ''
                                     }
                                     if(f.file_name  != ''){
+                                        console.log(f.file_name)
                                         const path = process.env.PUBLICVIDEOSURL
                                         if(fs.existsSync(`${path}/${f.file_name }`)){
                                             var  video_url     = `${path}/${f.file_name}`
@@ -326,7 +333,7 @@ exports.video_list = async(req,res) =>{
                                      }else{
                                             var is_favorite  = 0
                                      }
-                                     global.data.push({
+                                     return ({
                                         video_id : f._id,
                                         user_id:req?.body?.user_id,
                                         name:user_name,
@@ -348,16 +355,15 @@ exports.video_list = async(req,res) =>{
                                      })
                                      
                                     }
-                                    
+                                }) 
+                                Promise.all(promisedata).then((e)=>{
+                                    return res.status(201).json({data:e, status:1,message:"data got successfully"})
                                 })
-                                console.log(global.data)
-            return res.status(201).json({data:global.data, status:1,message:"data got successfully"})
 
+                        }else{
+                                    return res.status(402).json({status:0,message:"no data found"})
+                              }
 
-        }else{
-            return res.status(402).json({status:0,message:"no data found"})
-        }
-        
     }
     else{
        var total_views = 0;
@@ -369,7 +375,7 @@ exports.video_list = async(req,res) =>{
         .map(value => ({ value, sort: Math.random() }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value)
-        video_data?.map(async(f)=>{
+      const promisedata =  video_data?.map(async(f)=>{
             const video_interest = await videos.count({user_id:req?.body?.user_id,video_id:f._id})
             if(video_interest == 0 || video_interest == '0' ){
                 const user_data = await User.find({_id:f.user_id})
@@ -466,9 +472,6 @@ exports.video_list = async(req,res) =>{
                         is_allow_duet:e.is_allow_duet,
                         cover_image:cover_image,
                         video_url:video_url
-
-
-
                      })
                      
             }
@@ -476,7 +479,10 @@ exports.video_list = async(req,res) =>{
 
 
         })
-        return res.status(201).json({data:data, status:1,message:"data got successfully"})
+        Promise.all(promisedata).then((e)=>{
+
+            return res.status(201).json({data:e, status:1,message:"data got successfully"})
+        })
 
 
        }else{
@@ -492,8 +498,10 @@ exports.video_details = async(req,res) => {
     if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-
-    const video_data = await video.find({_id:req?.body?.video_id,is_view:1,is_save_to_device:0}).populate("song_id").populate("user_id")
+var total_likes = 0
+var total_comments = 0
+var data = []
+    const video_data = await videos.find({_id:req?.body?.video_id,is_view:1,is_save_to_device:0}).populate("song_id").populate("user_id")
     if(video_data.length >0 ){
         if(Object.keys(video_data[0].user_id).length > 0){
 
@@ -508,8 +516,8 @@ exports.video_details = async(req,res) => {
             }else{
                 var profile_image = ''
             }
-            var user_name = f.user_id.name
-            var user_username = f.user_id.username
+            var user_name = video_data[0].user_id.name
+            var user_username = video_data[0].user_id.username
 
         }else{
             var user_name = ''
@@ -569,13 +577,13 @@ exports.video_details = async(req,res) => {
                 var is_favorite  = 0
          }
          data.push({
-            video_id : e._id,
+            video_id : video_data[0]._id,
             user_id:req?.body?.user_id,
             name:user_name,
             username:user_username,
             profile_image:profile_image,
-            song_name : e?.song_id?.name ? e?.song_id?.name : '',
-            description:e.description,
+            song_name : video_data[0]?.song_id?.name ? video_data[0]?.song_id?.name : '',
+            description:video_data[0].description,
             is_follow:is_follow,
             is_video_like:is_video_like,
             is_bookmark:is_bookmark,
@@ -583,8 +591,8 @@ exports.video_details = async(req,res) => {
             total_likes:total_this_likes,
             total_comments:total_this_comments,
             total_views:parseInt(total_views),
-            is_allow_comment:e.is_allow_comment,
-            is_allow_duet:e.is_allow_duet,
+            is_allow_comment:video_data[0].is_allow_comment,
+            is_allow_duet:video_data[0].is_allow_duet,
             cover_image:cover_image,
             video_url:video_url
     })
@@ -675,8 +683,8 @@ exports.get_video_likes = async(req,res)=>{
     }
             var data = []
     var video_likes_data = await VideoLikes.find({video_id: req?.body?.video_id}).populate("user_id")
-    if(video_like_data.length>0){
-        video_like_data?.map(async(e)=>{
+    if(video_likes_data.length>0){
+        video_likes_data?.map(async(e)=>{
 
             if(Object.keys(e.user_id).length > 0){
                 if(e.user_id.profile_image != ''){

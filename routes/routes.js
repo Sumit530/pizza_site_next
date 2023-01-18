@@ -18,6 +18,8 @@ const usercontroller = require("../controller/userController")
 const videocontroller = require("../controller/VideosController")
 const notificationcontroller = require("../controller/NotificationController")
 const GeneralController = require("../controller/GeneralController")
+const VideoBookmarkController = require("../controller/VideoBookmarkController")
+const  VideoWatchHistoryController = require("../controller/VideoWatchHistoryController")
 const UserAuth = require("../middleware/UserMiddleware")
 
 
@@ -206,4 +208,19 @@ router.post("/follow_list",UserAuth,form.array(),usercontroller.follow_list)
 //function for upload files to different destination 
 router.post("/upload_video",UserAuth,VideoUpload.fields([{name:'cover_image',maxCount:1},{name:'video_file',maxCount:1}]), videocontroller.upload_video)
 router.post("/video_list",form.array(),videocontroller.video_list)
+router.post("/video_details",form.array(),videocontroller.video_details)
+//router.post("/position_video_list",form.array(),videocontroller.private_position_video_list)
+router.post("/remove_video_like",UserAuth,form.array(),videocontroller.remove_video_like)
+router.post("/add_video_like",UserAuth,form.array(),videocontroller.add_video_like)
+router.post("/get_video_likes",UserAuth,form.array(),videocontroller.get_video_likes)
+router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.add_video_bookmark)
+//router.post("/get_video_bookmarks",UserAuth,form.array(),VideoBookmarkController.get_video_bookmarks)
+router.post("/remove_video_bookmark",UserAuth,form.array(),VideoBookmarkController.remove_video_bookmark)
+
+
+//watch history 
+router.post("/get_watch_video_history",UserAuth,form.array(),VideoWatchHistoryController.get_watch_video_history)
+router.post("/add_watch_video_history",UserAuth,form.array(),VideoWatchHistoryController.add_watch_video_history)
+
+
 module.exports = router

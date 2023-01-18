@@ -16,9 +16,13 @@
             
         </div>
         <div style="position: fixed; bottom:0;width:100vw;">
-            
-                <input type="text" name="" id="chat" class="form-control" placeholder="Enter the chat id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
-                <button id="join" >semd</button>
+            <input type="text" name="" id="userid" class="form-control" placeholder="Enter the user id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
+            <input type="text" name="" id="chatid" class="form-control" placeholder="Enter the chat id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
+                <input type="text" name="" id="chat" class="form-control" placeholder="Enter the message" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
+                <button id="newsend">new send</button>
+                <button id="online">get online</button>
+                <button id="oldsend" >old send</button>
+                <button id="join" >join</button>
                 <button id="leave" >leave</button>
             
         </div>
@@ -29,17 +33,44 @@
         <script src="/socket.io/socket.io.js"></script>
         <script>
             var socket = io();
-            const userid = prompt("enter user name")
-            const chatid = prompt("enter chatid")
-
-            socket.emit('joinchat', chatid,userid);
+          
+           
+            $("#online").click(function(){
+                const userid = $('#userid').val();
+                socket.emit('add-user-online',userid)
+            })
+            socket.on('typing',function(user_id){
+                console.log(user_id + " is typing")
+            })
             $("#chat").keypress(function(){
                 socket.emit("typing",userid,chatid)
             })
             socket.on('typing',function(user_id){
                 console.log(user_id + " is typing")
             })
+            $("#newsend").click(function(){
+                var msg = $('#chat').val();
+                const userid = $('#userid').val();
+            const chatid = $('#chatid').val();
+                socket.emit("send-message",msg,userid,chatid,false)
+            })
+            socket.on("message-recieve",(msg,user_id)=>{
+                console.log(msg)
+            })
+            $("#join").click(function(){
+                const userid = $('#userid').val();
+            const chatid = $('#chatid').val();
+                socket.emit('joinchat', chatid,userid);
+            })
+            $("#oldsend").click(function(){
+                const userid = $('#userid').val();
+            const chatid = $('#chatid').val();
+                var msg = $('#chat').val();
+                socket.emit("sendmsg",msg,userid,chatid,true)
+            })
             $("#leave").click(function(){
+                const userid = $('#userid').val();
+            const chatid = $('#chatid').val();
                 socket.emit("leavechat",chatid)
             })
             // $('#join').click(function(){
