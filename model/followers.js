@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-
+const usermodel = require("./users")
 const Schema = new  mongoose.Schema({
 
     user_id : {

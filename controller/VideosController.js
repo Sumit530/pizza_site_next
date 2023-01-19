@@ -741,10 +741,11 @@ exports.add_video_comments = async(req,res)=>{
                 video_id:req?.body?.video_id,
                 mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
                 comment : req?.body?.comment ? req?.body?.comment : '',
-                parent_id : 0
             })
-            await video_comment.save()
-            if(Object.key(video_data[0].user_id).length > 0){
+            const comment = await video_comment.save()
+            
+            //console.log(video_data)
+            if(Object.keys(video_data[0].user_id).length > 0){
                 if(video_data[0].user_id.fcm_id != ''){
                     const notification_id = Math.floor(1000 + Math.random() * 9000)
                     const find_reciever_id   = video_data[0].user_id.fcm_id

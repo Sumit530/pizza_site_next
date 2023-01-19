@@ -2,7 +2,7 @@ const Users = require("../model/users")
 const Videos = require("../model/videos")
 const VideoData = require("../model/video_data")
 const VideoDuets = require("../model/video_duets")
-
+const fs = require("fs")
 
 exports.add_video_duet = async(req,res) =>{
     try {
@@ -17,8 +17,8 @@ exports.add_video_duet = async(req,res) =>{
         if(user_data.length > 0){
             const video_data  = await Videos.find({_id:req?.body?.video_id})
             if(video_data.length > 0){
-                const video_duet_data  = await videoduets.find({_id:req?.body?.video_id,video_id:req?.body?.video_id})
-                if(video_duet_data.length > 0){
+                const video_duet_data  = await VideoDuets.find({_id:req?.body?.video_id,video_id:req?.body?.video_id})
+                if(video_duet_data.length == 0){
     
                     const videoduets = new VideoDuets({
                         user_id:req?.body?.user_id,
@@ -39,10 +39,26 @@ exports.add_video_duet = async(req,res) =>{
         }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on add duets video" + error); 
+    }
+}
+exports.remove_video_duet = async(req,res) =>{
+    try {
+        if(!req?.body?.id || req?.body?.id == '' ){
+            return res.status(406).json({status:0,message:"please give proper parameter"})
+        } 
+        const duetdata = await VideoDuets.find({_id:req?.body?.id})
+        if(duetdata.length>0){
+            await VideoDuets.deleteOne({_id:req?.body?.id})
+            return  res.status(201).json({status:1,message:" video duet removed successfully!"})
+        }else{
+   return res.status(406).json({status:0,message:"duet video not found"})
+        }
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
         console.log("server error on add duets video"); 
     }
 }
-
 exports.get_video_duets = async(req,res)=>{
     try {
         if(!req?.body?.user_id || req?.body?.user_id == '' ){
@@ -53,7 +69,7 @@ exports.get_video_duets = async(req,res)=>{
         if(user_data.length>0){
             const video_duets_data = await VideoDuets.find({user_id:req?.body?.user_id })
             if(video_duets_data?.length > 0){
-                video_duets_data?.map(async(e)=>{
+               const promisedata =  video_duets_data?.map(async(e)=>{
 
                     const video_details = await Videos.find({_id:e.video_id})
                     if(video_details.length > 0){
@@ -85,16 +101,19 @@ exports.get_video_duets = async(req,res)=>{
                         var video_url  = ''
                         var cover_image  = ''
                     }
-                    data.push({
+                    return({
                         duet_id:e._id,
                         video_id:video_id,
                         cover_image:cover_image,
                         video_url:video_url        
                     })
                 })
-                 return res.status(201).json({status:1,message:" duets found successfully",data:data})
+                Promise.all(promisedata).then((e)=>{
+
+                    return res.status(201).json({status:1,message:" duets found successfully",data:e})
+                })
             }else{
-                return res.status(201).json({status:1,message:" duets not found"})
+                return res.status(402).json({status:0,message:"duets not found"})
             }
            
         }else{

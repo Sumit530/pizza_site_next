@@ -7,15 +7,18 @@ const Schema = new  mongoose.Schema({
         require:true,
         timestamps:true
     }],
-    admin : [ {
+    creater : {
         type:mongoose.Schema.Types.ObjectId,
         ref : 'users',
-        require:true,
-        timestamps:true
-    }],
+        require:true
+    },
     name : {
         type:String, // name of chat it would be username or groupname
         require:true
+    },
+    is_group_chat : {
+        type:Boolean,
+        default:false
     },
     status : {
         type:Boolean,

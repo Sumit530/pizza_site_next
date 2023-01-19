@@ -46,7 +46,7 @@ exports.remove_video_not_interested = async (req,res) =>{
     const video_notint_data = await videoNotInterested.find({_id:req?.body?.id})
             if(video_notint_data.length > 0){
                 await videoNotInterested.deleteOne({_id:req?.body?.id})
-                return res.status(201).json({status:1,message:"video added in not interest successfully"})
+                return res.status(201).json({status:1,message:"video removed from not interest successfully"})
             }else{
                 
                 return res.status(402).json({status:0,message:"this video not found in video interest "})
@@ -55,14 +55,14 @@ exports.remove_video_not_interested = async (req,res) =>{
 
 }
 
-exports.remove_video_not_interested = async (req,res) =>{
+exports.get_video_not_interested = async (req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
                 var data = []
     const video_notint_data = await videoNotInterested.find({user_id:req?.body?.user_id})
             if(video_notint_data.length > 0){
-                video_notint_data?.map(async(e)=>{
+             const promisedata =  video_notint_data?.map(async(e)=>{
                     const video_details = await videos.find({_id:e.video_id})
                     if(video_details.length > 0){
 
@@ -94,7 +94,7 @@ exports.remove_video_not_interested = async (req,res) =>{
                     var cover_image = ''
                     var video_id = ''
                 }
-                data.push({
+                return({
                     id:e._id,
                     video_id:video_id,
                     video_url:video_url,
@@ -102,11 +102,14 @@ exports.remove_video_not_interested = async (req,res) =>{
 
                 })
                 })
-                return res.status(201).json({data:data, status:1,message:"video not interest data get successfully "})
-            }else{
-                return res.status(402).json({status:0,message:"data not found in video not interest "})
-                
-            }
+                Promise.all(promisedata).then((e)=>{
+
+                    return res.status(201).json({data:e, status:1,message:"video not interest data get successfully "})
+                })
+                }else{
+                    return res.status(402).json({status:0,message:"data not found in video not interest "})
+                    
+                }
 
 
 }

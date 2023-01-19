@@ -12,6 +12,7 @@ require("dotenv").config()
 const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
 const { default: axios } = require("axios");
+const e = require("express");
 
 
 
@@ -614,17 +615,17 @@ exports.following_list = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
     const user = await User.find({_id:req.body.user_id})
-    flwdata = await Follow.find({follower_id:req?.body?.user_id}).populate("user_id")
+    flwdata = await Follow.find({follower_id:req?.body?.user_id})
     console.log(flwdata)
     const data = []
-    flwdata?.map((g)=>{
-        
+   const promisedata =  flwdata?.map(async(g)=>{
+        const users = await User.find({_id:g.user_id}) 
 
-            if(g?.user_id.profile_image != ''){
+            if(users[0].profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/profile/${g?.user_id.profile_image}`)){
-                    var filepath = `${path}/${g?.user_id.profile_image}`
+                if(fs.existsSync(`uploads/profile/${users[0].profile_image}`)){
+                    var filepath = `${path}/${users[0].profile_image}`
                 }
                 else {
                     var filepath = ''
@@ -632,22 +633,25 @@ exports.following_list = async(req,res) =>{
             }else{
                 var filepath = ''
             }
-            data.push({
-                id:e._id,
-                user_id:e.user_id,
-                name:e.name,
-                username:e.username,
-                private_account:e.private_account,
-                profile_image:filepath
+            return({
+                id:g._id,
+                user_id:g.user_id,
+                name:g.name ? g.name  : "" ,
+                username:g.username ? g.username :"",
+                private_account:g.private_account ? g.private_account : "",
+                profil_image:filepath
             })
         
     })
-    if(data.length>0){
-        return res.status(201).json({status:1,message:" follower found successfully",data:data})
-    }
-    else{
-        return res.status(402).json({status:0,message:"user not have followers"})
-    }
+    Promise.all(promisedata).then((e)=>{
+
+        if(e.length>0){
+            return res.status(201).json({status:1,message:" follower found successfully",data:e})
+        }
+        else{
+            return res.status(402).json({status:0,message:"user not have followers"})
+        }
+    })
    } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
     console.log("server error on  get follower list" + error); 
@@ -659,16 +663,16 @@ exports.follow_list = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({user_id:req?.body?.user_id}).populate("follower_id")
+    flwdata = await Follow.find({user_id:req?.body?.user_id})
     const data = []
-    flwdata?.map((g)=>{
+    const proimesdata = flwdata?.map(async(g)=>{
        
-
-            if(e.user_id.profile_image != ''){
+            const users = await User.find({_id:g.follower_id}) 
+            if(users[0].profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`${path}/${g?.user_id.profile_image}`)){
-                    var filepath = `${path}/${g?.user_id.profile_image}`
+                if(fs.existsSync(`uploads/users/profile/${g?.user_id.profile_image}`)){
+                    var filepath = `${path}/${users[0].profile_image}`
                 }
                 else {
                     var filepath = ''
@@ -676,22 +680,26 @@ exports.follow_list = async(req,res) =>{
             }else{
                 var filepath = ''
             }
-            data.push({
-                id:e._id,
-                user_id:e.user_id,
-                name:e.name,
-                username:e.username,
-                private_account:e.private_account,
+           
+            return({
+                id:g._id,
+                user_id:g.user_id,
+                name:g.name ? g.name  : "" ,
+                username:g.username ? g.username :"",
+                private_account:g.private_account ? g.private_account : "",
                 profil_image:filepath
             })
         
     })
-    if(data.length>0){
-        return res.status(201).json({status:1,message:"follower found successfully",data:data})
-    }
-    else{
-        return res.status(402).json({status:0,message:"user not have followers"})
-    }
+    Promise.all(proimesdata).then((e)=>{
+        if(e.length>0){
+            return res.status(201).json({status:1,message:"follower found successfully",data:e})
+        }
+        else{
+            return res.status(402).json({status:0,message:"user not have followers"})
+        }
+    })
+    
   } catch (error) {
      res.status(502).json({status:0,message:"internal server error"})
     console.log("server error on update get following list" + error); 
@@ -707,14 +715,15 @@ exports.pending_follow_request = async(req,res)=>{
         const flwdata = await Follow.find({user_id:req?.body?.user_id,status:0}).populate("follower_id")
         if(flwdata.length>0){
             const data = []
-            flwdata?.map((g)=>{
+          const proimesdata  =  flwdata?.map(async(g)=>{
+            const users = await User.find({_id:g.follower_id})
                 g?.follower_id?.map((e)=>{
         
-                    if(e.profile_image != ''){
+                    if(users[0].profile_image != ''){
                         
                         const path = process.env.PUBLICPROFILEURL
-                        if(fs.existsSync(`uploads/profile/${e.profile_image}`)){
-                            var filepath = `${path}/${e.profile_image}`
+                        if(fs.existsSync(`uploads/users/profile/${users[0].profile_image}`)){
+                            var filepath = `${path}/${users[0].profile_image}`
                         }
                         else {
                             var filepath = ''
@@ -722,22 +731,25 @@ exports.pending_follow_request = async(req,res)=>{
                     }else{
                         var filepath = ''
                     }
-                    data.push({
-                        id:e._id,
-                        user_id:e.user_id,
-                        name:e.name,
-                        username:e.username,
-                        private_account:e.private_account,
-                        profil_image:filepath
+                    return ({
+                          id:g._id,
+                          user_id:g.user_id,
+                          name:g.name ? g.name  : "" ,
+                          username:g.username ? g.username :"",
+                          private_account:g.private_account ? g.private_account : "",
+                          profil_image:filepath
                     })
                 })
             })
-            if(data.length>0){
-                return res.status(201).json({status:1,message:"pending request found successfully",data:data})
-            }
-            else{
-                return res.status(402).json({status:0,message:"user not have pending request"})
-            }
+            Promise.all(proimesdata).then((e)=>{
+
+                if(e.length>0){
+                    return res.status(201).json({status:1,message:"pending request found successfully",data:e})
+                }
+                else{
+                    return res.status(402).json({status:0,message:"user not have pending request"})
+                }
+            })
         }
         else{
             return res.status(402).json({status:0,message:"user not have pending request"})
@@ -809,8 +821,8 @@ exports.to_follow = async(req,res)=>{
                 //     }
                 // }
                 const followerdata = new Follow({
-                    user_id:mongoose.Types.ObjectId(user_id),
-                    follower_id:mongoose.Types.ObjectId(follower_id),
+                    user_id:user_id,
+                    follower_id:follower_id,
                 })
                 const newfollower = await followerdata.save()
                 return res.status(201).json({status:1,message:"Follow successfully!"})

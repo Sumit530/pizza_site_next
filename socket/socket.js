@@ -1,5 +1,5 @@
 
-const GroupChat = require("../model/group_chats")
+const GroupChat = require("../model/chats")
 const SingleChat = require("../model/single_chat")
 const Message = require("../model/messages")
 const User = require('../model/users')
@@ -15,28 +15,23 @@ const users = []
                User.findOneAndUpdate({_id:userid},{is_online:true}).then((e)=>{
                     onlineusers.set( userid,socket.id)
                     socket.broadcast.emit('userisonline',userid)
-                    console.log(onlineusers)
             }) 
         }
         
     })
     socket.on("joinchat",(chatid,userid)=>{
-       console.log(chatid,userid)
         socket.join(chatid)
         socket.broadcast.to(chatid).emit("joinchat",userid)
     })
     socket.on("leavechat",(roomid)=>{
         socket.leave(roomid)
-        console.log(socket.adapter.rooms.get(roomid))
     })
     socket.on("typing",(user_id,chat_id)=>{
         socket.broadcast.to(chat_id).emit("typing",user_id)
-        console.log(user_id)
        
     })
     socket.on("send-message",async(stypmsg,user_id,chat_id,isGroupChat)=>{
         //const getuser = onlineusers.get(destid)
-        console.log(stypmsg)
         var checkchat = null
         var chatid = chat_id
             if(isGroupChat == false){
@@ -80,13 +75,16 @@ const users = []
                     return key;
                 }
             }
-            console.log(difference)
             if(difference.length > 0){
                 difference.map((e)=>{
                     console.log("sending notification to "+getByValue(onlineusers,difference[0]))
                 })
             }
         }
+
+        const newmsg = new Message({
+
+        })
         socket.broadcast.to(chatid).emit("message-recieve",stypmsg,user_id)
         
     }

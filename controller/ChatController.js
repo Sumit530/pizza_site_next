@@ -1,5 +1,4 @@
-const GroupChat = require("../model/group_chats")
-const SingleChat = require("../model/single_chat")
+const Chat = require("../model/chats")
 const Message = require("../model/messages")
 const User = require('../model/users')
 const e = require("express")
@@ -7,10 +6,10 @@ const e = require("express")
 
 exports.ShowMessage = async(req,res) =>{
 try {
-    if(!req.body.group_chat_id || req.body.group_chat_id == ''){
+    if(!req.body.chat_id || req.body.chat_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const message = await Message.find({chat_id:req.body.group_chat_id}).populate("user_id") 
+    const message = await Message.find({chat_id:req.body.group_chat_id}).populate("users") 
     if(message.length>0){
         return res.status(201).json({data:message,status:1,message:"group created successfully"})  
     }else{
@@ -21,10 +20,11 @@ try {
         console.log("server error on create group chat" + error);  
 }
 }
-exports.showMessage = async(req,res)=>{
+exports.showChat = async(req,res)=>{
     if(!req.body.user_id || req.body.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
+    const chats = await Chat
 }
 exports.CreateGroup = async(req,res)=>{
     try {
@@ -38,9 +38,10 @@ exports.CreateGroup = async(req,res)=>{
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
             const users = req.body.user_ids.split(",")
-        const grpdata = new GroupChat({
+        const grpdata = new Chat({
             users:users,
             creater:req.body.creater_id,
+            is_group_chat:true,
             name:req.body.group_name 
 
         })
@@ -59,7 +60,7 @@ exports.DeleteGroup = async(req,res)=>{
         }
             
        
-         const group = await GroupChat.find({_id:req.body.group_chat_id})
+         const group = await Chat.find({_id:req.body.group_chat_id})
          if(group.length>0){
                 await GroupChat.deleteOne({_id:req?.body?.group_chat_id})
              return res.status(201).json({data:group,status:1,message:"group deleted successfully"})
@@ -79,7 +80,7 @@ exports.AddGroupChatMembers = async(req,res)=>{
         if(!req.body.user_id || req.body.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        const group = await GroupChat.find({_id:req.body.group_chat_id}).populate("users")
+        const group = await Chat.find({_id:req.body.group_chat_id}).populate("users")
         if(group.length>0){
             const user = await User.find({_id:req?.body?.user_id})
             if(user.length>0){
@@ -101,7 +102,7 @@ exports.ShowGroupChatMembers = async(req,res)=>{
         if(!req.body.group_chat_id || req.body.group_chat_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-         const group = await GroupChat.find({_id:req.body.group_chat_id}).populate("users")
+         const group = await Chat.find({_id:req.body.group_chat_id}).populate("users")
          if(group.length>0){
                 const data = group[0]?.users?.map((e)=>{
                         if(e.profile_image != ''){

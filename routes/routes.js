@@ -20,6 +20,9 @@ const notificationcontroller = require("../controller/NotificationController")
 const GeneralController = require("../controller/GeneralController")
 const VideoBookmarkController = require("../controller/VideoBookmarkController")
 const  VideoWatchHistoryController = require("../controller/VideoWatchHistoryController")
+const VideoCommentPinnedController = require("../controller/VideoCommentPinnedController")
+const VideoNotInterestedController = require("../controller/VideoNotInterestedController")
+const VideoDuetsController = require("../controller/VideoDuetsController")
 const UserAuth = require("../middleware/UserMiddleware")
 
 
@@ -213,14 +216,38 @@ router.post("/video_details",form.array(),videocontroller.video_details)
 router.post("/remove_video_like",UserAuth,form.array(),videocontroller.remove_video_like)
 router.post("/add_video_like",UserAuth,form.array(),videocontroller.add_video_like)
 router.post("/get_video_likes",UserAuth,form.array(),videocontroller.get_video_likes)
-router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.add_video_bookmark)
-//router.post("/get_video_bookmarks",UserAuth,form.array(),VideoBookmarkController.get_video_bookmarks)
-router.post("/remove_video_bookmark",UserAuth,form.array(),VideoBookmarkController.remove_video_bookmark)
+
 
 
 //watch history 
 router.post("/get_watch_video_history",UserAuth,form.array(),VideoWatchHistoryController.get_watch_video_history)
 router.post("/add_watch_video_history",UserAuth,form.array(),VideoWatchHistoryController.add_watch_video_history)
 
+
+//  video comments
+router.post("/add_video_comments",UserAuth,form.array(),videocontroller.add_video_comments)
+router.post("/add_parent_comment",UserAuth,form.array(),videocontroller.add_parent_comment)
+//router.post("/get_parent_video_comments",UserAuth,form.array(),videocontroller.get_parent_video_comments)
+router.post("/add_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.add_comment_pinned)
+router.post("/remove_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.remove_comment_pinned)
+//router.post("/add_parent_comment")
+
+// video bookmarks
+router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.add_video_bookmark)
+//router.post("/get_video_bookmarks",UserAuth,form.array(),VideoBookmarkController.get_video_bookmarks)
+router.post("/remove_video_bookmark",UserAuth,form.array(),VideoBookmarkController.remove_video_bookmark)
+
+
+
+// video not intersted 
+
+router.post("/add_video_not_interested",UserAuth,form.array(),VideoNotInterestedController.add_video_not_interested)
+router.post("/remove_video_not_interested",UserAuth,form.array(),VideoNotInterestedController.remove_video_not_interested)
+router.post("/get_video_not_interested",UserAuth,form.array(),VideoNotInterestedController.get_video_not_interested)
+
+//video duets
+router.post("/add_video_duet",UserAuth,form.array(),VideoDuetsController.add_video_duet)
+router.post("/remove_video_duet",UserAuth,form.array(),VideoDuetsController.remove_video_duet)
+router.post("/get_video_duets",UserAuth,form.array(),VideoDuetsController.get_video_duets)
 
 module.exports = router

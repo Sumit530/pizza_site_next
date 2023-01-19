@@ -1,15 +1,15 @@
-const Videos = require("../model/Videos")
-const User = require("../model/User")
+const Videos = require("../model/videos")
+const User = require("../model/users")
 const VideoComments = require("../model/videos_comments")
 const videoCommentPinneds = require("../model/video_comment_pinneds")
 const VideoData = require("../model/video_data")
 
 exports.add_comment_pinned = async(req,res)=>{
     try {
-        if(req?.body?.user_id){
+        if(!req?.body?.user_id || req?.body?.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        if(req?.body?.comment_id){
+        if(!req?.body?.comment_id || req?.body?.comment_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         const user_data = await User.find({_id:req?.body?.user_id})
@@ -41,10 +41,10 @@ exports.add_comment_pinned = async(req,res)=>{
 
 exports.remove_comment_pinned = async(req,res)=>{
    try {
-    if(req?.body?.user_id){
+    if(!req?.body?.user_id || req?.body?.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.comment_id){
+    if(!req?.body?.comment_id || req?.body?.comment_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const user_data = await User.find({_id:req?.body?.user_id})
