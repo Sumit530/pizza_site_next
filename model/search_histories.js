@@ -7,8 +7,10 @@ const Schema = new  mongoose.Schema({
         require:true
     },
     keyword : [{
-        type:String,
-        require:true
+        keyword : {
+            type:String,
+            timestamps:true
+        }
     }],
     status : {
         type:Boolean,

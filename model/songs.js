@@ -39,5 +39,5 @@ const Schema = new  mongoose.Schema({
 },
 {timestamps:true})
 Schema.plugin(softDeletePlugin)
-const search_histories = new mongoose.model("search_histories",Schema)
-module.exports = search_histories;
+const songs = new mongoose.model("songs",Schema)
+module.exports = songs;

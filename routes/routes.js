@@ -23,6 +23,7 @@ const  VideoWatchHistoryController = require("../controller/VideoWatchHistoryCon
 const VideoCommentPinnedController = require("../controller/VideoCommentPinnedController")
 const VideoNotInterestedController = require("../controller/VideoNotInterestedController")
 const VideoDuetsController = require("../controller/VideoDuetsController")
+const SearchHistoryController = require("../controller/SearchHistoryController")
 const UserAuth = require("../middleware/UserMiddleware")
 
 
@@ -249,5 +250,19 @@ router.post("/get_video_not_interested",UserAuth,form.array(),VideoNotInterested
 router.post("/add_video_duet",UserAuth,form.array(),VideoDuetsController.add_video_duet)
 router.post("/remove_video_duet",UserAuth,form.array(),VideoDuetsController.remove_video_duet)
 router.post("/get_video_duets",UserAuth,form.array(),VideoDuetsController.get_video_duets)
+
+
+//search history controller
+router.post("/add_search_history",UserAuth,form.array(),SearchHistoryController.add_search_history)
+router.post("/get_search_history",UserAuth,form.array(),SearchHistoryController.get_search_history)
+router.post("/delete_search_history",UserAuth,form.array(),SearchHistoryController.delete_search_history)
+router.post("/search_top_list",UserAuth,form.array(),SearchHistoryController.search_top_list)
+
+//router.post("/search_hashtags_list",UserAuth,form.array(),SearchHistoryController.search_hashtags_list)
+//router.post("/search_video_list",UserAuth,form.array(),SearchHistoryController.search_video_list)
+//router.post("/hashtags_to_videos",UserAuth,form.array(),SearchHistoryController.hashtags_to_videos)
+//router.post("/search_username_list",UserAuth,form.array(),SearchHistoryController.search_username_list)
+
+
 
 module.exports = router

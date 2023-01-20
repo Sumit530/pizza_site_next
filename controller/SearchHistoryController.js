@@ -1,7 +1,7 @@
 const search_histories = require('../model/search_histories')
 const Songs = require("../model/songs")
-const Followers = require("../model/Followers")
-const Videos = require("../model/Videos")
+const Followers = require("../model/followers")
+const Videos = require("../model/videos")
 const VideoData = require("../model/video_data")
 const VideoLikes = require("../model/video_likes")
 const VideoComments = require("../model/videos_comments")
@@ -15,20 +15,20 @@ const VideoFavorite = require("../model/video_favorites")
 
 
 exports.add_search_history = async(req,res)=>{
-    if(req?.body?.user_id){
+    if(!req?.body?.user_id || req?.body?.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.keyword){
+    if(!req?.body?.keyword || req?.body?.keyword == ""){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const getuser = await search_histories.find({user_id:req?.body?.user_id})
    if(getuser.length > 0){
-    const searchdata = await search_histories.find({user_id:req?.body?.user_id,keyword:{$text:{$search:req?.body?.user_id}}})
+    const searchdata = await search_histories.find({user_id:req?.body?.user_id,keyword:{$in:[req.body.keyword]}})
     if(searchdata.length==0){
 
         await  search_histories.findOneAndUpdate({
             user_id:req?.body?.user_id   
-        },{keyword:{$push:req.body.keyword}})
+        },{keyword:{$push:[req.body.keyword]}})
         return  res.status(201).json({status:1,message:"search history added successfully"})
     }
     else{
@@ -45,7 +45,7 @@ exports.add_search_history = async(req,res)=>{
 }
 
 exports.get_search_history = async(req,res)=>{
-    if(req?.body?.user_id){
+    if(!req?.body?.user_id || req?.body?.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const getuser = await search_histories.find({user_id:req?.body?.user_id})
