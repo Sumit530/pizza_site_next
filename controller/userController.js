@@ -11,7 +11,7 @@ const Follow = require("../model/followers")
 require("dotenv").config()
 const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
-const { default: axios } = require("axios");
+
 const e = require("express");
 
 
@@ -33,7 +33,6 @@ if(mobile_no != null ){
         return res.status(401).json({status:0,message:"incorrect phone number"})
     }
     const check = await User.find({mobile_no})
-    console.log(check);
     if(check.length>0){
         return res.status(401).json({status:0,message:"phone number already exist"})
     }
@@ -73,9 +72,9 @@ if(mobile_no != null ){
     
 
 else if (email != null){
-
-    const valid =  await validate(email)
-    if(valid == false){
+    const re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
+    console.log(email.match(re))
+    if(!email.match(re)){
         return res.status(409).json({status:0,message:"incorrect email"})
     }
     const check = await User.find({email:email})
@@ -89,7 +88,7 @@ else if (email != null){
         service: 'gmail',
         auth: {
           user: 'appstane.test@gmail.com',
-          pass: 'Sumit1458p'
+          pass: 'hwivyglhxqcngwgy'
         }
       });
       
@@ -101,17 +100,25 @@ else if (email != null){
       };
       transporter.sendMail(mailOptions, async(error, info)=>{
         if (error) {
-          res.status(501).json({status:0,message:"internal error cannot sent email"})
+          res.status(501).json({status:0,message:"internal error cannot sent email"+ error})
         } else {
             const userdata = new User({
                 country_code,email,otp,otp_expired    	           
             })
           
-            const finaluser = await userdata.save()
+            let finaluser = await userdata.save()
             const notification_setting_data = new NotificationSetting({
                 user_id:finaluser._id
             })
             await notification_setting_data.save()
+            finaluser = {
+                user_id:finaluser._id,
+                name:finaluser.name,
+                country_code:finaluser.country_code,
+                mobile_no :finaluser.mobile_no,
+                email:finaluser.name,
+        
+            }
             res.status(201).json({data:finaluser,status:1,message:"email send successfully"})
         }})
 }

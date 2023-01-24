@@ -9,7 +9,7 @@ try {
     if(!req.body.chat_id || req.body.chat_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const message = await Message.find({chat_id:req.body.group_chat_id}).populate("users") 
+    const message = await Message.find({chat_id:req.body.group_chat_id}).populate("users","username,name,profile") 
     if(message.length>0){
         return res.status(201).json({data:message,status:1,message:"group created successfully"})  
     }else{
