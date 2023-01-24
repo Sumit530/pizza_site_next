@@ -8,6 +8,7 @@ const Notification = require("../model/notifications")
 const NotificationSetting = require("../model/notification_settings")
 const safety = require("../model/safeties")
 const Follow = require("../model/followers")
+const Language = require("../model/languages")
 require("dotenv").config()
 const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
@@ -73,7 +74,6 @@ if(mobile_no != null ){
 
 else if (email != null){
     const re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
-    console.log(email.match(re))
     if(!email.match(re)){
         return res.status(409).json({status:0,message:"incorrect email"})
     }
@@ -546,15 +546,13 @@ exports.update_notification_settings = async(req,res) =>{
         
        const  notifcationdata = await NotificationSetting.find({user_id:req?.body?.user_id})
        if(notifcationdata.length > 0){
-        const notifcation_data = new NotificationSetting({
-            user_id:req?.body?.user_id,
+        const notifcation_data = NotificationSetting.findOneAndUpdate({ user_id:req?.body?.user_id,},{
             is_likes:req?.body?.is_likes,
             is_customized_updates:req?.body?.is_customized_updates,
             is_direct_messages:req?.body?.is_direct_messages,
             is_mentions:req?.body?.is_mentions,
             is_recommended_broadcasts:req?.body?.is_recommended_broadcasts,  
         })
-        await notifcation_data.save()
         return res.status(201).json({status:1,message:"notification setting updated successfully"})
        }else{
         return res.status(402).json({status:0,message:"user notification data not found"})
@@ -842,7 +840,31 @@ exports.to_follow = async(req,res)=>{
         console.log("server error on to follow user" + error); 
     }
 }
-
+exports.update_language = async(req,res)=>{
+    try {
+        if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})
+        }  
+        if( req?.body?.language_id == '' || !req?.body?.language_id || req?.body?.language_id == '' || !req?.body?.language_id ){ 
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})
+        }  
+        const userdata = await User.find({_id:req?.body?.user_id})
+        if(userdata.length>0){
+            const langdata= await Language.find({_id:req?.body?.language_id})
+            if(langdata.length > 0){
+                await User.findOneAndUpdate({_id:req?.body?.user_id},{language_id:req?.body?.language_id})
+                return res.status(201).json({status:1,message:"langauge updated successfully!"})
+            }else{
+                return res.status(409).json({status:0,message:"This language not exist!!"}) 
+            }
+        }else{
+            return res.status(409).json({status:0,message:"This user not exist!!"}) 
+        }
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on to update language" + error); 
+    }
+}
 exports.to_unfollow = async(req,res) =>{
     try {
         if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.follower_id == '' || !req?.body?.follower_id ){ 
@@ -850,8 +872,14 @@ exports.to_unfollow = async(req,res) =>{
         } 
         const user_data = await User.find({_id:req?.body?.user_id})
         if(user_data.length>0){
-            await Follow.findOneAndDelete({user_id:req?.body?.user_id,follower_id:req?.body?.follower_id},{new:true})
-            return  res.status(201).json({status:1,message:"unFollow successfully!"})
+            const flwdata = await Follow.find({user_id:req?.body?.user_id,follower_id:req.body.follower_id})
+            if(flwdata.length > 0){
+
+                await Follow.findOneAndDelete({user_id:req?.body?.user_id,follower_id:req?.body?.follower_id},{new:true})
+                return  res.status(201).json({status:1,message:"unFollow successfully!"})
+            } else{
+                return res.status(409).json({status:0,message:"user not following "})
+            }
         }
         else{
             return res.status(409).json({status:0,message:"This user not exist!!"})

@@ -7,6 +7,8 @@ const router = require("./routes/routes")
 const fs =require("fs")
 const path = require("path")
 const bodyparser= require("body-parser")
+const mongoose = require("mongoose")
+const Language = require("./model/languages")
 const server = https.createServer(
   //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -32,6 +34,7 @@ app.use(express.static("public"));
 require("./db/connection")
 app.use('/api',router)
 const { v4: uuidv4 } = require("uuid");     
+const { lang } = require("moment")
 app.set("view engine", "ejs");
 // io.on("connection", (socket) => {
 //     console.log("join")
@@ -44,9 +47,12 @@ app.set("view engine", "ejs");
 //   }); 
 // });
 
+ 
+
 
 
 //app.use(con)
+
 
 app.get("/",(req,res)=>{
     res.send("hey")

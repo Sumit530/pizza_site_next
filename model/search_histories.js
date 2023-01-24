@@ -6,12 +6,14 @@ const Schema = new  mongoose.Schema({
         ref : 'Users',
         require:true
     },
-    keyword : [{
-        keyword : {
-            type:String,
-            timestamps:true
+    keyword : [
+        {
+        key:String ,
+        createdAt : {
+            type:Date,
+            default: Date.now()}
         }
-    }],
+                ],
     status : {
         type:Boolean,
         default:true

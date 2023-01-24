@@ -24,6 +24,8 @@ const VideoCommentPinnedController = require("../controller/VideoCommentPinnedCo
 const VideoNotInterestedController = require("../controller/VideoNotInterestedController")
 const VideoDuetsController = require("../controller/VideoDuetsController")
 const SearchHistoryController = require("../controller/SearchHistoryController")
+const LanguageController = require("../controller/LanguageController")
+
 const UserAuth = require("../middleware/UserMiddleware")
 
 
@@ -177,7 +179,7 @@ router.post("/check_username",form.array(),usercontroller.check_username)
 router.post("/send_otp",form.array(),usercontroller.send_otp)
 router.post("/resend_otp",form.array(),usercontroller.resend_otp)
 router.post("/update_location",form.array(),usercontroller.update_location)
-router.post("/update_profile",form.array(),usercontroller.update_profile)
+//router.post("/update_profile",form.array(),usercontroller.update_profile)
 //router.post("/get_user_language",usercontroller.USE)
 router.post("/update_password",form.array(),usercontroller.update_password)
 router.post("/update_mobile_no",form.array(),usercontroller.update_mobile_no)
@@ -195,6 +197,8 @@ router.post("/user_details",form.array(),usercontroller.user_details)
 router.post("/user_detail",form.array(),usercontroller.user_details)
 router.post("/following_list",form.array(),usercontroller.following_list)
 router.post("/get_notification_settings",form.array(),usercontroller.get_notification_settings)
+router.post("/update_language",form.array(),usercontroller.update_language)
+router.post("/get_user_language",form.array(),UserAuth, LanguageController.get_user_language)
 
 //router.post("/get_notification_settings",notificationcontroller.get)
 //router.post("/distance",GeneralController.distance)
@@ -205,8 +209,12 @@ router.post("/get_notification_settings",form.array(),usercontroller.get_notific
 router.post("/to_follow",UserAuth,form.array(),usercontroller.to_follow)
 router.post("/to_unfollow",UserAuth,form.array(),usercontroller.to_unfollow)
 router.post("/following_list",UserAuth,form.array(),usercontroller.following_list)
+
 router.post("/follow_list",UserAuth,form.array(),usercontroller.follow_list)
 
+//language controller 
+
+router.get("/language",form.array(), LanguageController.Index)
 
 //upload video
 
