@@ -8,7 +8,7 @@ const fs =require("fs")
 const path = require("path")
 const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
-const Language = require("./model/languages")
+const Categories = require("./model/categories")
 const server = https.createServer(
   //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -46,6 +46,12 @@ app.set("view engine", "ejs");
 //     });
 //   }); 
 // });
+// const setting  = new Categories({
+//   name:""
+// })
+// setting.save().then((e)=>{
+//   console.log("added")
+// })
 
  
 
@@ -53,7 +59,8 @@ app.set("view engine", "ejs");
 
 //app.use(con)
 
-
+app.use("/upload",express.static('uploads/'))
+//app.use("/upload",express.static('uploads/song_banner_image'))
 app.get("/",(req,res)=>{
     res.send("hey")
 })

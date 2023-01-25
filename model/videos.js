@@ -8,7 +8,8 @@ const Schema = new  mongoose.Schema({
         require:true
     },
     song_id : {
-        type:Number,
+        type:mongoose.Schema.Types.ObjectId,
+        ref : 'songs',
         require:true
     },
     description : {

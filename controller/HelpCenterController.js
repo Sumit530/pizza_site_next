@@ -5,7 +5,7 @@ const help_center_data = require("../model/help_center_data")
 exports.gethelp = async(req,res) =>{
 
     try {
-        const helpcenter = await help_centers() 
+        const helpcenter = await help_centers.find() 
         if(helpcenter.length > 0){
             const data = []
             helpcenter.map((e)=>{
@@ -31,7 +31,7 @@ exports.gethelpbyid = async(req,res) =>{
         if(!req.body.id || req.body.id == '' ){ 
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        const helpcenter =await help_centers({_id:req.body.id})
+        const helpcenter =await help_centers.find({_id:req.body.id})
         if(helpcenter.length > 0) {
             const data = {
                 id : helpcenter[0]._id,

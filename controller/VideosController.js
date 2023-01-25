@@ -54,7 +54,7 @@ if(req?.files?.video_file ){
 
     const video_data = new videos({
         user_id,
-        song_id : song_id ? song_id : '',
+        song_id : req?.body?.song_id ? req?.body?.song_id : '',
         description : description ? description : '',
         is_view,
         is_save_to_device : is_save_to_device   ? is_save_to_device  : '',
@@ -246,7 +246,7 @@ exports.video_list = async(req,res) =>{
        
         var total_likes = 0
         var total_comments = 0
-        const unshuffle_video_data = await videos.find({is_view:1,is_save_to_device:0})
+        const unshuffle_video_data = await videos.find({is_view:1,is_save_to_device:0}).populate("song_id")
         if(unshuffle_video_data.length > 0){
 
             var video_data =  unshuffle_video_data

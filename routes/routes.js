@@ -25,13 +25,18 @@ const VideoNotInterestedController = require("../controller/VideoNotInterestedCo
 const VideoDuetsController = require("../controller/VideoDuetsController")
 const SearchHistoryController = require("../controller/SearchHistoryController")
 const LanguageController = require("../controller/LanguageController")
+const SettingController = require("../controller/SettingController")
+const HelpCenterController = require("../controller/HelpCenterController")
+const SongsController = require("../controller/SongsController")
+const SoundBookmarksController = require("../controller/SoundBookmarksController")
+const Singers = require("../model/singers")
 
 const UserAuth = require("../middleware/UserMiddleware")
 
 
 const ProfileStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/profile");
+    cb(null, "uploads/users/profile");
   },
   filename: function (req, file, cb) {
     const uniqueSuffix =
@@ -63,7 +68,7 @@ const ProfileUpload = multer.diskStorage({
     fileSize:5 * 1024 * 1024
   }
 });
-
+//uploads/videos/cover_image
 const CoverImageStorage = multer.diskStorage ({
   destination: function (req, file, cb) {
     cb(null, "uploads/videos/cover_image");
@@ -95,6 +100,72 @@ const CoverImageUpload = multer({
   },
   limits:{
     fileSize:5 * 1024 * 1024
+  }
+});
+
+const SongStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    if(file.fieldname == 'attachment'){
+
+      cb(null, "uploads/songs");
+    }
+    else if(file.fieldname == 'banner_image'){
+      cb(null, "uploads/song_banner_image");
+    }
+  },
+  filename: function (req, file, cb) {
+    if(file.fieldname == 'attachment'){
+
+      const uniqueSuffix =
+      Date.now() + "-" + crypto.randomBytes(16).toString("hex");
+      cb(
+        null,
+        uniqueSuffix +
+        ".mp3"
+        );
+      }
+      else if (file.fieldname == 'banner_image'){
+        const uniqueSuffix =
+      Date.now() + "-" + crypto.randomBytes(16).toString("hex");
+    cb(
+      null,
+      uniqueSuffix + '.webp'
+      )
+      }
+  },
+});
+
+const SongUpload = multer({
+  storage: SongStorage,
+  fileFilter: (req, file, cb) => {
+    console.log(file)
+    if(file.fieldname == 'attachment'){
+
+      if (
+        file.mimetype == "audio/mpeg" || file.mimetype == "audio/wave" 
+        ) {
+          cb(null, true);
+        } else {
+          cb(null, false);
+          return cb("Only .mp3 avi format allowed!");
+        }
+      }
+      else if (file.fieldname == 'banner_image'){
+        if (
+          file.mimetype == "image/png" ||
+          file.mimetype == "image/jpg" ||
+          file.mimetype == "image/jpeg"
+        ) {
+          cb(null, true);
+        } else {
+          cb(null, false);
+          return cb("Only .png, .jpg and .jpeg format allowed!");
+        }
+      }
+  },
+  limits:{
+      fileSize: 20 * 1024 * 1024 
+    
   }
 });
 
@@ -272,6 +343,40 @@ router.post("/search_top_list",UserAuth,form.array(),SearchHistoryController.sea
 //router.post("/hashtags_to_videos",UserAuth,form.array(),SearchHistoryController.hashtags_to_videos)
 //router.post("/search_username_list",UserAuth,form.array(),SearchHistoryController.search_username_list)
 
+// setting controller 
 
+router.get("/terms_of_use",SettingController.terms_of_use)
+router.get("/copyright_policy",SettingController.copyright_policy)
+router.get("/privacy_policy",SettingController.privacy_policy)
 
+//help center data
+router.get("/gethelp",HelpCenterController.gethelp)
+router.post("/gethelpbyid",form.array(),HelpCenterController.gethelpbyid)
+router.post("/add_help_center_problem_resolved",form.array(),HelpCenterController.add_help_center_problem_resolved)
+
+//songs controller 
+router.post("/add_song",UserAuth,SongUpload.fields([{name:'attachment',maxCount:1},{name:'banner_image',maxCount:1}]),SongsController.add_song)
+router.post("/add_banner_image",UserAuth,form.array(),SongsController.add_banner_image)
+router.post("/add_favortie_song",UserAuth,form.array(),SongsController.add_favortie_song)
+router.post("/get_categories",UserAuth,form.array(),SongsController.get_categories)
+router.post("/get_favorties_song",UserAuth,form.array(),SongsController.get_favorties_song)
+router.get("/get_singers",UserAuth,form.array(),SongsController.get_singers)
+router.post("/get_song",UserAuth,form.array(),SongsController.get_song)
+router.post("/get_song_to_video",UserAuth,form.array(),SongsController.get_song_to_video)
+router.post("/removed_favortie_song",UserAuth,form.array(),SongsController.removed_favortie_song)
+router.post("/add_sound_bookmark",UserAuth,form.array(),SoundBookmarksController.add_sound_bookmark)
+router.post("/get_song_bookmarks",UserAuth,form.array(),SoundBookmarksController.get_song_bookmarks)
+router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksController.remove_song_bookmark)
+
+router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
+
+  const setting  = new Singers({
+    name:"badsah",
+    description:"famous rapper ",
+    image:req.file.filename
+  })
+  setting.save().then((e)=>{
+    console.log("added")
+  })
+})
 module.exports = router

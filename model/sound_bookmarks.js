@@ -16,5 +16,5 @@ const Schema = new  mongoose.Schema({
     }
 },
 {timestamps:true})
-const search_histories = new mongoose.model("search_histories",Schema)
-module.exports = search_histories;
+const sound_bookmarks = new mongoose.model("sound_bookmarks",Schema)
+module.exports = sound_bookmarks;

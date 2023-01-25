@@ -14,7 +14,7 @@ exports.terms_of_use = async(req,res) =>{
 }
 
 exports.privacy_policy =async(req,res) =>{
-    const settingdata = await Setting.find() 
+    const data = await Setting.find() 
     if(data.length > 0){
         const result = {
             details:data[0].privacy_policy
@@ -26,7 +26,7 @@ exports.privacy_policy =async(req,res) =>{
     }
 }
 exports.copyright_policy =async(req,res) =>{
-    const settingdata = await Setting.find() 
+    const data = await Setting.find() 
     if(data.length > 0){
         const result = {
             details:data[0].copyright_policy

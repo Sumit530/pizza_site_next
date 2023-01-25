@@ -11,6 +11,7 @@ const VideoFavorite = require("../model/video_favorites")
 const VideoLikes = require("../model/video_likes")
 const VideoWatchHistory = require("../model/video_watch_histories")
 const Country = require("../model/countries")
+const fs = require("fs")
 
 exports.add_banner_image = async(req,res) =>{
     const banner_image = req?.file?.filename
@@ -30,9 +31,8 @@ exports.add_banner_image = async(req,res) =>{
 exports.get_categories = async(req,res) =>{
     const cat = await Categories.find()
     if(cat.length > 0){
-        const data = []
-        cat.map((e)=>{
-            data.push({
+        const data  = cat.map((e)=>{
+            return ({
                 id:e._id,
                 name:e.name     
                 })
@@ -49,6 +49,7 @@ exports.add_song = async(req,res) =>{
     if(!req?.body?.name || req?.body?.name == ''  ){
         return res.status(406).json({status:0,message:"please give a user id"})
     }
+    console.log(req.files)
     // if(!req?.file?.user_id || req?.body?.user_id == ''  ){
     //     return res.status(406).json({status:0,message:"please give a user id"})
     // }
@@ -58,13 +59,13 @@ exports.add_song = async(req,res) =>{
     const songdata = new Songs({
         cat_id:req?.body?.cat_id ,
         name:req?.body?.name ,
-        banner_image:req?.files?.bannerimage ,
-        attachment:req?.files?.attachment 
+        banner_image:req?.files?.banner_image[0].filename ,
+        attachment:req?.files?.attachment[0].filename 
 
 
     })
     await songdata.save()
-    return  res.status(201).json({status:1,message:"song added successfully!",data:data})
+    return  res.status(201).json({status:1,message:"song added successfully!"})
 }
 
 exports.get_singers = async(req,res) =>{
@@ -75,7 +76,7 @@ exports.get_singers = async(req,res) =>{
             if(e.image != ''){
                 
                 const path = process.env.PUBLICSINGERURL
-                if(fs.existsSync(`${path}}/${e.image}`)){
+                if(fs.existsSync(`uploads/singers/${e.image}`)){
                     var filepath = `${path}/${e.image}`
                 }
                 else {
@@ -99,17 +100,16 @@ exports.get_singers = async(req,res) =>{
 
 exports.get_song =async(req,res) =>{
     const catData = await Categories.find()
-    var songdata = []
     var data = []
     if(catData.length > 0){
-        catData.map(async(e)=>{
-            const songData = await Songs.find({cat_id:catData._id})
+      const songdata =  catData.map(async(e)=>{
+            const songData = await Songs.find({cat_id:e._id})
             if(songData.length > 0){
-                songData.map((f)=>{
+               var d =  songData.map((f)=>{
                     if(f.attachment != ''){
                 
                         const path = process.env.PUBLICSONGURL
-                        if(fs.existsSync(`${path}/${f.attachment}`)){
+                        if(fs.existsSync(`uploads/songs/${f.attachment}`)){
                             var attachment  = `${path}/${f.attachment}`
                         }
                         else {
@@ -121,7 +121,7 @@ exports.get_song =async(req,res) =>{
                     if(f.banner_image != ''){
                         
                         const path = process.env.PUBLICSONGBANNERIMAGE
-                        if(fs.existsSync(`${paht}/${f.banner_image}`)){
+                        if(fs.existsSync(`uploads/song_banner_image/${f.banner_image}`)){
                             var banner_image  = `${path}/${f.banner_image}`
                         }
                         else {
@@ -130,7 +130,7 @@ exports.get_song =async(req,res) =>{
                     }else{
                         var banner_image = ''
                     }
-                    data.push({
+                    return({
                         id:f._id,
                         name:f.name,
                         description:f.description,
@@ -140,15 +140,16 @@ exports.get_song =async(req,res) =>{
                     })
                 })
             }
-            songdata.push({
+            return({
                 id:e._id,
                 name:e.name,
-                song_data:data
+                song_data:d
             })
-            data = []
-
         })
-        return  res.status(201).json({status:1,message:"song list get successfully!",data:songdata})
+        Promise.all(songdata).then((e)=>{
+           // console.log(e)
+            return  res.status(201).json({status:1,message:"song list get successfully!",data:e})
+        })
     }else{
         return res.status(406).json({status:0,message:"data not found"})
     }
@@ -156,7 +157,7 @@ exports.get_song =async(req,res) =>{
 
 
 exports.add_favortie_song = async(req,res) =>{
-    if(!req?.body?.user_id || req?.body?.user_id == ''  || !req?.body?.song_id || req?.body?.song_id == ''){
+    if(!req?.body?.user_id || req?.body?.user_id == ''  || !req?.body?.sound_id || req?.body?.sound_id == ''){
         return res.status(406).json({status:0,message:"please give a user id"})
     }
     const check = await SoundBookmark.find({song_id:req.body.sound_id,user_id:req.body.user_id})
@@ -164,7 +165,7 @@ exports.add_favortie_song = async(req,res) =>{
 
         const favsongdata = new SoundBookmark({
             sound_id:req.body.sound_id,
-            user_id : eq.body.user_id
+            user_id : req.body.user_id
         })
         await favsongdata.save()
         return  res.status(201).json({status:1,message:"sound added as favorite successfully!"})
@@ -191,16 +192,26 @@ try {
         return res.status(406).json({status:0,message:"please give a user id"})
     }
     if(req?.body?.keyword && req?.body?.keyword != ''  ){
-        var songdata = await SoundBookmark.find({user_id:req.body.user_id,name:`/${req.body.keyword}/`}).populate("cat_id")
+        var songdata = await SoundBookmark.find({user_id:req.body.user_id,name:`/${req.body.keyword}/`}).populate({ 
+            path: 'sound_id',
+            populate: {
+              path: 'cat_id'
+            } 
+         })
     }else{
-        var songdata = await SoundBookmark.find({user_id:req.body.user_id}).populate("cat_id")
+        var songdata = await SoundBookmark.find({user_id:req.body.user_id}).populate({ 
+            path: 'sound_id',
+            populate: {
+              path: 'cat_id'
+            } 
+         })
     }
     var data = []
     if(songdata.length > 0){
         songdata?.map((f)=>{
-            if(f.attachment != ''){
+            if(f.sound_id.attachment != ''){
                 const path = process.env.PUBLICSONGURL
-                if(fs.existsSync(`${path}/${f.attachment}`)){
+                if(fs.existsSync(`${path}/${f.sound_id.attachment}`)){
                     var attachment  = `${path}/${f.attachment}`
                 }
                 else {
@@ -212,8 +223,8 @@ try {
             if(f.banner_image != ''){
                 
                 const path = process.env.PUBLICSONGBANNERIMAGE
-                if(fs.existsSync(`${path}/${f.banner_image}`)){
-                    var song_banner_image  = `${path}/${f.banner_image}`
+                if(fs.existsSync(`${path}/${f.sound_id.banner_image}`)){
+                    var song_banner_image  = `${path}/${f.sound_id.banner_image}`
                 }
                 else {
                     var song_banner_image = ''
@@ -222,14 +233,14 @@ try {
                 var song_banner_image = ''
             }
             data.push({
-                id:e._id,
-                song_id:e.sound_id._id,
-                cat_id:e.cat_id._id,
-                cat_name:e.cat_id.name,
-                name:e.name,
-                description:e.description,
-                duration:e.duration,
-                singer_id : e.singer_id,
+                id:f._id,
+                song_id:f.sound_id._id,
+                cat_id:f.sound_id.cat_id._id,
+                cat_name:f.sound_id.cat_id.name,
+                name:f.name,
+                description:f.description,
+                duration:f.duration,
+                singer_id : f?.singer_id,
                 attachment:attachment,
                 banner_image:song_banner_image,
 
@@ -240,6 +251,8 @@ try {
     }
     var banner_data = []
     const banner_images_data  = await Banner_images.find()
+    console.log("hey")
+    console.log(banner_images_data)
     if(banner_images_data.length > 0){
         banner_images_data?.map((f)=>{
             if(f.image_name != ''){
@@ -267,7 +280,7 @@ try {
     
 } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on get favorite");   
+    console.log("server error on get favorite" + error);   
 }
 }
 
@@ -493,6 +506,8 @@ exports.get_song_to_video = async(req,res) =>{
                 is_favorite : is_favorite,
                 is_video_like : is_video_like
             })
+            
+    
 
     }else{
         singleSongData = []
