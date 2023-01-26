@@ -14,4 +14,4 @@ const Schema = new  mongoose.Schema({
 {timestamps:true})
 Schema.plugin(softDeletePlugin)
 const categories = new mongoose.model("categories",Schema)
-module.exports = categories;
+module.exports = categories;    

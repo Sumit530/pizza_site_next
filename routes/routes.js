@@ -103,6 +103,7 @@ const CoverImageUpload = multer({
   }
 });
 
+
 const SongStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     if(file.fieldname == 'attachment'){
@@ -356,7 +357,7 @@ router.post("/add_help_center_problem_resolved",form.array(),HelpCenterControlle
 
 //songs controller 
 router.post("/add_song",UserAuth,SongUpload.fields([{name:'attachment',maxCount:1},{name:'banner_image',maxCount:1}]),SongsController.add_song)
-router.post("/add_banner_image",UserAuth,form.array(),SongsController.add_banner_image)
+router.post("/add_banner_image",UserAuth,SongUpload.single("banner_image"),SongsController.add_banner_image)
 router.post("/add_favortie_song",UserAuth,form.array(),SongsController.add_favortie_song)
 router.post("/get_categories",UserAuth,form.array(),SongsController.get_categories)
 router.post("/get_favorties_song",UserAuth,form.array(),SongsController.get_favorties_song)
@@ -368,15 +369,15 @@ router.post("/add_sound_bookmark",UserAuth,form.array(),SoundBookmarksController
 router.post("/get_song_bookmarks",UserAuth,form.array(),SoundBookmarksController.get_song_bookmarks)
 router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksController.remove_song_bookmark)
 
-router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
+// router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
 
-  const setting  = new Singers({
-    name:"badsah",
-    description:"famous rapper ",
-    image:req.file.filename
-  })
-  setting.save().then((e)=>{
-    console.log("added")
-  })
-})
+//   const setting  = new Singers({
+//     name:"badsah",
+//     description:"famous rapper ",
+//     image:req.file.filename
+//   })
+//   setting.save().then((e)=>{
+//     console.log("added")
+//   })
+// })
 module.exports = router

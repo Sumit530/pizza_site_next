@@ -8,7 +8,7 @@ const fs =require("fs")
 const path = require("path")
 const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
-const Categories = require("./model/categories")
+
 const server = https.createServer(
   //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -46,12 +46,7 @@ app.set("view engine", "ejs");
 //     });
 //   }); 
 // });
-// const setting  = new Categories({
-//   name:""
-// })
-// setting.save().then((e)=>{
-//   console.log("added")
-// })
+
 
  
 

@@ -60,12 +60,15 @@ if(req?.files?.video_file ){
         is_save_to_device : is_save_to_device   ? is_save_to_device  : '',
         friends_id : friends_id ? friends_id : '',
         cover_image : req?.files?.cover_image[0].filename,
-        file_name : req?.files?.video_file[0].filename
+        file_name : req?.files?.video_file[0].filename,
+         is_allow_comments : req?.body?.is_allow_comments ,
+         mention_ids : mention_ids ? mention_ids : null,
+        is_allow_duet : is_allow_duet ? is_allow_duet : '',
+        is_allow_comments : is_allow_comments ? is_allow_comments : ""
     })
     const video = await video_data.save()
     console.log(video)
     var video_id = video._id
-    console.log(req?.body?.mention_ids)
     if(req?.body?.mention_ids && req?.body?.mention_ids != ''){
         const mention_user_id = req?.body?.mention_ids.split(",") 
         const user_data = await Users.find({_id:user_id}).select("name")
