@@ -3,12 +3,12 @@ const mongoose = require("mongoose")
 const Schema = new  mongoose.Schema({
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
         require:true
     },
     receiver_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
       
     },
     video_id : {

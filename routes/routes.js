@@ -29,7 +29,13 @@ const SettingController = require("../controller/SettingController")
 const HelpCenterController = require("../controller/HelpCenterController")
 const SongsController = require("../controller/SongsController")
 const SoundBookmarksController = require("../controller/SoundBookmarksController")
-const Singers = require("../model/singers")
+const NotificationController = require("../controller/NotificationController")
+const VideoEffectsController = require("../controller/VideoEffectsController")
+const HashtagBookmarksController = require("../controller/HashtagBookmarksController")
+const BlockUserContoller = require("../controller/BlockUserContoller")
+const RecentEmojisController = require("../controller/RecentEmojisController")
+const RestrictAccountsController  = require("../controller/RestrictAccountsController")
+const VideoReportController  = require("../controller/VideoReportController")
 
 const UserAuth = require("../middleware/UserMiddleware")
 
@@ -86,6 +92,40 @@ const CoverImageStorage = multer.diskStorage ({
 
 const CoverImageUpload = multer({
   storage: CoverImageStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb("Only .png, .jpg and .jpeg format allowed!");
+    }
+  },
+  limits:{
+    fileSize:5 * 1024 * 1024
+  }
+});
+
+const EffectStorage = multer.diskStorage ({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/effects");
+  },
+  
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() + "-" + crypto.randomBytes(16).toString("hex");
+    cb(
+      null,
+      uniqueSuffix + '.webp'
+    );
+  },
+});
+
+const EffectUpload = multer({
+  storage: EffectStorage,
   fileFilter: (req, file, cb) => {
     if (
       file.mimetype == "image/png" ||
@@ -369,15 +409,51 @@ router.post("/add_sound_bookmark",UserAuth,form.array(),SoundBookmarksController
 router.post("/get_song_bookmarks",UserAuth,form.array(),SoundBookmarksController.get_song_bookmarks)
 router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksController.remove_song_bookmark)
 
-// router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
 
-//   const setting  = new Singers({
-//     name:"badsah",
-//     description:"famous rapper ",
-//     image:req.file.filename
-//   })
-//   setting.save().then((e)=>{
-//     console.log("added")
-//   })
+// notification route
+router.post("/notification",UserAuth,form.array(),NotificationController.notification)
+router.post("/like_notification_list",UserAuth,form.array(),NotificationController.like_notification_list)
+
+
+// vidoe effect
+ router.post("/add_effect",UserAuth,EffectUpload.single("attachment"),VideoEffectsController.add_effect)
+ router.post("/get_effect",UserAuth,form.array(),VideoEffectsController.get_effect)
+
+
+ // hashtag controller
+ router.post("/add_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.add_hashtag_bookmark)
+ router.post("/remove_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.remove_hashtag_bookmark)
+ router.post("/get_hashtag_bookmarks",UserAuth,form.array(),HashtagBookmarksController.get_hashtag_bookmarks)
+ 
+ // block user controller
+ router.post("/add_block_user",UserAuth,form.array(),BlockUserContoller.add_block_user)
+ router.post("/get_block_user_list",UserAuth,form.array(),BlockUserContoller.get_block_user_list)
+ router.post("/remove_block_user",UserAuth,form.array(),BlockUserContoller.remove_block_user)
+
+ //recent emoji controller
+ router.post("/add_recent_emoji",UserAuth,form.array(),RecentEmojisController.add_recent_emoji)
+ router.post("/get_recent_emoji",UserAuth,form.array(),RecentEmojisController.get_recent_emoji)
+ 
+ 
+ // restric account controller 
+ router.post("/get_recent_emoji",UserAuth,form.array(),RecentEmojisController.get_recent_emoji)
+ 
+ //  video report controller
+
+ router.post("/add_video_report",UserAuth,form.array(),VideoReportController.add_video_report)
+ router.get("/get_video_report_types",UserAuth,form.array(),VideoReportController.get_video_report_types)
+ 
+ // restrict account 
+ router.post("/add_restrict_accounts",UserAuth,form.array(),RestrictAccountsController.add_restrict_accounts)
+
+// router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
+  //   const setting  = new Singers({
+    //     name:"badsah",
+    //     description:"famous rapper ",
+    //     image:req.file.filename
+    //   })
+    //   setting.save().then((e)=>{
+      //     console.log("added")
+      //   })
 // })
 module.exports = router

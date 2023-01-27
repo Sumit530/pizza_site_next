@@ -22,5 +22,5 @@ const Schema = new  mongoose.Schema({
 },
 {timestamps:true})
 Schema.plugin(softDeletePlugin)
-const search_histories = new mongoose.model("search_histories",Schema)
-module.exports = search_histories;
+const restrict_accounts = new mongoose.model("restrict_accounts",Schema)
+module.exports = restrict_accounts;

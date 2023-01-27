@@ -15,7 +15,7 @@ exports.add_hashtag_bookmark = async(req,res) =>{
             if(hashtagdata.length > 0) {
                 const hashtagbookmark = await hashtags_bookmarks.find({user_id:req.body.user_id,hashtag_id:req.body.hashtag_id})
                 if(hashtagbookmark.length == 0){
-                    hashtagbookmarkdata = new hashtags_bookmarks({
+                  const  hashtagbookmarkdata = new hashtags_bookmarks({
                         user_id :  req.body.user_id ,
                         hashtag_id : req.body.hashtag_id
                     })
@@ -38,12 +38,23 @@ exports.add_hashtag_bookmark = async(req,res) =>{
     }
 }
 
-const hashtags_bookmarks  = require("../model/hashtags_bookmarks")
-const Videos= require("../model/videos")
-const  User = require("../model/users")
-const Hashtags = require("../model/hashtags")
 
-
+exports.get_hashtag_bookmarks   = async (req,res) =>{
+    try {
+        if(!req.body.user_id || req.body.user_id == ''){ 
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    }
+        const hashtagdata = await hashtags_bookmarks.find({user_id:req?.body?.user_id},{user_id:1,hashtag_id:1})
+        if(hashtagdata.length>0){
+            return res.status(201).json({status:1,message:"hashtag bookmark add successfully",data:hashtagdata})
+        }else{
+            return  res.status(406).json({status:0,message:"not found of hashtag bookmark"})
+        }
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on  get hashtag bookmark" + error); 
+    }
+}
 exports.remove_hashtag_bookmark = async(req,res) =>{
     try {
         if(!req.body.user_id || req.body.user_id == '' || req.body.hashtag_id == '' || !req.body.hashtag_id){ 

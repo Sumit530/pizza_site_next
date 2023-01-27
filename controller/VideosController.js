@@ -16,7 +16,6 @@ const VideoReportData = require("../model/video_reports_data")
 const Notification = require("../model/notifications")
 const Hashtag = require("../model/hashtag_data")
 const fs = require('fs')
-const notifications = require("../model/notifications")
 const moment = require("moment")
 const push_message = require("../push-message/notification")
 require("dotenv").config()
@@ -82,6 +81,7 @@ if(req?.files?.video_file ){
                 if(find_reciever_id != ''){
                     let img = ''
                     push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                }
                     const notification_data = new Notification({
                         user_id:user_id,
                         receiver_id : e,
@@ -91,7 +91,6 @@ if(req?.files?.video_file ){
                     })
                     await notification_data.save()
                     
-                }
             }
         })
     }
@@ -620,6 +619,7 @@ exports.add_video_like = async(req,res)=>{
             return res.status(402).json({status:0,message:"already liked video"})
         }else{
             const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
+            console.log(video_data)
             if(video_data.length>0){
                 if(Object.keys(video_data[0].user_id).length > 0){
                     const notification_id = Math.floor(1000 + Math.random() * 9000)
@@ -629,16 +629,16 @@ exports.add_video_like = async(req,res)=>{
                     if(find_reciever_id != ''){
                         let img = ''
                         push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                    }  
                         const notification_data = new Notification({
-                            user_id:user_id,
+                            user_id:req?.body?.user_id,
                             receiver_id : video_data[0].user_id._id,
-                            video_id:video_id,
+                            video_id:req?.body?.video_id,
                             comment:title,
                             type:1
                         })
                         await notification_data.save()
                         
-                    }  
                 } 
                 const video_like_data = new VideoLikes({
                     user_id:req?.body?.user_id,

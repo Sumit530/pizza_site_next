@@ -22,7 +22,7 @@ exports.add_video_report = async(req,res) =>{
             type :req?.body?.type,
             description : req?.body?.description ? req?.body?.description : ''  ,
         })
-        const video_report = await video_report.save()
+        const video_report = await video_report_data.save()
         var report_id = video_report._id
         if(report_id != ''){
            
@@ -50,13 +50,14 @@ exports.add_video_report = async(req,res) =>{
 }
 
 exports.get_video_report_types = async(req,res)=>{
-    const videoreporttype = await VideoReportData.find()
+    const videoreporttype = await VideoReportsType.find()
     var data = [] 
     if(videoreporttype?.length > 0){
+        console.log(videoreporttype)
         videoreporttype?.map((e)=>{
             data.push({
                 id:e._id,
-                title:e.title,
+                title:e.name,
                 discription:e.description
             })
         })

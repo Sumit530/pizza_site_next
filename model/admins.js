@@ -19,5 +19,5 @@ const Schema = new  mongoose.Schema({
         type:String
     }
 },{timestamps:true})
-const failed_jobs = new mongoose.model("failed_jobs",Schema)
-module.exports = failed_jobs;
+const admins = new mongoose.model("admins",Schema)
+module.exports = admins;

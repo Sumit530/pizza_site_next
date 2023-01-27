@@ -4,12 +4,12 @@ const Schema = new  mongoose.Schema({
 
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
         require:true
     },
-    bloack_user_id : {
+    block_user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
         require:true
     }
 

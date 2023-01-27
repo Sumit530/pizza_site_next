@@ -1,5 +1,5 @@
  const VideoEffect  = require("../model/video_effects")
-
+const fs = require("fs")
 
  exports.add_effect = async(req,res) =>{
     if(!req?.body?.name || req?.body?.name == '' ){
@@ -10,20 +10,20 @@
     } 
     const video_effects = new VideoEffect({
             name:req.body.name,
-            attachment:req.body.filename
+            attachment:req.file.filename
     })
     await video_effects.save()
     return  res.status(201).json({status:1,message:" video effects addedd successfully!"})
  }
  exports.get_effect = async(req,res) =>{
-   var data = []
+   
     const video_effects = await VideoEffect.find()
     if(video_effects.length > 0){
-        video_effects?.map((e)=>{
+     var data =    video_effects?.map((e)=>{
 
             if(e.attachment != ''){
                 const path = process.env.PUBLICEFFECTSURL
-                if(fs.existsSync(`${path}/${e.attachment}`)){
+                if(fs.existsSync(`uploads/effects/${e.attachment}`)){
                    var cover_image    = `${path}/${e.attachment}`
                 }
                 else {
@@ -32,7 +32,7 @@
             }else{
                var cover_image   = ''
             }
-            data.push({
+            return({
                 id:e._id,
                 name:e.name,
                 attachment:cover_image

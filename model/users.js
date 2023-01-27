@@ -135,5 +135,5 @@ const Schema = new  mongoose.Schema({
 },{timestamps:true})
 Schema.plugin(softDeletePlugin)
 
-const Users = new mongoose.model("Users",Schema)
+const Users =  mongoose.model("Users",Schema)
 module.exports = Users;
