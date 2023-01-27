@@ -23,7 +23,7 @@ const Schema = new  mongoose.Schema({
         type:String,
         require:true
     },
-    duration : {
+    duration : {    
         type:String,
         require:true
     },
