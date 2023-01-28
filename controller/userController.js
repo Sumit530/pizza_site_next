@@ -12,8 +12,7 @@ const Language = require("../model/languages")
 require("dotenv").config()
 const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
-
-const e = require("express");
+const qrcode = require("qrcode")
 
 
 
@@ -255,19 +254,45 @@ exports.resend_otp = async(req,res)=>{
     }
     
 
+exports.getmyqrcode = async(req,res)=>{
+    if(!req.body.user_id || req.body.user_id == '' ){ 
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    } 
+
+    const userData = await User.find({_id:req?.body?.user_id})
+    if(userData.length>0){
+        let data = {
+            id:userData[0]._id,
+            name:userData[0].name,
+            username:userData[0].username,
+        }
+        data = JSON.stringify(data)
+        qrcode.toDataURL(data,(err,url)=>{
+            if(err) return "error orrcured " + err
+            const data = url.split("base64,")[1]
+            res.status(201).json({status:1,message:"Qrcode generated successfully",data:data})
+        })
+
+    }else{
+        res.status(409).json({status:0,message:"user not found"})
+    }
+}
+
+
 exports.user_details = async(req,res)=>{
+    try {
     const {keyword} =  req?.body
-try {
     
     if(!keyword) {
         return res.status(402).json({status:0,message:"please provide a keyword"})
     } 
+    console.log(isNaN(keyword) == false)
     var user = null
     if(isNaN(keyword) == false){
-       var user = await User.find({mobile_no: `/${keyword}/` })
+       var user = await User.find({mobile_no: {$regex :keyword}})
     }
     else if(keyword.match(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i) != null){
-        var user = await User.find({email:`/${keyword}/`})
+        var user = await User.find({email: {$regex : keyword}},{otp:0,createdAt:0,deletedAt:0,updatedAt:0})
     }
     
     if(user == null || user.length<=0){

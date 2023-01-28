@@ -8,7 +8,7 @@ const path = require("path")
 const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
 const models = path.join(__dirname,"model")
-const Hashtag = require("./model/video_report_types")
+const Hashtag = require("./model/account_categories")
 const server = https.createServer(
   //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -55,9 +55,17 @@ app.set("view engine", "ejs");
 
 
 //  Hashtag.insertMany([
-//   {name:"abusive content",description:"i dont want to see"},
-//   {name:"bad content",description:"i dont want to see"},
-//   {name:"human slave content",description:"i dont want to see"},
+//   {name:"News/media"},
+//   {name:"Sports"},
+//   {name:"Government and politics"},
+//   {name:"Music"},
+//   {name:"Fashion"},
+//   {name:"Entertainment"},
+//   {name:"Digital creator/blogger/influencer"},
+//   {name:"Gamer"},
+//   {name:"Global business/brand/organization"},
+//   {name:"Other"},
+  
 
 //  ]).then((e)=>{
 //   console.log("insterd")

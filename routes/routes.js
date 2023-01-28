@@ -17,7 +17,6 @@ const { json } = require("body-parser");
 const usercontroller = require("../controller/userController")
 const videocontroller = require("../controller/VideosController")
 const notificationcontroller = require("../controller/NotificationController")
-const GeneralController = require("../controller/GeneralController")
 const VideoBookmarkController = require("../controller/VideoBookmarkController")
 const  VideoWatchHistoryController = require("../controller/VideoWatchHistoryController")
 const VideoCommentPinnedController = require("../controller/VideoCommentPinnedController")
@@ -36,6 +35,8 @@ const BlockUserContoller = require("../controller/BlockUserContoller")
 const RecentEmojisController = require("../controller/RecentEmojisController")
 const RestrictAccountsController  = require("../controller/RestrictAccountsController")
 const VideoReportController  = require("../controller/VideoReportController")
+const VideoEffectBookmarkController  = require("../controller/VideoEffectBookmarkController")
+const GeneralController  = require("../controller/GeneralController")
 
 const UserAuth = require("../middleware/UserMiddleware")
 
@@ -311,6 +312,7 @@ router.post("/following_list",form.array(),usercontroller.following_list)
 router.post("/get_notification_settings",form.array(),usercontroller.get_notification_settings)
 router.post("/update_language",form.array(),usercontroller.update_language)
 router.post("/get_user_language",form.array(),UserAuth, LanguageController.get_user_language)
+router.post("/getmyqrcode",form.array(),UserAuth, usercontroller.getmyqrcode)
 
 //router.post("/get_notification_settings",notificationcontroller.get)
 //router.post("/distance",GeneralController.distance)
@@ -418,8 +420,12 @@ router.post("/like_notification_list",UserAuth,form.array(),NotificationControll
 // vidoe effect
  router.post("/add_effect",UserAuth,EffectUpload.single("attachment"),VideoEffectsController.add_effect)
  router.post("/get_effect",UserAuth,form.array(),VideoEffectsController.get_effect)
-
-
+ 
+ // video effect bookmark 
+ router.post("/add_effect_bookmark",UserAuth,form.array(),VideoEffectBookmarkController.add_effect_bookmark)
+ router.post("/get_effect_bookmarks",UserAuth,form.array(),VideoEffectBookmarkController.get_effect_bookmarks)
+ router.post("/remove_effect_bookmark",UserAuth,form.array(),VideoEffectBookmarkController.remove_effect_bookmark)
+ 
  // hashtag controller
  router.post("/add_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.add_hashtag_bookmark)
  router.post("/remove_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.remove_hashtag_bookmark)
@@ -445,15 +451,10 @@ router.post("/like_notification_list",UserAuth,form.array(),NotificationControll
  
  // restrict account 
  router.post("/add_restrict_accounts",UserAuth,form.array(),RestrictAccountsController.add_restrict_accounts)
+ 
+ // general controller 
+ router.post("/account_category_list",form.array(),GeneralController.getaccountcategory)
+ router.post("/country_list",form.array(),GeneralController.getcountries)
+ 
 
-// router.post("/add",CoverImageUpload.single("img"), (req,res)=>{
-  //   const setting  = new Singers({
-    //     name:"badsah",
-    //     description:"famous rapper ",
-    //     image:req.file.filename
-    //   })
-    //   setting.save().then((e)=>{
-      //     console.log("added")
-      //   })
-// })
 module.exports = router

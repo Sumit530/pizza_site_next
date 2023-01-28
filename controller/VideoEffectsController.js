@@ -38,7 +38,7 @@ const fs = require("fs")
                 attachment:cover_image
             })
         })
-        return  res.status(201).json({data:data , status:1,message:" video effects addedd successfully!"})
+        return  res.status(201).json({data:data , status:1,message:" video effects found !"})
     }else{
         return res.status(406).json({status:0,message:"please give proper parameter"})
     }
