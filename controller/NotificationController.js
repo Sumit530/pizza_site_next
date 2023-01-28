@@ -133,7 +133,7 @@ exports.notification = async(req,res)=>{
 
         Promise.all(video_all_data).then((e)=>{
             if(e){
-                return  res.status(201).json({status:1,message:"data found found",data:e})
+                return  res.status(201).json({status:1,message:"data found",data:e})
             }else{
                 return res.status(406).json({status:0,message:"No data found.!"})
             }

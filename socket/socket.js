@@ -1,6 +1,5 @@
 
-const GroupChat = require("../model/chats")
-const SingleChat = require("../model/single_chat")
+const Chat = require("../model/chats")
 const Message = require("../model/messages")
 const User = require('../model/users')
 global.onlineusers = new Map()
@@ -35,27 +34,31 @@ const users = []
         var checkchat = null
         var chatid = chat_id
             if(isGroupChat == false){
-                checkchat = await SingleChat.find({_id:chat_id})
+                checkchat = await Chat.find({_id:chat_id})
                 if(checkchat.length <= 0){
+                    const user_data = await User.find({_id:chat_id})
+                    if(user_data.length>0){
 
-                    const chatdata = new SingleChat({
-                        user_id : user_id,
-                        reciever_id : chatid 
-                    })
-                    const savedchat = await chatdata.save()
-                    checkchat = await SingleChat.find({_id:savedchat._id}) 
-                      chatid = savedchat._id
-                    socket.join(chatid)
+                        const chatdata = new Chat({
+                            users : [user_id,chat_id],
+                            name : user_data[0].name,
+                            profile_image:user_data[0].profile_image
+                        })
+                        const savedchat = await chatdata.save()
+                        checkchat = await Chat.find({_id:savedchat._id}) 
+                        chatid = savedchat._id
+                        socket.join(chatid)
+                    }
 
                 }   
             }else{
 
-                checkchat = await GroupChat.find({_id:chatid})   
+                checkchat = await Chat.find({_id:chatid})   
             }
         if(  checkchat != null && checkchat?.length  > 0  ){
-            const chatusers = isGroupChat == true  ? checkchat[0]?.users?.map((e)=>{
-                return e._id
-            }) : [checkchat[0].reciever_id,checkchat[0].user_id]
+            const chatusers =  checkchat[0]?.users?.map((e)=>{
+                return e
+            }) 
             const inchatuser = Array.from(socket.adapter.rooms.get(chatid))
             var send = []
             chatusers.map((e)=>{
@@ -81,19 +84,25 @@ const users = []
                 })
             }
         }
-
         const newmsg = new Message({
-
+            chat_id:chatid,
+            user_id:user_id,
+            message:stypmsg
         })
-        socket.broadcast.to(chatid).emit("message-recieve",stypmsg,user_id)
+        newmsg.save().then(()=>{
+
+            socket.broadcast.to(chatid).emit("message-recieve",stypmsg,user_id)
+        })
         
     }
-       // const chat = new Chat({srcuser:userid,destuser:destid})
-    //     await chat.save()
-        // await User.findOneAndUpdate({_id:destid,recentchats:{$ne:userid}},{$push:{recentchats:userid}})
-        // await User.findOneAndUpdate({_id:userid,recentchats:{$ne:destid}},{$push:{recentchats:destid}})
     })
-   
+   socket.on('seen-message',async(userid,messageid)=>{
+        const checkseen = await Message.find({_id:messageid,isSeen:[userid]})
+        if(checkseen.length == 0){
+            await Message.findOneAndUpdate({_id:messageid},{isSeen:[userid]})
+        }
+        socket.emit('seen-message',userid,messageid)
+   })
     
     socket.emit("get-user",users)
     socket.on("join-room",(roomid,name,id)=>{

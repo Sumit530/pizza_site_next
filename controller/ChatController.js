@@ -9,9 +9,29 @@ try {
     if(!req.body.chat_id || req.body.chat_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const message = await Message.find({chat_id:req.body.group_chat_id}).populate("users","username,name,profile") 
+    const message = await Message.find({chat_id:req.body.chat_id}).populate("user_id","username,name,profile") 
     if(message.length>0){
-        return res.status(201).json({data:message,status:1,message:"group created successfully"})  
+      var data =   message?.map((e)=>{
+            if(e.user_id.profile_image != ''){
+                const path = process.env.PUBLICPOROFILEIMAGEURL
+                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                    var  profile_image = `${path}/${e.user_id.profile_image}`
+                }else{
+                    
+                    var profile_image = ''
+                }
+            }else{
+                var profile_image = ''
+            }
+            return({
+                id:e._id,
+                user_id:e.user_id._id,
+                username:e.user_id.username,
+                profile_image:profile_image
+
+            })
+        })
+        return res.status(201).json({data:message,status:1,message:"message found"})  
     }else{
         return  res.status(406).json({status:0,message:"message not found"})    
     }
@@ -24,7 +44,43 @@ exports.showChat = async(req,res)=>{
     if(!req.body.user_id || req.body.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const chats = await Chat
+    const chats = await Chat.find({users:[req.body.user_id]})
+    if(chats.length>0){
+       var data =  chats?.map(async(e)=>{
+        const lastmessage = await Message.find({chat_id:e._id}).limit(1).sort({$natural:-1})
+            if(e.profile_image != ''){
+
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image}`)){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    var profile_image = `${path}/${e.profile_image}`
+                }
+                else if(fs.existsSync(`uploads/chats/profile/${e.profile_image}`)){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    var profile_image = `${path}/${e.profile_image}`
+                }else{
+                    var profile_image = ''
+                }
+            }else{
+                var profile_image = ''
+            }
+            return({
+                id:e._id,
+                profile_image:profile_image, 
+                name:e.name,
+                type:e.type,
+                lastmessage:e.message,
+                attachment:e.attachment
+            })
+        })
+        Promise.all(data).then((e)=>{
+
+            if(e.length > 0){
+                return  res.status(201).json({status:1,message:"data found",data:e})
+            }else{
+                return res.status(406).json({status:0,message:"No data found.!"})
+            }
+        })
+    }
 }
 exports.CreateGroup = async(req,res)=>{
     try {

@@ -11,9 +11,29 @@ const Schema = new  mongoose.Schema({
         ref : 'users',
         require:true
     },
-    body : {
+    message : {
         type:String, //message contnent
         require:true
+    },
+    isFile : {
+        type:Boolean,
+        require:true,
+        default:false
+    },
+    ifAudio : {
+        type:Boolean,
+        require:true,
+        default:false
+    },
+    isImage : {
+        type:Boolean,
+        require:true,
+        default:false
+    },
+    isVideo : {
+        type:Boolean,
+        require:true,
+        default:false
     },
     isSeen : [{
         type:mongoose.Schema.Types.ObjectId,  //if it is group chat then how many user seen it otherwise only one sees

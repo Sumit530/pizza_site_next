@@ -16,6 +16,10 @@ const Schema = new  mongoose.Schema({
         type:String, // name of chat it would be username or groupname
         require:true
     },
+    profile_image:{
+        type:String,
+        require:true
+    },
     is_group_chat : {
         type:Boolean,
         default:false
