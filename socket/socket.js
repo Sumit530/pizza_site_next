@@ -1,33 +1,36 @@
 
+const { default: mongoose } = require("mongoose")
 const Chat = require("../model/chats")
 const Message = require("../model/messages")
+const { findOne } = require("../model/users")
 const User = require('../model/users')
 global.onlineusers = new Map()
 const users = []
  exports = module.exports  = (io) =>{
     io.on("connection",(socket)=>{
         //console.log(socket.id)
-    socket.on("add-user-online",(userid)=>{
+    socket.on("add-user-online",(user_id)=>{
        // console.log(userid)
-       if(!onlineusers.get(userid)){
+       if(!onlineusers.get(user_id)){
 
-               User.findOneAndUpdate({_id:userid},{is_online:true}).then((e)=>{
-                    onlineusers.set( userid,socket.id)
-                    socket.broadcast.emit('userisonline',userid)
+               User.findOneAndUpdate({_id:user_id},{is_online:true}).then((e)=>{
+                    onlineusers.set( user_id,socket.id)
+                    socket.broadcast.emit('userisonline',user_id)
             }) 
         }
         
     })
-    socket.on("joinchat",(chatid,userid)=>{
-        socket.join(chatid)
-        socket.broadcast.to(chatid).emit("joinchat",userid)
+    socket.on("joinchat",(chat_id,user_id)=>{
+        socket.join(chat_id)
+        socket.broadcast.to(chat_id).emit("joinchat",user_id)
     })
-    socket.on("leavechat",(roomid)=>{
-        socket.leave(roomid)
+    socket.on("leavechat",async(chat_id)=>{
+        const checkSeen  = await Chat.aggregate([{$match: {_id: mongoose.Types.ObjectId(chat_id)}}, {$project: {users: {$size: '$users'}}}])
+        console.log(checkSeen)
+        const d = await Message.deleteMany({chat_id: mongoose.Types.ObjectId(chat_id),[`seenBy.${checkSeen[0].users - 2}`]:{"$exists":true}})
     })
     socket.on("typing",(user_id,chat_id)=>{
         socket.broadcast.to(chat_id).emit("typing",user_id)
-       
     })
     socket.on("send-message",async(stypmsg,user_id,chat_id,isGroupChat)=>{
         //const getuser = onlineusers.get(destid)
@@ -89,29 +92,41 @@ const users = []
             user_id:user_id,
             message:stypmsg
         })
-        newmsg.save().then(()=>{
-
-            socket.broadcast.to(chatid).emit("message-recieve",stypmsg,user_id)
+        newmsg.save().then((e)=>{
+            
+            socket.broadcast.to(chatid).emit("message-recieve",stypmsg,user_id,{message_id:e._id})
         })
         
     }
     })
-   socket.on('seen-message',async(userid,messageid)=>{
-        const checkseen = await Message.find({_id:messageid,isSeen:[userid]})
+   socket.on('seen-message',async(user_id,message_id,chat_id)=>{
+        const checkseen = await Message.find({_id:message_id,seenBy:[user_id]})
         if(checkseen.length == 0){
-            await Message.findOneAndUpdate({_id:messageid},{isSeen:[userid]})
+            const check = await Message.find({_id:message_id,user_id:user_id})
+
+            if(check.length==0){
+
+                await Message.findOneAndUpdate({_id:message_id},{$push:{ seenBy : mongoose.Types.ObjectId(user_id)}})
+                socket.broadcast.to(chat_id).emit('seen-message',user_id,message_id)
+            }
         }
-        socket.emit('seen-message',userid,messageid)
    })
     
-    socket.emit("get-user",users)
-    socket.on("join-room",(roomid,name,id)=>{
-        socket.join(roomid);
-        
-       // socket.broadcast.to(roomid).emit("user-connected",userid)
-        socket.on("message",(message)=>{
-            io.to(roomid).emit("sendmessage",message,roomid)
-        })
-    })
+   socket.on('start_call', (roomId) => {
+    console.log(`Broadcasting start_call event to peers in room ${roomId}`)
+    socket.broadcast.to(roomId).emit('start_call')
+  })
+  socket.on('webrtc_offer', (event) => {
+    console.log(`Broadcasting webrtc_offer event to peers in room ${event.roomId}`)
+    socket.broadcast.to(event.roomId).emit('webrtc_offer', event.sdp)
+  })
+  socket.on('webrtc_answer', (event) => {
+    console.log(`Broadcasting webrtc_answer event to peers in room ${event.roomId}`)
+    socket.broadcast.to(event.roomId).emit('webrtc_answer', event.sdp)
+  })
+  socket.on('webrtc_ice_candidate', (event) => {
+    console.log(`Broadcasting webrtc_ice_candidate event to peers in room ${event.roomId}`)
+    socket.broadcast.to(event.roomId).emit('webrtc_ice_candidate', event)
+  })
 })
 }

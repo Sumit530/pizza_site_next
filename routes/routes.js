@@ -20,6 +20,7 @@ const notificationcontroller = require("../controller/NotificationController")
 const VideoBookmarkController = require("../controller/VideoBookmarkController")
 const  VideoWatchHistoryController = require("../controller/VideoWatchHistoryController")
 const VideoCommentPinnedController = require("../controller/VideoCommentPinnedController")
+const VideoCommentLikesController  = require("../controller/VideoCommentLikesController")
 const VideoNotInterestedController = require("../controller/VideoNotInterestedController")
 const VideoDuetsController = require("../controller/VideoDuetsController")
 const SearchHistoryController = require("../controller/SearchHistoryController")
@@ -36,9 +37,12 @@ const RecentEmojisController = require("../controller/RecentEmojisController")
 const RestrictAccountsController  = require("../controller/RestrictAccountsController")
 const VideoReportController  = require("../controller/VideoReportController")
 const VideoEffectBookmarkController  = require("../controller/VideoEffectBookmarkController")
-const GeneralController  = require("../controller/GeneralController")
+const Generalontroller  = require("../controller/GeneralController")
+const Message = require("../model/messages")
+const Chat = require("../model/chats")
 
-const UserAuth = require("../middleware/UserMiddleware")
+const UserAuth = require("../middleware/UserMiddleware");
+const { default: mongoose } = require("mongoose");
 
 
 const ProfileStorage = multer.diskStorage({
@@ -336,10 +340,12 @@ router.get("/language",form.array(), LanguageController.Index)
 router.post("/upload_video",UserAuth,VideoUpload.fields([{name:'cover_image',maxCount:1},{name:'video_file',maxCount:1}]), videocontroller.upload_video)
 router.post("/video_list",form.array(),videocontroller.video_list)
 router.post("/video_details",form.array(),videocontroller.video_details)
-//router.post("/position_video_list",form.array(),videocontroller.private_position_video_list)
+router.post("/private_position_video_list",form.array(),videocontroller.private_position_video_list)
+router.post("/position_video_list",form.array(),videocontroller.position_video_list)
 router.post("/remove_video_like",UserAuth,form.array(),videocontroller.remove_video_like)
 router.post("/add_video_like",UserAuth,form.array(),videocontroller.add_video_like)
 router.post("/get_video_likes",UserAuth,form.array(),videocontroller.get_video_likes)
+router.post("/update_video_status",UserAuth,form.array(),videocontroller.update_video_status)
 
 
 
@@ -355,6 +361,10 @@ router.post("/add_parent_comment",UserAuth,form.array(),videocontroller.add_pare
 router.post("/add_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.add_comment_pinned)
 router.post("/remove_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.remove_comment_pinned)
 //router.post("/add_parent_comment")
+
+// add comment like
+router.post("/add_comment_like",UserAuth,form.array(),VideoCommentLikesController.add_comment_like)
+router.post("/remove_comment_like",UserAuth,form.array(),VideoCommentLikesController.remove_comment_like)
 
 // video bookmarks
 router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.add_video_bookmark)
@@ -453,8 +463,10 @@ router.post("/like_notification_list",UserAuth,form.array(),NotificationControll
  router.post("/add_restrict_accounts",UserAuth,form.array(),RestrictAccountsController.add_restrict_accounts)
  
  // general controller 
- router.post("/account_category_list",form.array(),GeneralController.getaccountcategory)
- router.post("/country_list",form.array(),GeneralController.getcountries)
+ //router.post("/account_category_list",form.array(),GeneralController.getaccountcategory)
+ //router.post("/country_list",form.array(),GeneralController.getcountries)
+ 
+ 
  
 
 module.exports = router

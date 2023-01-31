@@ -19,11 +19,13 @@
             <input type="text" name="" id="userid" class="form-control" placeholder="Enter the user id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
             <input type="text" name="" id="chatid" class="form-control" placeholder="Enter the chat id" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
                 <input type="text" name="" id="chat" class="form-control" placeholder="Enter the message" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
+                <input type="text" name="" id="msgid" class="form-control" placeholder="Enter the message id to seen" value="" required="required" title="" style="background:rgb(34, 20, 48);color:white;">
                 <button id="newsend">new send</button>
                 <button id="online">get online</button>
                 <button id="oldsend" >old send</button>
                 <button id="join" >join</button>
                 <button id="leave" >leave</button>
+                <button id="seenmsg" >seenMsg</button>
             
         </div>
         <!-- jQuery -->
@@ -39,6 +41,12 @@
                 const userid = $('#userid').val();
                 socket.emit('add-user-online',userid)
             })
+            $("#seenmsg").click(function(){
+                const userid = $('#userid').val();
+                const msgid = $('#msgid').val();
+                const chatid = $('#chatid').val();
+                socket.emit('seen-message',userid,msgid,chatid)
+            })
             socket.on('typing',function(user_id){
                 console.log(user_id + " is typing")
             })
@@ -48,14 +56,18 @@
             socket.on('typing',function(user_id){
                 console.log(user_id + " is typing")
             })  
+            socket.on('seen-message',(user_id,message_id)=>{
+                console.log(user_id + " seen " + message_id + " this message")
+            })
             $("#newsend").click(function(){
                 var msg = $('#chat').val();
                 const userid = $('#userid').val();
             const chatid = $('#chatid').val();
                 socket.emit("send-message",msg,userid,chatid,false)
             })
-            socket.on("message-recieve",(msg,user_id)=>{
+            socket.on("message-recieve",(msg,user_id,{message_id})=>{
                 console.log(msg)
+                console.log(message_id)
             })
             $("#join").click(function(){
                 const userid = $('#userid').val();

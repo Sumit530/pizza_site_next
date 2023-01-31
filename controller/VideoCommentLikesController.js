@@ -1,17 +1,17 @@
-const Videos = require("../model/Videos")
-const User = require("../model/User")
+const Videos = require("../model/videos")
+const User = require("../model/users")
 const VideoCommentsLikes = require("../model/video_comment_likes")
 const VideoData = require("../model/video_data")
 
 
 exports.add_comment_like = async(req,res) =>{
-    if(req?.body?.user_id){
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.video_id){
+    if(req?.body?.video_id == '' || !req?.body?.video_id){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.comment_id){
+    if(req?.body?.comment_id == '' || !req?.body?.comment_id){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
 
@@ -22,7 +22,7 @@ exports.add_comment_like = async(req,res) =>{
             return  res.status(406).json({status:0,message:"This comment already likeed"})
         }
         else{
-            const video = Videos.find({_id:req?.body?.video_id})
+            const video = await Videos.find({_id:req?.body?.video_id})
             if(video.length>0){
 
                 const data = new VideoCommentsLikes({
@@ -43,13 +43,13 @@ exports.add_comment_like = async(req,res) =>{
 
 
 exports.remove_comment_like = async(req,res) =>{
-    if(req?.body?.user_id){
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.video_id){
+    if(req?.body?.video_id == '' || !req?.body?.video_id){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    if(req?.body?.comment_id){
+    if(req?.body?.comment_id == '' || !req?.body?.comment_id){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
 

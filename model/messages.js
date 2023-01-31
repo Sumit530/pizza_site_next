@@ -20,15 +20,19 @@ const Schema = new  mongoose.Schema({
         enum:[1,2,3,4,5], //1=message 2=image 3=audio 4=video 5=file
         default:1
     },
+    isSaved : {
+        type:Boolean,
+        default:false
+    },
     attachment : {
         type:String,
         require:true,
     },
-    isSeen : [{
+    seenBy : [{
         type:mongoose.Schema.Types.ObjectId,  //if it is group chat then how many user seen it otherwise only one sees
         ref : 'users',
         require:true
-    }],
+    }], 
     status : {
         type:Boolean,
         default:true

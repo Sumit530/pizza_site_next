@@ -8,7 +8,7 @@ const path = require("path")
 const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
 const models = path.join(__dirname,"model")
-const Hashtag = require("./model/account_categories")
+const Message = require("./model/messages")
 const server = https.createServer(
   //    {
 //      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -78,6 +78,11 @@ app.use("/upload",express.static('uploads/'))
 app.get("/",(req,res)=>{
     res.send("hey")
 })
+// Message.find({createdAt:{$lte : moment().utc().subtract(1,"minute").toDate()}}).then((e)=>{
+
+//   console.log(e)
+// })
 server.listen(8000,()=>{
 console.log("server is running on 8000");
 })
+

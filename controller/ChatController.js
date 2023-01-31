@@ -1,7 +1,9 @@
 const Chat = require("../model/chats")
 const Message = require("../model/messages")
 const User = require('../model/users')
-const e = require("express")
+const Chat_Setting = require("../model/chat_setting")
+const moment = require("moment")
+
 
 
 exports.ShowMessage = async(req,res) =>{
@@ -9,31 +11,66 @@ try {
     if(!req.body.chat_id || req.body.chat_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const message = await Message.find({chat_id:req.body.chat_id}).populate("user_id","username,name,profile") 
-    if(message.length>0){
-      var data =   message?.map((e)=>{
-            if(e.user_id.profile_image != ''){
-                const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
-                    var  profile_image = `${path}/${e.user_id.profile_image}`
+    const checkChatSetting = await Chat_Setting.find({chat_id:req?.body?.chat_id})
+    if(checkChatSetting[0].delete_chats == 2){
+        
+       await  Message.deleteMany({chat_id:req.body.chat_id,isSaved:false,createdAt:{$lte : moment().utc().subtract(1,"day").toDate()}})
+        const message = await Message.find({chat_id:req.body.chat_id,deletedBy:{$nin:[req.body.user_id]}}).populate("user_id","username,name,profile") 
+        if(message.length>0){
+            var data =   message?.map((e)=>{
+                if(e.user_id.profile_image != ''){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                        var  profile_image = `${path}/${e.user_id.profile_image}`
+                    }else{
+                        
+                        var profile_image = ''
+                    }
                 }else{
-                    
                     var profile_image = ''
                 }
-            }else{
-                var profile_image = ''
-            }
-            return({
-                id:e._id,
-                user_id:e.user_id._id,
-                username:e.user_id.username,
-                profile_image:profile_image
-
+                return({
+                    id:e._id,
+                    user_id:e.user_id._id,
+                    username:e.user_id.username,
+                    profile_image:profile_image,
+                    is_saved : e.isSaved == true ? true : false
+                    
+                })
             })
-        })
-        return res.status(201).json({data:message,status:1,message:"message found"})  
-    }else{
-        return  res.status(406).json({status:0,message:"message not found"})    
+            return res.status(201).json({data:data,status:1,message:"message found"})  
+        }else{
+            return  res.status(406).json({status:0,message:"message not found"})    
+        }
+    }
+    else if (checkChatSetting[0].delete_chats == 1){
+        const message = await Message.find({chat_id:req.body.chat_id}).populate("user_id","username,name,profile") 
+        if(message.length>0){
+            var data =   message?.map((e)=>{
+                if(e.user_id.profile_image != ''){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                        var  profile_image = `${path}/${e.user_id.profile_image}`
+                    }else{
+                        
+                        var profile_image = ''
+                    }
+                }else{
+                    var profile_image = ''
+                }
+                return({
+                    id:e._id,
+                    user_id:e.user_id._id,
+                    username:e.user_id.username,
+                    profile_image:profile_image,
+                    is_saved : e.isSaved == true ? true : false
+                    
+                })
+            })
+            return res.status(201).json({data:data,status:1,message:"message found"})  
+        }else{
+            return  res.status(406).json({status:0,message:"message not found"})    
+        }
     }
 } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
@@ -109,6 +146,19 @@ exports.CreateGroup = async(req,res)=>{
     }
 }
 
+exports.DeleteMessages = (req,res)=>{
+    try {
+        if(!req.body.message_ids || req.body.message_ids == ''){
+            return  res.status(406).json({status:0,message:"please give proper parameter"})
+        }  
+        if(!req.body.message_ids || req.body.message_ids == ''){
+            return  res.status(406).json({status:0,message:"please give proper parameter"})
+        }  
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on delete messsage chat" + error);  
+    }
+}
 exports.DeleteGroup = async(req,res)=>{
     try {
         if(!req.body.group_chat_id || req.body.group_chat_id == ''){
