@@ -6,17 +6,10 @@ const Schema = new  mongoose.Schema({
         ref : 'chats',
         require:true,
     },
-    name : {
-        type:String, // name of chat it would be username or groupname
-        require:true
-    },
-    profile_image:{
-        type:String,
-        require:true
-    },
-    is_group_chat : {
-        type:Boolean,
-        default:false
+    delete_chats : {
+        type:Number, // 1 = after view 2 = after 24 hours
+        require:true,
+        default:1
     },
     status : {
         type:Boolean,

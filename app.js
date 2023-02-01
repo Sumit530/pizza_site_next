@@ -10,10 +10,10 @@ const mongoose = require("mongoose")
 const models = path.join(__dirname,"model")
 const Message = require("./model/messages")
 const server = https.createServer(
-  //    {
-//      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
-//   cert:fs.readFileSync(path.join(__dirname,"cert",'cert.pem')),
-// },
+     {
+     key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
+  cert:fs.readFileSync(path.join(__dirname,"cert",'cert.pem')),
+},
 app)
 
 const io = require("socket.io")(server, {
@@ -33,6 +33,9 @@ const peerServer = ExpressPeerServer(server, {
 });
 app.get("/",(req,res)=>{
   res.render('index')
+})
+app.get("/room",(req,res)=>{
+  res.render('vc',{roomId : "1234"})
 })
 
 app.use("/peerjs", peerServer);
@@ -72,6 +75,7 @@ app.set("view engine", "ejs");
 //  })
 
 //app.use(con)
+app.use('/', express.static('public'))
 
 app.use("/upload",express.static('uploads/'))
 //app.use("/upload",express.static('uploads/song_banner_image'))

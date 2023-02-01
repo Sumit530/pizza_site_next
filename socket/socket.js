@@ -2,8 +2,8 @@
 const { default: mongoose } = require("mongoose")
 const Chat = require("../model/chats")
 const Message = require("../model/messages")
-const { findOne } = require("../model/users")
 const User = require('../model/users')
+const Chat_Setting = require('../model/chat_setting')
 global.onlineusers = new Map()
 const users = []
  exports = module.exports  = (io) =>{
@@ -24,10 +24,23 @@ const users = []
         socket.join(chat_id)
         socket.broadcast.to(chat_id).emit("joinchat",user_id)
     })
+    socket.on("message", (message) => {
+        io.to(roomId).emit("createMessage", message, userName);
+      });
     socket.on("leavechat",async(chat_id)=>{
-        const checkSeen  = await Chat.aggregate([{$match: {_id: mongoose.Types.ObjectId(chat_id)}}, {$project: {users: {$size: '$users'}}}])
-        console.log(checkSeen)
-        const d = await Message.deleteMany({chat_id: mongoose.Types.ObjectId(chat_id),[`seenBy.${checkSeen[0].users - 2}`]:{"$exists":true}})
+        const ChatSetting = await Chat_Setting.find({chat_id:chat_id})
+        if(ChatSetting[0].delete_chats == 1){
+            const checkSeen  = await Chat.aggregate([{$match: {_id: mongoose.Types.ObjectId(chat_id)}}, {$project: {users: {$size: '$users'}}}])
+            await Message.deleteMany({chat_id: mongoose.Types.ObjectId(chat_id),[`seenBy.${checkSeen[0].users - 2}`]:{"$exists":true}})
+        }
+    })
+
+    socket.on("delete-message",async(user_id,message_id)=>{
+        const checkChat = await Message.find({_id:message_id,deletedBy : {$in : [user_id]}})
+        if(checkChat.length == 0){
+            await Message.findOneAndUpdate({_id:message_id},{$push : {deletedBy : user_id}})
+            socket.emit("message-deleted",(message_id,user_id))
+        }
     })
     socket.on("typing",(user_id,chat_id)=>{
         socket.broadcast.to(chat_id).emit("typing",user_id)
@@ -48,6 +61,10 @@ const users = []
                             profile_image:user_data[0].profile_image
                         })
                         const savedchat = await chatdata.save()
+                        const chatSetting = new Chat_Setting({
+                            chat_id:savedchat._id
+                        })
+                        await chatSetting.save()
                         checkchat = await Chat.find({_id:savedchat._id}) 
                         chatid = savedchat._id
                         socket.join(chatid)
@@ -111,22 +128,15 @@ const users = []
             }
         }
    })
+
+   socket.on('save-message',async(user_id,message_id,chat_id)=>{
+    await Message.findOneAndUpdate({_id:message_id},{isSaved:true})
+    socket.broadcast.to(chat_id).emit('save-message',user_id,message_id,chat_id)
+   })
+   socket.on('unsave-message',async(user_id,message_id,chat_id)=>{
+    await Message.findOneAndUpdate({_id:message_id},{isSaved:false})
+    socket.broadcast.to(chat_id).emit('unsave-message',user_id,message_id,chat_id)
+   })
     
-   socket.on('start_call', (roomId) => {
-    console.log(`Broadcasting start_call event to peers in room ${roomId}`)
-    socket.broadcast.to(roomId).emit('start_call')
-  })
-  socket.on('webrtc_offer', (event) => {
-    console.log(`Broadcasting webrtc_offer event to peers in room ${event.roomId}`)
-    socket.broadcast.to(event.roomId).emit('webrtc_offer', event.sdp)
-  })
-  socket.on('webrtc_answer', (event) => {
-    console.log(`Broadcasting webrtc_answer event to peers in room ${event.roomId}`)
-    socket.broadcast.to(event.roomId).emit('webrtc_answer', event.sdp)
-  })
-  socket.on('webrtc_ice_candidate', (event) => {
-    console.log(`Broadcasting webrtc_ice_candidate event to peers in room ${event.roomId}`)
-    socket.broadcast.to(event.roomId).emit('webrtc_ice_candidate', event)
-  })
 })
 }

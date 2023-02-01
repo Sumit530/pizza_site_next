@@ -24,6 +24,11 @@ const Schema = new  mongoose.Schema({
         type:Boolean,
         default:false
     },
+    deletedBy : [{
+        type:mongoose.Schema.Types.ObjectId,  //if it is group chat then how many user seen it otherwise only one sees
+        ref : 'users',
+        require:true
+    }],
     attachment : {
         type:String,
         require:true,

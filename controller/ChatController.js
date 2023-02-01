@@ -19,21 +19,39 @@ try {
         if(message.length>0){
             var data =   message?.map((e)=>{
                 if(e.user_id.profile_image != ''){
-                    const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                        const path = process.env.PUBLICPOROFILEIMAGEURL
                         var  profile_image = `${path}/${e.user_id.profile_image}`
-                    }else{
+                    }
+                    else if (fs.existsSync(`uploads/cahts/profile/${e.user_id.profile_image}`)){
+                        const path = process.env.PUBLICPOROFILEIMAGEURL
+                        var  profile_image = `${path}/${e.user_id.profile_image}`
+                    }
+                    else{
                         
                         var profile_image = ''
                     }
                 }else{
                     var profile_image = ''
                 }
+                if(e.attachment != ''){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    if(fs.existsSync(`uploads/chat/${e.attachment}`)){
+                        var  attachment = `${path}/${e.attachment}`
+                    }else{
+                        
+                        var attachment = ''
+                    }
+                }else{
+                    var attachment = ''
+                }
                 return({
                     id:e._id,
                     user_id:e.user_id._id,
                     username:e.user_id.username,
                     profile_image:profile_image,
+                    attachment:attachment,
+                    message:e.message,
                     is_saved : e.isSaved == true ? true : false
                     
                 })
@@ -48,21 +66,39 @@ try {
         if(message.length>0){
             var data =   message?.map((e)=>{
                 if(e.user_id.profile_image != ''){
-                    const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                        const path = process.env.PUBLICPOROFILEIMAGEURL
                         var  profile_image = `${path}/${e.user_id.profile_image}`
-                    }else{
+                    }
+                    else if (fs.existsSync(`uploads/cahts/profile/${e.user_id.profile_image}`)){
+                        const path = process.env.PUBLICPOROFILEIMAGEURL
+                        var  profile_image = `${path}/${e.user_id.profile_image}`
+                    }
+                    else{
                         
                         var profile_image = ''
                     }
                 }else{
                     var profile_image = ''
                 }
+                if(e.attachment != ''){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    if(fs.existsSync(`uploads/chat/${e.attachment}`)){
+                        var  attachment = `${path}/${e.attachment}`
+                    }else{
+                        
+                        var attachment = ''
+                    }
+                }else{
+                    var attachment = ''
+                }
                 return({
                     id:e._id,
                     user_id:e.user_id._id,
                     username:e.user_id.username,
                     profile_image:profile_image,
+                    attachment:attachment,
+                    message:e.message,
                     is_saved : e.isSaved == true ? true : false
                     
                 })
@@ -153,22 +189,23 @@ exports.DeleteMessages = (req,res)=>{
         }  
         if(!req.body.message_ids || req.body.message_ids == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
-        }  
+        } 
+
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
         console.log("server error on delete messsage chat" + error);  
     }
 }
-exports.DeleteGroup = async(req,res)=>{
+exports.DeleteChat = async(req,res)=>{
     try {
-        if(!req.body.group_chat_id || req.body.group_chat_id == ''){
+        if(!req.body.chat_id || req.body.chat_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
             
        
-         const group = await Chat.find({_id:req.body.group_chat_id})
+         const group = await Chat.find({_id:req.body.chat_id})
          if(group.length>0){
-                await GroupChat.deleteOne({_id:req?.body?.group_chat_id})
+                await Chat.deleteOne({_id:req?.body?.chat_id})
              return res.status(201).json({data:group,status:1,message:"group deleted successfully"})
          }else{
             return  res.status(406).json({status:0,message:"group not found"})  
