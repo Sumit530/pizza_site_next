@@ -61,7 +61,7 @@ const ProfileStorage = multer.diskStorage({
   },
 });
 
-const ProfileUpload = multer.diskStorage({
+const ProfileUpload = multer({
   storage: ProfileStorage,
   fileFilter: (req, file, cb) => {
     if (
@@ -304,6 +304,7 @@ router.post("/update_username",form.array(),usercontroller.update_username)
 router.post("/update_privacy",form.array(),usercontroller.update_privacy)
 router.post("/update_page_name",form.array(),usercontroller.update_page_name)
 router.post("/update_safeties",form.array(),usercontroller.update_safeties)
+router.post("/update_profile",ProfileUpload.single("profile_image"),usercontroller.update_profile)
 router.post("/get_user_safeties",form.array(),usercontroller.get_user_safeties)
 router.post("/update_notification_settings",form.array(),usercontroller.update_notification_settings)
 router.post("/get_all_users",form.array(),usercontroller.get_all_users)
@@ -428,6 +429,9 @@ router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksControll
 router.post("/notification",UserAuth,form.array(),NotificationController.notification)
 router.post("/like_notification_list",UserAuth,form.array(),NotificationController.like_notification_list)
 router.post("/comment_notification_list",UserAuth,form.array(),NotificationController.comment_notification_list)
+router.post("/follower_notification_list",UserAuth,form.array(),NotificationController.follower_notification_list)
+router.post("/mentions_notification_list",UserAuth,form.array(),NotificationController.mentions_notification_list)
+
 
 
 // vidoe effect

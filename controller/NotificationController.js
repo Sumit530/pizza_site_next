@@ -148,20 +148,21 @@ exports.follower_notification_list = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     } 
-    var today_followers_notification_data  = await Notification.find({receiver_id:req.body.user_id,notification_type:3}).populate("user_id").sort({createdAt:-1})
+    var today_followers_notification_data  = await Notification.find({receiver_id:req.body.user_id,type:3}).populate("user_id").sort({createdAt:-1})
+    console.log(today_followers_notification_data)
     if(today_followers_notification_data?.length > 0){
         var today_list = today_followers_notification_data?.map(async(e)=>{
              if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
                 if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
-                    var  profile_image1 = `${path}/${e.user_id.profile_image}`
+                    var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
-                    var profile_image1 = ''
+                    var profile_image = ''
                 }
             }else{
-                var profile_image1 = ''
+                var profile_image = ''
             }
             const follower_data = await Followers.find({user_id:req.body.user_id,follower_id:e.user_id})
             if (follower_data != '') 
@@ -184,8 +185,8 @@ exports.follower_notification_list = async(req,res) =>{
         })
     }
     var yesterday_followers_notification_data   = await Notification.find({receiver_id:req.body.user_id,notification_type:3}).populate("user_id").sort({createdAt:-1})
-    if(today_followers_notification_data?.length > 0){
-        var yesterday_list = today_followers_notification_data?.map(async(e)=>{
+    if(yesterday_followers_notification_data?.length > 0){
+        var yesterday_list = yesterday_followers_notification_data?.map(async(e)=>{
              if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
@@ -219,20 +220,22 @@ exports.follower_notification_list = async(req,res) =>{
         })
         
     }
+
     var result = []
     Promise.all(today_list).then((e)=>{
+    
         result.push({
             today_list:e
         })
+        Promise.all(yesterday_list).then((e)=>{
+            yesterday_list:e
+        })
+        if(result.length > 0){
+            return  res.status(201).json({status:1,message:"data found found",data:result})
+        }else{
+            return res.status(406).json({status:0,message:"No data found.!"})
+        }
     })
-    Promise.all(yesterday_list).then((e)=>{
-        yesterday_list:e
-    })
-    if(result.length > 0){
-        return  res.status(201).json({status:1,message:"data found found",data:result})
-    }else{
-        return res.status(406).json({status:0,message:"No data found.!"})
-    }
 }
 
 exports.mentions_notification_list = async(req,res) =>{
