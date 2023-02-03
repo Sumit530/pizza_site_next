@@ -42,6 +42,13 @@ const users = []
             socket.emit("message-deleted",(message_id,user_id))
         }
     })
+    socket.on("unsend-message",async(user_id,message_id)=>{
+        const checkChat = await Message.find({_id:message_id,user_id:user_id})
+        if(checkChat.length > 0){
+            await Message.deleteOne({_id:message_id})
+            socket.emit("message-unsent",(message_id,user_id))
+        }
+    })
     socket.on("typing",(user_id,chat_id)=>{
         socket.broadcast.to(chat_id).emit("typing",user_id)
     })

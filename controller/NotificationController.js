@@ -301,6 +301,7 @@ exports.comment_notification_list = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     } 
     var mention_data  = await Notification.find({receiver_id:req.body.user_id,notification_type:2}).populate("video_id").populate("user_id").sort({createdAt:-1})
+    console.log(mention_data)
     if(mention_data.length > 0){
         var mentionList = mention_data.map(async(e)=>{
             if(e.user_id.profile_image != ''){
@@ -362,13 +363,13 @@ exports.comment_notification_list = async(req,res) =>{
         return res.status(406).json({status:0,message:"No data found.!"})
     }
 }
-exports.like_notification_list  = (req,res)=>{
-    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
-        return  res.status(406).json({status:0,message:"please give a proper parameter"})
-    }
+// exports.like_notification_list  = (req,res)=>{
+//     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+//         return  res.status(406).json({status:0,message:"please give a proper parameter"})
+//     }
 
 
-} 
+// } 
 
 
 exports.like_notification_list = async(req,res)=>{
@@ -376,8 +377,7 @@ exports.like_notification_list = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).populate({path: 'user_id', model:"users"}).sort({createdAt:-1})
-    console.log(all_notidication_data)
+    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).populate('user_id').sort({createdAt:-1})
       if(all_notidication_data?.length > 0){
         var video_all_data =   all_notidication_data?.map(async(e)=>{
             if(Object.keys(e.user_id).length > 0){
@@ -536,23 +536,29 @@ exports.like_notification_list = async(req,res)=>{
     })
         
   
-var result = []
-            Promise.all(video_all_data).then((e)=>{
+}
+
+Promise.all(video_all_data).then((e)=>{
+                var result = []
+                
                 result.push({
                     today_list:e
                 })
+                if(yesterday_data.length>0){
+
+                    Promise.all(yesterday_video_data).then((f)=>{
+                        
+                        result.push({
+                            yesterday_video_data:f
+                        })
+                    })
+                }
+                if(result.length>0){
+                    return  res.status(201).json({status:1,message:"data found found",data:result})
+                }else{
+                    return res.status(406).json({status:0,message:"No data found.!"})
+                }
             })
-            Promise.all(yesterday_video_data).then((e)=>{
-            result.push({
-                yesterday_video_data:e
-                  })
-              })
-        if(result.length>0){
-            return  res.status(201).json({status:1,message:"data found found",data:result})
-        }else{
-        return res.status(406).json({status:0,message:"No data found.!"})
-    }
         
-    }
 
 }

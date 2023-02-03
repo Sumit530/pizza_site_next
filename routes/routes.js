@@ -302,10 +302,12 @@ router.post("/update_password",form.array(),usercontroller.update_password)
 router.post("/update_mobile_no",form.array(),usercontroller.update_mobile_no)
 router.post("/update_username",form.array(),usercontroller.update_username)
 router.post("/update_privacy",form.array(),usercontroller.update_privacy)
+router.post("/update_page_name",form.array(),usercontroller.update_page_name)
 router.post("/update_safeties",form.array(),usercontroller.update_safeties)
 router.post("/get_user_safeties",form.array(),usercontroller.get_user_safeties)
 router.post("/update_notification_settings",form.array(),usercontroller.update_notification_settings)
 router.post("/get_all_users",form.array(),usercontroller.get_all_users)
+router.post("/all_user_list",form.array(),usercontroller.all_user_list)
 router.post("/get_my_accounts",form.array(),usercontroller.get_my_accounts)
   //router.post("/get_all_users",form.array(),form.array(),usercontroller.)
 //router.post("/get_all_users",form.array(),usercontroller.all)
@@ -425,6 +427,7 @@ router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksControll
 // notification route
 router.post("/notification",UserAuth,form.array(),NotificationController.notification)
 router.post("/like_notification_list",UserAuth,form.array(),NotificationController.like_notification_list)
+router.post("/comment_notification_list",UserAuth,form.array(),NotificationController.comment_notification_list)
 
 
 // vidoe effect

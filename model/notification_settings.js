@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const Schema = new  mongoose.Schema({
         user_id : {
             type:mongoose.Schema.Types.ObjectId,
-            ref:"users"
+            ref:"Users"
         },
         is_likes : {
             type:Boolean,

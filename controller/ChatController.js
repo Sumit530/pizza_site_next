@@ -182,20 +182,22 @@ exports.CreateGroup = async(req,res)=>{
     }
 }
 
-exports.DeleteMessages = (req,res)=>{
-    try {
-        if(!req.body.message_ids || req.body.message_ids == ''){
-            return  res.status(406).json({status:0,message:"please give proper parameter"})
-        }  
-        if(!req.body.message_ids || req.body.message_ids == ''){
-            return  res.status(406).json({status:0,message:"please give proper parameter"})
-        } 
+// exports.DeleteMessages = (req,res)=>{
+//     try {
+//         if(!req.body.message_ids || req.body.message_ids == ''){
+//             return  res.status(406).json({status:0,message:"please give proper parameter"})
+//         } 
 
-    } catch (error) {
-        res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on delete messsage chat" + error);  
-    }
-}
+//         if(!req.body.user_id || req.body.user_id == ''){
+//             return  res.status(406).json({status:0,message:"please give proper parameter"})
+//         } 
+
+
+//     } catch (error) {
+//         res.status(502).json({status:0,message:"internal server error"})
+//         console.log("server error on delete messsage chat" + error);  
+//     }
+// }
 exports.DeleteChat = async(req,res)=>{
     try {
         if(!req.body.chat_id || req.body.chat_id == ''){

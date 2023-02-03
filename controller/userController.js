@@ -338,6 +338,49 @@ exports.get_my_accounts = async(req,res)=>{
         console.log("server error on get my account");
     }
 }
+
+exports.all_user_list = async(req,res) =>{
+    try {
+    if(!req.body.keyword || req.body.keyword == "" ){
+        return res.status(402).json({status:0,message:"internal server error"})
+    }
+    const userData = await User.find({username: {$regex : req.body.keyword}},{name:1,username:1,profil_image:1,private_account:1})
+    if(userData.length>0){
+        const data = userData.map((e)=>{
+            if(e.profile_image != ''){
+                
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image}`)){
+                    var profile_image = `${path}/${e.profile_image}`
+                }
+                else {
+                    var profile_image = ''
+                }
+            }else{
+                var profile_image = ''
+            }
+            return ({
+                id : e._id,
+                name:e.name,
+                username:e.username,
+                private_account : e.private_account == true ? 1 : 0 ,
+                profile_image:profile_image,
+
+            })
+        })
+        if(data.length>0){
+            return  res.status(201).json({status:1,message:"user found",data:data})  
+        }else{
+            return res.status(406).json({status:0,message:"No data found.!"})
+        }
+    }else{
+        return res.status(406).json({status:0,message:"No data found.!"})
+    }
+} catch (error) {
+    res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on get my account" + error);   
+}
+}
 exports.get_all_users = async(req,res)=>{
     try {
         
@@ -463,6 +506,7 @@ exports.update_password = async(req,res) =>{
 }
 }
 
+
 exports.update_mobile_no = async(req,res) =>{
     try {
         
@@ -486,9 +530,11 @@ exports.update_page_name = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give username or page name"})
     }
 
-    const updateuser = await User.findOneAndUpdate({_id:user_id},{page_name:page_name},{new:true})
-    if(updateuser.length>0){
+    const updateuser = await User.findOneAndUpdate({_id: req?.body?.user_id},{page_name:req?.body?.page_name},{new:true})
+    if(Object.keys(updateuser).length > 0){
         return res.status(201).json({status:1,message:"page name updated successfully"})
+    }else{
+        return res.status(402).json({status:0,message:"page name not updated please try again"})
     }
    } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
@@ -701,7 +747,7 @@ exports.follow_list = async(req,res) =>{
             if(users[0].profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/users/profile/${g?.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${users[0].profile_image}`)){
                     var filepath = `${path}/${users[0].profile_image}`
                 }
                 else {
