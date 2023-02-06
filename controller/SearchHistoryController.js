@@ -23,7 +23,7 @@ exports.add_search_history = async(req,res)=>{
     }
     const getuser = await search_histories.find({user_id:req?.body?.user_id})
    if(getuser.length > 0){
-    const searchdata = await search_histories.find({user_id:req?.body?.user_id,keyword:{$in:[{key:req.body.keyword}]}})
+    const searchdata = await search_histories.find({user_id:req?.body?.user_id,"keyword.key":req?.body?.keyword})
     console.log(searchdata)
     if(searchdata.length==0){
 
@@ -53,8 +53,13 @@ exports.get_search_history = async(req,res)=>{
     }
     const getuser = await search_histories.find({user_id:req?.body?.user_id})
    if(getuser.length > 0){
-    
+  const t =   getuser[0].keyword.map((e,i)=>{
 
+         e.keyword_id = e._id
+        delete e._id
+        return e
+    }) 
+console.log(t)
         return  res.status(201).json({status:1,message:"search history added successfully",data:getuser[0]})
     
    }else{

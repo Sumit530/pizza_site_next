@@ -21,6 +21,7 @@ const Schema = new  mongoose.Schema({
     },
     mention_user : {
         type:mongoose.Schema.Types.ObjectId,
+        ref : 'Users',
         require:true
 
     },

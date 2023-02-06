@@ -14,8 +14,8 @@ const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
 const qrcode = require("qrcode")
 const mongoose = require("mongoose")
-
-
+var hbs = require('nodemailer-express-handlebars');
+const path = require("path")
 
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
@@ -78,9 +78,9 @@ else if (email != null){
         return res.status(409).json({status:0,message:"incorrect email"})
     }
     const check = await User.find({email:email})
-    if(check.length>0){
-        return res.status(409).json({status:0,message:"email allready exist"})
-    }
+    // if(check.length>0){
+    //     return res.status(409).json({status:0,message:"email allready exist"})
+    // }
     const otp = Math.floor(1000 + Math.random() * 9000)
     const otpdate = Date.now()
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
@@ -89,14 +89,23 @@ else if (email != null){
         auth: {
           user: 'appstane.test@gmail.com',
           pass: 'hwivyglhxqcngwgy'
-        }
+        },
       });
+      transporter.use('complie',hbs({
+        viewPath: 'views',
+        extName:".handlebars"
+
+    }))
       
       const mailOptions = {
-        from: 'swipeupp@gmail.com',
+        from :  '"Swipe up" <Swipeup@gmail.com>',
         to: `${email}`,
-        subject: 'varification opt',
-        text: `otp : ${otp}`
+        subject: 'varification otp',
+        //html:'`${fs.readFileSync("../views/email.handlebars")}`'
+        template:'email',
+        context:{
+            otp:otp
+        }
       };
       transporter.sendMail(mailOptions, async(error, info)=>{
         if (error) {

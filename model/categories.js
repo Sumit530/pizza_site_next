@@ -15,3 +15,4 @@ const Schema = new  mongoose.Schema({
 Schema.plugin(softDeletePlugin)
 const categories = new mongoose.model("categories",Schema)
 module.exports = categories;    
+
