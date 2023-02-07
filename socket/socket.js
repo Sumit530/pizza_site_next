@@ -4,11 +4,14 @@ const Chat = require("../model/chats")
 const Message = require("../model/messages")
 const User = require('../model/users')
 const Chat_Setting = require('../model/chat_setting')
+const { v4: uuidv4 } = require('uuid');
 global.onlineusers = new Map()
 const users = []
+global.livestreams = new Map()
  exports = module.exports  = (io) =>{
     io.on("connection",(socket)=>{
         //console.log(socket.id)
+        
     socket.on("add-user-online",(user_id)=>{
        // console.log(userid)
        if(!onlineusers.get(user_id)){
@@ -145,5 +148,19 @@ const users = []
     socket.broadcast.to(chat_id).emit('unsave-message',user_id,message_id,chat_id)
    })
     
+   socket.on("create-live",(user_id)=>{
+    const live_id = uuidv4()
+        livestreams.set(live_id,user_id)
+        socket.join(live_id)
+        //notificaton to all followers 
+        socket.emit()
+   })
+   socket.on("join-live",async(live_id,user_id)=>{
+        const user = await User.find({_id:user_id})
+        if(user.length>0){
+            socket.join(live_id)
+            socket.broadcast.to(live_id).emit("live-joined",user_id,user[0].username)
+        }
+   })
 })
 }

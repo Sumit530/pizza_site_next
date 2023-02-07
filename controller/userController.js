@@ -16,6 +16,7 @@ const qrcode = require("qrcode")
 const mongoose = require("mongoose")
 var hbs = require('nodemailer-express-handlebars');
 const path = require("path")
+const ejs = require("ejs")
 
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
@@ -96,40 +97,46 @@ else if (email != null){
         extName:".handlebars"
 
     }))
+    const sendEmail = (receiver,otp) => {
+        ejs.renderFile('C:/demo3/views/email.ejs', { otp:otp , email:email}, (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            var mailOptions = {
+              from: '"Swipe up" <Swipeup@gmail.com>',
+              to: receiver,
+              subject: "varification otp",
+              html: data
+            };
       
-      const mailOptions = {
-        from :  '"Swipe up" <Swipeup@gmail.com>',
-        to: `${email}`,
-        subject: 'varification otp',
-        //html:'`${fs.readFileSync("../views/email.handlebars")}`'
-        template:'email',
-        context:{
-            otp:otp
-        }
+            transporter.sendMail(mailOptions, async(error, info) => {
+                if (error) {
+                    res.status(501).json({status:0,message:"internal error cannot sent email"+ error})
+                  } else {
+                      const userdata = new User({
+                          country_code,email,otp,otp_expired    	           
+                      })
+                    
+                      let finaluser = await userdata.save()
+                      const notification_setting_data = new NotificationSetting({
+                          user_id:finaluser._id
+                      })
+                      await notification_setting_data.save()
+                      finaluser = {
+                          user_id:finaluser._id,
+                          name:finaluser.name,
+                          country_code:finaluser.country_code,
+                          mobile_no :finaluser.mobile_no,
+                          email:finaluser.name,
+                  
+                      }
+                      res.status(201).json({data:finaluser,status:1,message:"email send successfully"})
+                  }
+            });
+          }
+        });
       };
-      transporter.sendMail(mailOptions, async(error, info)=>{
-        if (error) {
-          res.status(501).json({status:0,message:"internal error cannot sent email"+ error})
-        } else {
-            const userdata = new User({
-                country_code,email,otp,otp_expired    	           
-            })
-          
-            let finaluser = await userdata.save()
-            const notification_setting_data = new NotificationSetting({
-                user_id:finaluser._id
-            })
-            await notification_setting_data.save()
-            finaluser = {
-                user_id:finaluser._id,
-                name:finaluser.name,
-                country_code:finaluser.country_code,
-                mobile_no :finaluser.mobile_no,
-                email:finaluser.name,
-        
-            }
-            res.status(201).json({data:finaluser,status:1,message:"email send successfully"})
-        }})
+      sendEmail(email,otp)
 }
 
 }
@@ -236,7 +243,9 @@ else{
     res.status(409).json({status:0,message:"user not found"})
 }
 }
-
+exports.reset_password = (req,res)=>{
+    
+}
 exports.resend_otp = async(req,res)=>{
     const {mobile_no} = req?.body
     const phoneno = /^\d{10}$/;
