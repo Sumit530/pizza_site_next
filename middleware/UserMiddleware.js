@@ -31,7 +31,7 @@ try {
 }
 
 catch(e){
-        res.status(500).json({status:0,message:"internal server error on admin authentication"})
+        res.status(500).json({status:0,message:"internal server error on User authentication"})
         console.log("invalid token "+ e);
         
     

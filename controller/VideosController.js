@@ -740,7 +740,7 @@ exports.add_video_comments = async(req,res)=>{
     if(user_data.length > 0){
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
         if(video_data.length>0){
-            video_comment = new VideoComments({
+           const  video_comment = new VideoComments({
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
                 mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
@@ -798,7 +798,7 @@ exports.add_parent_comment = async(req,res)=>{
     if(user_data.length > 0){
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
         if(video_data.length>0){
-            video_comment = new VideoComments({
+           const  video_comment = new VideoComments({
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
                 mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',

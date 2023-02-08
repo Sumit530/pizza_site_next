@@ -16,7 +16,12 @@ const qrcode = require("qrcode")
 const mongoose = require("mongoose")
 var hbs = require('nodemailer-express-handlebars');
 const path = require("path")
-const ejs = require("ejs")
+const ejs = require("ejs");
+const videos = require("../model/videos");
+const video_likes = require("../model/video_likes");
+const video_watch_histories = require("../model/video_watch_histories");
+const videos_comments = require("../model/videos_comments");
+const video_favorites = require("../model/video_favorites");
 
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
@@ -325,6 +330,7 @@ exports.user_details = async(req,res)=>{
     console.log(error)
 }
 }
+
 exports.get_my_accounts = async(req,res)=>{
     try {
         var result = []
@@ -735,7 +741,234 @@ exports.getProfile = async(req,res) =>{
         if(!req?.body?.follower_id || req?.body?.follower_id == '' || req?.body?.login_id == '' || !req?.body?.login_id){ 
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        const user = await User.find({_id:follower_id})
+        var profile = await User.find({_id:follower_id})
+        if(profile.length==0){
+            return res.status(402).json({status:0,message:"No Data Found"})
+        }
+        if(profile[0].profile_image != ''){
+                
+            const path = process.env.PUBLICPROFILEURL
+            if(fs.existsSync(`uploads/profile/${profile[0].profile_image}`)){
+                var filepath = `${path}/${profile[0].profile_image}`
+            }
+            else {
+                var filepath = ''
+            }
+        }else{
+            var filepath = ''
+        }
+        var total_following  = await Follow.count({follower_id:profile[0]._id})
+        var total_follow     = await Follow.count({user_id:profile[0]._id})
+        var total_likess  = 0
+        const all_video_data  = await videos.find({user_id:profile[0]._id})
+        if(all_video_data.length>0){
+            all_video_data.map((e)=>{
+                total_likess += video_likes.count({video_id:e._id}) 
+            })
+        }else{
+            total_likess = 0
+        }
+        var total_likes   = 0
+        var total_like_this_video   = 0
+        var total_comments   = 0
+        var all_video_data  = await videos.find({user_id:profile[0]._id,is_view:1,is_save_to_device:0})
+        if(all_video_data.length>0){
+               var video_file_data =  all_video_data.map(async(e)=>{
+                    var total_views = await video_watch_histories.count({video_id:e._id})
+                    total_likes   += await video_likes.count({video_likes:e._id})
+                    total_like_this_video   = await video_likes.count({video_likes:e._id})
+                    total_comments   = await videos_comments.count({video_id:e._id})
+                    if(e.cover_image != ''){
+                        const path = process.env.PUBLICCOVERIMAGEEURL
+                        if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
+                            var cover_image    = `${path}/${e.cover_image}`
+                        }
+                        else {
+                            var cover_image   = ''
+                        }
+                    }else{
+                        var cover_image   = ''
+                    }
+                    if(e.file_name  != ''){
+                        const path = process.env.PUBLICVIDEOSURL
+                        if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
+                            var  video_url     = `${path}/${e.file_name}`
+                        }
+                        else {
+                            var video_url    = ''
+                        }
+                    }else{
+                        var  video_url    = ''
+                     } 
+                     var user_like_data = await video_likes.find({video_id:e._id,user_id:req?.body?.login_id})
+                     if(user_like_data.length > 1){
+                        var is_video_like  = 1
+                     }else{
+                        var is_video_like  = 0
+                     }
+                     return ({
+                    id:e._id,
+                    cover_image:cover_image,
+                    video_url:video_url,
+                    description:e.description,
+                    is_video_like:is_video_like,
+                    total_comments:total_comments,
+                    total_views:total_views,
+                     })
+
+                })
+        }else{
+            var video_file_data = []
+        }
+        const all_favorite_video_data = await video_favorites.find({user_id:req?.body?.login_id})
+        if(all_favorite_video_data.length>0){
+            var record_video_files =  all_favorite_video_data.map(async(e)=>{
+                var total_views = await video_watch_histories.count({video_id:e._id})
+                total_likes   += await video_likes.count({video_likes:e._id})
+                total_like_this_video   = await video_likes.count({video_likes:e._id})
+                total_comments   = await videos_comments.count({video_id:e._id})
+                if(e.cover_image != ''){
+                    const path = process.env.PUBLICCOVERIMAGEEURL
+                    if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
+                        var cover_image    = `${path}/${e.cover_image}`
+                    }
+                    else {
+                        var cover_image   = ''
+                    }
+                }else{
+                    var cover_image   = ''
+                }
+                if(e.file_name  != ''){
+                    const path = process.env.PUBLICVIDEOSURL
+                    if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
+                        var  video_url     = `${path}/${e.file_name}`
+                    }
+                    else {
+                        var video_url    = ''
+                    }
+                }else{
+                    var  video_url    = ''
+                 } 
+                 var user_like_data = await video_likes.find({video_id:e._id,user_id:req?.body?.login_id})
+                 if(user_like_data.length > 1){
+                    var is_video_like  = 1
+                 }else{
+                    var is_video_like  = 0
+                 }
+                 return ({
+                id:e._id,
+                cover_image:cover_image,
+                video_url:video_url,
+                description:e.description,
+                is_video_like:is_video_like,
+                total_comments:total_comments,
+                total_views:total_views,
+                 })
+
+            })
+        }else{
+            var record_video_files = []
+        }
+       const private_videos  = await videos.find({user_id:profile[0]._id,is_save_to_device:0})
+       if(private_videos.length > 0){
+       var recordp_video_file =  all_favorite_video_data.map(async(e)=>{
+            var total_views = await video_watch_histories.count({video_id:e._id})
+            total_likes   += await video_likes.count({video_likes:e._id})
+            total_like_this_video   = await video_likes.count({video_likes:e._id})
+            total_comments   = await videos_comments.count({video_id:e._id})
+            if(e.cover_image != ''){
+                const path = process.env.PUBLICCOVERIMAGEEURL
+                if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
+                    var cover_image    = `${path}/${e.cover_image}`
+                }
+                else {
+                    var cover_image   = ''
+                }
+            }else{
+                var cover_image   = ''
+            }
+            if(e.file_name  != ''){
+                const path = process.env.PUBLICVIDEOSURL
+                if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
+                    var  video_url     = `${path}/${e.file_name}`
+                }
+                else {
+                    var video_url    = ''
+                }
+            }else{
+                var  video_url    = ''
+             } 
+             var user_like_data = await video_likes.find({video_id:e._id,user_id:req?.body?.login_id})
+             if(user_like_data.length > 1){
+                var is_video_like  = 1
+             }else{
+                var is_video_like  = 0
+             }
+             return ({
+            id:e._id,
+            cover_image:cover_image,
+            video_url:video_url,
+            description:e.description,
+            is_video_like:is_video_like,
+            total_comments:total_comments,
+            total_views:total_views,
+             })
+
+        })
+       }else{
+        var recordp_video_file = []
+       } 
+       const unshuffle_followers_data  = await Follow.find({user_id:req?.body?.follower_id})
+       if(unshuffle_followers_data.length>0){
+
+           var followers_data =  unshuffle_followers_data
+           .map(value => ({ value, sort: Math.random() }))
+           .sort((a, b) => a.sort - b.sort)
+           .map(({ value }) => value)
+           followers_data = followers_data.splice(0,25)
+           var followers_result  = followers_data.map(async(e)=>{
+                const user_data = await User.find({_id:e.follower_id})
+                if(user_data.length>0){
+                    if(user_data[0].profile_image  != ''){
+                        const path = process.env.PUBLICPROFILEURL
+                        if(fs.existsSync(`uploads/users/profile/${user_data[0].profile_image }`)){
+                            var  profile_image     = `${path}/${user_data[0].profile_image}`
+                        }
+                        else {
+                            var profile_image    = ''
+                        }
+                    }else{
+                        var  profile_image    = ''
+                     } 
+                    }
+                    return({
+                        id:e._id,
+                        user_id:user_data[0]._id,
+                        name:user_data[0].name,
+                        username:user_data[0].username,
+                        private_account:user_data[0].private_account,
+                        profile_image:profile_image
+                    })
+           })
+        }else{
+            var followers_result = []
+        }
+
+        if(profile[0].email != ""){
+            hidden = ""
+            for(let i = 0;i<profile[0].email.split("@")[0]-3;i++){
+                hidden += "*" 
+            }
+            var email = `${profile[0].email.splice(0,3)}${hidden}`
+        }else{
+            email = ""
+        }
+        if(profile[0].email != ""){
+            var mobile_no = `${profile[0].email.splice(0,2)}******${profile[0].email.splice(8,2)}`
+        }else{
+            mobile_no = ""
+        }
+        
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
     console.log("server error on update get notification setting"); 
@@ -1038,3 +1271,18 @@ exports.to_unfollow = async(req,res) =>{
         console.log("server error on to unfollow user" + error); 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

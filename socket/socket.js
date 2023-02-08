@@ -162,5 +162,23 @@ global.livestreams = new Map()
             socket.broadcast.to(live_id).emit("live-joined",user_id,user[0].username)
         }
    })
+   socket.on("message-in-live",async(user_id,message,live_id)=>{
+    const user = await User.find({_id:user_id})
+    if(user.length>0){
+        socket.broadcast.to(live_id).emit("message-in-live",user_id,message,user[0].username)
+    }
+   })
+   socket.on("leave-live",async(live_id,user_id)=>{
+    const user = await User.find({_id:user_id})
+    if(user.length>0){
+     socket.leave(live_id)
+        socket.broadcast.to(live_id).emit("live-leaved",user_id,user[0].username)
+    }  
+    }) 
+    socket.on("close-live",async(live_id,user_id)=>{
+        Array.from(socket.adapter.rooms.get(live_id)).map((e)=>{
+            e.leave(live_id)
+    })   
+   })
 })
 }

@@ -75,7 +75,7 @@ exports.get_video_duets = async(req,res)=>{
                     if(video_details.length > 0){
                         if(e.cover_image != ''){
                             const path = process.env.PUBLICCOVERIMAGEEURL
-                            if(fs.existsSync(`${path}/${e.cover_image}`)){
+                            if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                                 var cover_image    = `${path}/${e.cover_image}`
                             }
                             else {
@@ -86,7 +86,7 @@ exports.get_video_duets = async(req,res)=>{
                         }
                         if(e.file_name  != ''){
                             const path = process.env.PUBLICVIDEOSURL
-                            if(fs.existsSync(`${path}/${e.file_name }`)){
+                            if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                                 var  video_url     = `${path}/${e.file_name}`
                             }
                             else {
