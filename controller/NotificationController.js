@@ -72,8 +72,8 @@ exports.notification = async(req,res)=>{
         }else{
             var is_follow = 0
         }
-        var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,video_id:e.video_id,createdAt:moment().utc().subtract(1,"day")})
-        var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,video_id:e.video_id,createdAt:moment().utc().subtract(1,"day")})
+        var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,video_id:e.video_id,createdAt:{ $gte:moment().utc().subtract(1,"day")}})
+        var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}})
 
         if(noti_more_data?.length>0){
           var  yesterday_more_result =   noti_more_data?.map(async(f)=>{
@@ -451,8 +451,8 @@ exports.like_notification_list = async(req,res)=>{
 
         
      
-        var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:moment().utc().subtract(1,"day")}).populate("receiver_id")
-        var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:moment().utc().subtract(1,"day")}).populate("receiver_id")
+        var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
+        var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
         if(noti_more_data?.length>0){
           var  yesterday_more_result =   noti_more_data?.map((f)=>{
                 if(f.receiver_id.profile_image != ''){

@@ -14,7 +14,7 @@ const fs = require('fs');
 const crypto = require("crypto");
 const session = require('express-session');
 //const auth = require("../middleware/oath");
-const { json } = require("body-parser");
+const moment = require("moment")
 const usercontroller = require("../controller/userController")
 const videocontroller = require("../controller/VideosController")
 const notificationcontroller = require("../controller/NotificationController")
@@ -41,6 +41,7 @@ const VideoEffectBookmarkController  = require("../controller/VideoEffectBookmar
 const Generalontroller  = require("../controller/GeneralController")
 const Message = require("../model/messages")
 const Chat = require("../model/chats")
+const Videos = require("../model/videos")
 
 const UserAuth = require("../middleware/UserMiddleware");
 const { default: mongoose } = require("mongoose");
@@ -474,7 +475,10 @@ router.post("/mentions_notification_list",UserAuth,form.array(),NotificationCont
  //router.post("/account_category_list",form.array(),GeneralController.getaccountcategory)
  //router.post("/country_list",form.array(),GeneralController.getcountries)
  
- 
+//  router.post('/demo',async(req,res)=>{
+//     const video = await Videos.find({createdAt:{$gte:moment().subtract(1,"day").format()}})
+//     console.log(video)
+//  })
  
 
 module.exports = router

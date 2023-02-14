@@ -760,9 +760,9 @@ exports.getProfile = async(req,res) =>{
         var total_following  = await Follow.count({follower_id:profile[0]._id})
         var total_follow     = await Follow.count({user_id:profile[0]._id})
         var total_likess  = 0
-        const all_video_data  = await videos.find({user_id:profile[0]._id})
-        if(all_video_data.length>0){
-            all_video_data.map((e)=>{
+        const videos  = await videos.find({user_id:profile[0]._id})
+        if(videos.length>0){
+            videos.map((e)=>{
                 total_likess += video_likes.count({video_id:e._id}) 
             })
         }else{

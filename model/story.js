@@ -31,10 +31,7 @@ const Schema = new  mongoose.Schema({
     require:true
     }
    ]
-
-
-
 },{timestamps:true})
 Schema.plugin(softDeletePlugin)
-const block_user = new mongoose.model("block_user",Schema)
+const block_user = new mongoose.model("storys",Schema)
 module.exports = block_user;
