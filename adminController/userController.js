@@ -71,3 +71,8 @@ exports.updateProfile = async(req,res)=>{
         return res.status(402).json({status:0,message:"user profile not updated"})
     }
 }
+
+exports.userRoles = (req,res)=>{
+
+}
+
