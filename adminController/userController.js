@@ -3,6 +3,7 @@ const fs = require("fs")
 const notifications = require("../model/notifications")
 const account_verification = require("../model/account_verification")
 const user_report = require("../model/user_reports")
+const help_center_data = require("../model/help_center_data")
 exports.GetAllUser = async(req,res) =>{
     const users = await User.find({},{password:0}).sort({createdAt:-1})
     if(users.length>0){
@@ -260,5 +261,57 @@ return res.status(201).json({status:1,message:"User Data found!",result:finaluse
 }else{
 return res.status(404).json({status:0,message:"User Data Not found."}) 
 }
+}
 
+
+exports.show_help_center_data = (req,res) =>{
+    async(req,res) =>{
+        try {
+           
+            const Data = await help_center_data.find().populate("user_id").sort({createdAt:-1})
+            if(Data.length > 0){
+              const user_data =   Data.map((e)=>{
+
+                    if(e.user_id.profile_image  != ''){
+                        const path = process.env.PUBLICPROFILEURL
+                        if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
+                            var profile_image      = `${path}/${e.user_id.profile_image}`
+                        }
+                        else {
+                            var profile_image     = ''
+                        }
+                    }else{
+                        var profile_image     = ''
+                    } 
+                    e.user_id.profile_image = profile_image
+                    return e
+                })
+                return res.status(201).json({status:1,message:"'Help center Data Found!",result:user_data})
+            }else {
+                res.status(402).json({status:0,message:"Help center Data Not Found"})    
+            }      
+        } catch (error) {
+            res.status(502).json({status:0,message:"internal server error"})
+        console.log("server error on add_help_center_problem_resolved" + error);  
+        }
+    }
+}
+
+exports.add_help_center_problem_resolved = async(req,res) =>{
+    try {
+        if(!req.body.help_center_data_id || req.body.help_center_data_id){ 
+            return  res.status(406).json({status:0,message:"please give proper parameter"})
+        }
+        const checkdata = await help_centers.find({_id:req.body.help_center_id})
+        if(checkdata.length > 0){
+            const checkdata = await help_centers.findOneAndUpdate({_id:req.body.help_center_id},{problem_solved:true})
+            return res.status(201).json({status:1,message:"'Problem resolved add successfully"})
+        }else {
+            res.status(402).json({status:0,message:"not found helpcenter"})    
+        }
+            
+    } catch (error) {
+        res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on add_help_center_problem_resolved" + error);  
+    }
 }

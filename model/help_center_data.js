@@ -13,6 +13,7 @@ const Schema = new  mongoose.Schema({
     },
     problem_solved : {
         type:Boolean,
+        default:false
     },
     
     status : {
