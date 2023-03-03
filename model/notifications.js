@@ -28,6 +28,10 @@ const Schema = new  mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"video_comments"
     },
+    message:{
+        type:String,
+        require:true
+    },
     type :{
         type:Number,
         // 1 = likes  ||  2 = comment || 3 = followers || 4 = mention  || 5 = swipeup 

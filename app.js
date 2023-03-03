@@ -3,6 +3,7 @@ const app = express()
 const https = require("http")
 const moment = require("moment")
 const router = require("./routes/routes")
+const adminRoute = require("./routes/adminRoutes")
 const fs =require("fs")
 const path = require("path")
 const bodyparser= require("body-parser")
@@ -43,6 +44,7 @@ app.use("/peerjs", peerServer);
 app.use(express.static("public"));
 require("./db/connection")
 app.use('/api',router)
+app.use('/admin',adminRoute)
 const { v4: uuidv4 } = require("uuid");
 const { lang } = require("moment")
 app.set("view engine", "ejs");

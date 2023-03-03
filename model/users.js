@@ -117,6 +117,10 @@ const Schema = new  mongoose.Schema({
         default:0 ,
         require:true
     },
+    two_factor:{
+        type:Boolean,
+        default:false
+    },
     type : {
         type:Number,
         default:1,

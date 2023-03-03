@@ -3,7 +3,7 @@ const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const Schema = new  mongoose.Schema({
     user_id : {
         type:mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        ref : 'Users',
         require:true
     },
     full_name : {
@@ -35,31 +35,31 @@ const Schema = new  mongoose.Schema({
         type:Number,
     },
     url1 : {
-        type:Number
+        type:String
     },
     link_type2 : {
         type:Number,
     },
     url2 : {
-        type:Number
+        type:String
     },
     link_type3 : {
         type:Number,
     },
     url3 : {
-        type:Number
+        type:String
     },
     link_type4 : {
         type:Number,
     },
     url4 : {
-        type:Number
+        type:String
     },
     link_type5 : {
         type:Number,
     },
     url5 : {
-        type:Number
+        type:String
     },
     status : {
         type:Boolean,

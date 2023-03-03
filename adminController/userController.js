@@ -1,8 +1,29 @@
 const User = require("../model/users")
+const fs = require("fs")
+const notifications = require("../model/notifications")
+const account_verification = require("../model/account_verification")
+const user_report = require("../model/user_reports")
 exports.GetAllUser = async(req,res) =>{
-    const users = await User.find({},{password:0})
+    const users = await User.find({},{password:0}).sort({createdAt:-1})
     if(users.length>0){
-        return res.status(201).json({status:1,message:"User Data found!",result:users})
+        const finalusers = users.map((e)=>{
+
+            if(e.profile_image  != ''){
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
+                    var profile_image      = `${path}/${e.profile_image}`
+                }
+                else {
+                    var profile_image     = ''
+                }
+            }else{
+                var profile_image     = ''
+            } 
+            console.log(profile_image)
+            e.profile_image = profile_image
+            return e
+        })
+        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
     }else{
         return res.status(404).json({status:0,message:"User Data Not found."})
     }
@@ -76,3 +97,168 @@ exports.userRoles = (req,res)=>{
 
 }
 
+exports.getTwoFactorDisableUser = async(req,res)=>{
+    const users = await User.find({two_factor:false},{password:0}).sort({createdAt:-1})
+    if(users.length>0){
+        const finalusers = users.map((e)=>{
+
+            if(e.profile_image  != ''){
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
+                    var profile_image      = `${path}/${e.profile_image}`
+                }
+                else {
+                    var profile_image     = ''
+                }
+            }else{
+                var profile_image     = ''
+            } 
+            console.log(profile_image)
+            e.profile_image = profile_image
+            return e
+        })
+        console.log(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+    }else{
+        return res.status(404).json({status:0,message:"User Data Not found."})
+    }
+}
+
+
+exports.require_two_factor = async(req,res)=>{
+    if(!req.body.user_id || req.body.user_id == ""){
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    if(!req.body.message || req.body.message == ""){
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    const notification = new notifications({
+        receiver_id:req.body.user_id,
+        type:5,
+        message:req.body.message
+    })
+        await notification.save()
+    return res.status(201).json({status:1,message:"sent Notification Successfully "})
+
+}
+
+exports.email_not_verified_user = async(req,res)=>{
+    const users = await User.find({email:""},{password:0}).sort({createdAt:-1})
+    if(users.length>0){
+        const finalusers = users.map((e)=>{
+
+            if(e.profile_image  != ''){
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
+                    var profile_image      = `${path}/${e.profile_image}`
+                }
+                else {
+                    var profile_image     = ''
+                }
+            }else{
+                var profile_image     = ''
+            } 
+            console.log(profile_image)
+            e.profile_image = profile_image
+            return e
+        })
+        console.log(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+    }else{
+        return res.status(404).json({status:0,message:"User Data Not found."})
+    }
+}
+
+exports.verify_email = async(req,res)=>{
+    if(!req.body.user_id || req.body.user_id == ""){
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    if(!req.body.message || req.body.message == ""){
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    const notification = new notifications({
+        receiver_id:req.body.user_id,
+        type:5,
+        message:req.body.message
+    })
+        await notification.save()
+    return res.status(201).json({status:1,message:"sent Notification Successfully "})
+
+}
+exports.show_verification_requests = async(req,res)=>{
+                const data = await account_verification.find().populate("user_id","social_id name username mobile_no fcm_id profile_image is_vip private_account").sort({createdAt:-1})
+
+        if(data.length>0){
+            const finalusers = data.map((e)=>{
+
+                if(e.user_id.profile_image  != ''){
+                    const path = process.env.PUBLICPROFILEURL
+                    if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
+                        var profile_image      = `${path}/${e.user_id.profile_image}`
+                    }
+                    else {
+                        var profile_image     = ''
+                    }
+                }else{
+                    var profile_image     = ''
+                } 
+                e.user_id.profile_image = profile_image
+                if(e.documents  != ''){
+                    const path = process.env.PUBLICPROFILEURL
+                    if(fs.existsSync(`uploads/users/verification_documents/${e.documents }`)){
+                        var document      = `${path}/${e.documents}`
+                    }
+                    else {
+                        var document     = ''
+                    }
+                }else{
+                    var document     = ''
+                } 
+                e.document = document
+                return e
+            })  
+            return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+        }else{
+            return res.status(404).json({status:0,message:"User Data Not found."}) 
+        }
+
+}
+exports.show_reported_user = async(req,res)=>{
+    
+    const data = await user_report.find().populate("user_id","social_id name username mobile_no fcm_id profile_image is_vip private_account").sort({createdAt:-1})
+
+if(data.length>0){
+const finalusers = data.map((e)=>{
+
+    if(e.user_id.profile_image  != ''){
+        const path = process.env.PUBLICPROFILEURL
+        if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
+            var profile_image      = `${path}/${e.user_id.profile_image}`
+        }
+        else {
+            var profile_image     = ''
+        }
+    }else{
+        var profile_image     = ''
+    } 
+    e.user_id.profile_image = profile_image
+    if(e.documents  != ''){
+        const path = process.env.PUBLICPROFILEURL
+        if(fs.existsSync(`uploads/users/verification_documents/${e.documents }`)){
+            var document      = `${path}/${e.documents}`
+        }
+        else {
+            var document     = ''
+        }
+    }else{
+        var document     = ''
+    } 
+    e.document = document
+    return e
+})  
+return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+}else{
+return res.status(404).json({status:0,message:"User Data Not found."}) 
+}
+
+}

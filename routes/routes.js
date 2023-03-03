@@ -38,6 +38,7 @@ const RecentEmojisController = require("../controller/RecentEmojisController")
 const RestrictAccountsController  = require("../controller/RestrictAccountsController")
 const VideoReportController  = require("../controller/VideoReportController")
 const VideoEffectBookmarkController  = require("../controller/VideoEffectBookmarkController")
+const AccountVerificationController  = require("../controller/AccountVerificationController")
 const Generalontroller  = require("../controller/GeneralController")
 const Message = require("../model/messages")
 const Chat = require("../model/chats")
@@ -133,6 +134,40 @@ const EffectStorage = multer.diskStorage ({
 
 const EffectUpload = multer({
   storage: EffectStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb("Only .png, .jpg and .jpeg format allowed!");
+    }
+  },
+  limits:{
+    fileSize:5 * 1024 * 1024
+  }
+});
+
+const DocumentStorage = multer.diskStorage ({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/users/verification_documents");
+  },
+  
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() + "-" + crypto.randomBytes(16).toString("hex");
+    cb(
+      null,
+      uniqueSuffix + '.webp'
+    );
+  },
+});
+
+const  DocumentUpload = multer({
+  storage: DocumentStorage,
   fileFilter: (req, file, cb) => {
     if (
       file.mimetype == "image/png" ||
@@ -289,7 +324,7 @@ const VideoUpload = multer({
 
 
 
-router.post("/registration", form.array(),usercontroller.registration)
+  router.post("/registration", form.array(),usercontroller.registration)
 router.post("/social_signup",form.array(),usercontroller.social_signup)
 router.post("/login",form.array(),usercontroller.LoginUser)
 //router.post("/get_all_users",usercontroller.get_all_users)
@@ -464,6 +499,10 @@ router.post("/mentions_notification_list",UserAuth,form.array(),NotificationCont
  router.post("/get_recent_emoji",UserAuth,form.array(),RecentEmojisController.get_recent_emoji)
  
  //  video report controller
+
+// account verification 
+router.post("/add_account_verification",UserAuth,DocumentUpload.single("document"),AccountVerificationController.add_account_verification)
+
 
  router.post("/add_video_report",UserAuth,form.array(),VideoReportController.add_video_report)
  router.get("/get_video_report_types",UserAuth,form.array(),VideoReportController.get_video_report_types)
