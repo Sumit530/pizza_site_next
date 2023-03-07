@@ -22,6 +22,13 @@ const Schema = new  mongoose.Schema({
         type:String,
         require:true
     },
+    password_expire_at : {
+            type:Date,
+            require:true
+    }, 
+    password_updated_at : {
+
+    },
     country_code:{
         type:String,
         default:''

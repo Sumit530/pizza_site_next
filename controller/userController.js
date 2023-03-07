@@ -519,7 +519,7 @@ exports.update_password = async(req,res) =>{
     const {password,user_id} = req?.body
     const user = await User.find({_id:user_id})
     if(user.length>0){
-        await User.findOneAndUpdate({_id:user_id},{password:password},{new:true})
+        await User.findOneAndUpdate({_id:user_id},{password:password,password_updated_at:moment().local().format(),password_expire_at:moment().local().add(30,"day").format()},{new:true})
         return res.status(201).json({status:1,message:"password updated successfully"})
     }
     else {
@@ -534,7 +534,7 @@ exports.update_password = async(req,res) =>{
 
 exports.update_mobile_no = async(req,res) =>{
     try {
-        
+          
     
     if(!req?.body?.mobile_no || req?.body?.mobile_no == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
         return  res.status(406).json({status:0,message:"please give username and mobile no"})
@@ -545,7 +545,7 @@ exports.update_mobile_no = async(req,res) =>{
     }
 } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update mobiel no"); 
+    console.log("server error on update mobile no"); 
 }
 }
 
