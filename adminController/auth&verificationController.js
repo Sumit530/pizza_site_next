@@ -1,7 +1,8 @@
 const banned_user = require("../model/banned_user")
 const ban_reasons = require("../model/ban_reasons")
 const password_policies = require("../model/password_policies")
-
+const momnet = require("moment")
+const Users = require("../model/users")
 exports.getPasswordPolicy = async(res,res) =>{
         const password_policy = await password_policies.find()
         if(password_policy.length>0){
@@ -27,12 +28,22 @@ exports.banUser = async(req,res) =>{
 
     var reasons = await ban_reasons.find({reason:{$in:req.body.reason.split(",")}},{_id:1})
     reasons = reasons.map((e)=> {return e.id})
+        await Users.findOneAndUpdate({_id:req.body.user_id},{deAtivated:true})
+if( parseInt(req.body.type) == 1 ){
 
-    const ban_user = new banned_user({
+    var ban_user = new banned_user({
         user_id:req.body.user_id,
         type: req.body.type ,
         reason: reasons
     })
+}else{
+    var ban_user = new banned_user({
+        user_id:req.body.user_id,
+        type: req.body.type ,
+        reason: reasons,
+        unban_after: momnet().add(parseInt(req.body.unban_after),"day")
+        })
+}
     await ban_user.save()
     res.status(201).json({status:1,message:"User Banned Successfully"})
 }
@@ -67,4 +78,12 @@ exports.showBanUsers = async (req,res)=>{
     }else{
         res.status(402).json({status:0,message:"Ban Users not found",})
     }
+}
+exports.unBanUser = async(req,res) =>{
+    if(!req.body.user_id || req.body.user_id == ''){ 
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    }
+    await banned_user.deleteOne({user_id:req.body.user_id})
+    await Users.findOneAndUpdate({_id:req.body.user_id},{deAtivated:false})
+    res.status(201).json({status:1,message:"User Unban Successfully"})
 }
