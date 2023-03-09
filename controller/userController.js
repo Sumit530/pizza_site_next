@@ -203,13 +203,20 @@ exports.LoginUser = async(req,res)=>{
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
-                 const keysecret = process.env.USER_SECRET
-                const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
-                const token = jwt.sign({id:update._id,email:update.email},keysecret)
-                const data = {
-                    user_id:update._id,name:update.name ? update.name : "" ,country_code:update.country_code,mobile_no : update.mobile_no ? update.mobile_no : "",email : update.email ? update.email :"",language_id:update.language_id,token:token
+
+                if(user[0].deAtivated == false){
+
+                    const keysecret = process.env.USER_SECRET
+                    const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
+                    const token = jwt.sign({id:update._id,email:update.email},keysecret)
+                    const data = {
+                        user_id:update._id,name:update.name ? update.name : "" ,country_code:update.country_code,mobile_no : update.mobile_no ? update.mobile_no : "",email : update.email ? update.email :"",language_id:update.language_id,token:token
+                    }
+                    res.status(201).json({status:1,message:"logged in successfully",data:data})
+                }else{
+                         const reason = await banned_user.find({user_id:user[0]._id}).populate("reason")
+                    return res.status(409).json({status:-1,message:"Id is Deactivated by admin",reason})
                 }
-                res.status(201).json({status:1,message:"logged in successfully",data:data})
             }
         }
         else {

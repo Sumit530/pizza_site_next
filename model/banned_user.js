@@ -25,7 +25,7 @@ const Schema = new  mongoose.Schema({
         type:Number,   // number of days
         require:true
     } ,
-    staus : {
+    status : {
         type:Boolean,
         require:true
     }

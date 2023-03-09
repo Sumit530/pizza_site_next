@@ -43,8 +43,17 @@ const Schema = new  mongoose.Schema({
     },
     gender:{
         type:String,
-        default:''
+        enum:['male','female','other'],
     },
+    deAtivated : {
+        type:Boolean,
+        default:false,
+    },
+    deActivate_type : {
+        type:Number,  // 1 = ban 2 = block 
+        require:true
+    },
+
     dob : {
         type:Date,
         default:null
