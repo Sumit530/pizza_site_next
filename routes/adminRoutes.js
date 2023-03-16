@@ -49,7 +49,7 @@ const ProfileStorage = multer.diskStorage({
     }
   });
 
-  adminRoute.get("/getallusers",userController.GetAllUser)
+  adminRoute.get("/getallusers/:page",userController.GetAllUser)
   adminRoute.get("/get_two_factor_disable_user",userController.getTwoFactorDisableUser)
   adminRoute.get("/show_verification_requests",userController.show_verification_requests)
 

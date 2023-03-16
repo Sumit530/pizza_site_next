@@ -10,7 +10,8 @@ const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
 const models = path.join(__dirname,"model")
 const Message = require("./model/messages")
-
+const cors = require("cors")
+app.use(cors())
 const server = https.createServer(
      {
      key:fs.readFileSync(path.join(__dirname,"cert",'key.pem')),
@@ -48,16 +49,7 @@ app.use('/admin',adminRoute)
 const { v4: uuidv4 } = require("uuid");
 const { lang } = require("moment")
 app.set("view engine", "ejs");
-// io.on("connection", (socket) => {
-//     console.log("join")
-//     socket.on("join-room", (roomId, userId, userName) => {
-//     socket.join(roomId);
-//     socket.broadcast.to(roomId).emit('user-connected', userId)
-//     socket.on("message", (message) => {
-//       io.to(roomId).emit("createMessage", message, userName);
-//     });
-//   });
-// });
+
 
 
 //  Hashtag.insertMany([
@@ -77,18 +69,13 @@ app.set("view engine", "ejs");
 //   console.log("insterd")
 //  })
 
-//app.use(con)
 app.use('/', express.static('public'))
 
 app.use("/upload",express.static('uploads/'))
-//app.use("/upload",express.static('uploads/song_banner_image'))
 app.get("/",(req,res)=>{
     res.send("hey")
 })
-// Message.find({createdAt:{$lte : moment().utc().subtract(1,"minute").toDate()}}).then((e)=>{
 
-//   console.log(e)
-// })
 server.listen(8000,()=>{
 console.log("server is running on 8000");
 })

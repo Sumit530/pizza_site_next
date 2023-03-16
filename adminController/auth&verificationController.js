@@ -87,3 +87,5 @@ exports.unBanUser = async(req,res) =>{
     await Users.findOneAndUpdate({_id:req.body.user_id},{deAtivated:false})
     res.status(201).json({status:1,message:"User Unban Successfully"})
 }
+
+
