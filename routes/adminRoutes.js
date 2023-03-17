@@ -2,11 +2,13 @@ const express = require("express");
 const adminRoute = express.Router();
 const bodyParser = require("body-parser");
 
+
+
 //const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 jsonparser = bodyParser.json();
 const multer = require("multer");
-const form = multer()
+const form = multer().array()
 const path = require("path")
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -49,7 +51,7 @@ const ProfileStorage = multer.diskStorage({
     }
   });
 
-  adminRoute.get("/getallusers/:page",userController.GetAllUser)
+  adminRoute.post("/getallusers",form,userController.GetAllUser)
   adminRoute.get("/get_two_factor_disable_user",userController.getTwoFactorDisableUser)
   adminRoute.get("/show_verification_requests",userController.show_verification_requests)
 

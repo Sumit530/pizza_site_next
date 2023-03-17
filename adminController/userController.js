@@ -4,11 +4,22 @@ const notifications = require("../model/notifications")
 const account_verification = require("../model/account_verification")
 const user_report = require("../model/user_reports")
 const help_center_data = require("../model/help_center_data")
+const followers = require("../model/followers")
+const videos = require("../model/videos")
 exports.GetAllUser = async(req,res) =>{
-    const users = await User.find({},{password:0}).sort({createdAt:-1})
-    if(users.length>0){
-        const finalusers = users.map((e)=>{
+    let page = req.body.page 
+    let limit = req.body.limit
+    page = (page-1)*limit 
 
+    const users = await User.find({},{password:0},{ skip: page, limit: limit }).sort({createdAt:-1})
+    const totalusers = await User.count()
+    
+    if(users.length>0){
+        const finalusers =  users.map(async(e)=>{
+                const follower = await followers.count({follower_id:e._id}) 
+                const following = await followers.count({user_id:e._id}) 
+                const post = await videos.count({user_id:e._id}) 
+                console.log(post)
             if(e.profile_image  != ''){
                 const path = process.env.PUBLICPROFILEURL
                 if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
@@ -20,11 +31,27 @@ exports.GetAllUser = async(req,res) =>{
             }else{
                 var profile_image     = ''
             } 
-            console.log(profile_image)
-            e.profile_image = profile_image
-            return e
+            const obj = new Object(e)
+            obj.profile_image = profile_image
+            Object.keys("sumit").values = "sumit"
+            obj['following'] = following
+            obj['follower'] = follower
+            return ({
+                name:e.name,
+                profile_image:profile_image,
+                videos : post,
+                follower,
+                following,
+                email:e.email,
+                _id:e._id,
+                status:e.status,
+                createdAt:e.createdAt,
+
+
+            })
         })
-        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+         const data = await Promise.all(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:data,total:totalusers})
     }else{
         return res.status(404).json({status:0,message:"User Data Not found."})
     }
