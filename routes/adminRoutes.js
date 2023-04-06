@@ -52,7 +52,9 @@ const ProfileStorage = multer.diskStorage({
   });
 
   adminRoute.post("/getallusers",form,userController.GetAllUser)
-  adminRoute.get("/get_two_factor_disable_user",userController.getTwoFactorDisableUser)
+  adminRoute.post("/update_profile",ProfileUpload.single("profile_image"),userController.updateProfile)
+  adminRoute.post("/get_two_factor_disable_user",form,  userController.getTwoFactorDisableUser)
   adminRoute.get("/show_verification_requests",userController.show_verification_requests)
+  adminRoute.get("/email_not_verified_user",userController.email_not_verified_user)
 
   module.exports = adminRoute

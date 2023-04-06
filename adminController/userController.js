@@ -6,20 +6,33 @@ const user_report = require("../model/user_reports")
 const help_center_data = require("../model/help_center_data")
 const followers = require("../model/followers")
 const videos = require("../model/videos")
+
+
 exports.GetAllUser = async(req,res) =>{
     let page = req.body.page 
     let limit = req.body.limit
     page = (page-1)*limit 
-
-    const users = await User.find({},{password:0},{ skip: page, limit: limit }).sort({createdAt:-1})
-    const totalusers = await User.count()
     
+        
+    const users = await User.find({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }},{password:0},{ skip: page, limit: limit }).sort({createdAt:-1})
+      const totalusers = await User.count({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }})
     if(users.length>0){
         const finalusers =  users.map(async(e)=>{
                 const follower = await followers.count({follower_id:e._id}) 
                 const following = await followers.count({user_id:e._id}) 
                 const post = await videos.count({user_id:e._id}) 
-                console.log(post)
             if(e.profile_image  != ''){
                 const path = process.env.PUBLICPROFILEURL
                 if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
@@ -41,6 +54,9 @@ exports.GetAllUser = async(req,res) =>{
                 profile_image:profile_image,
                 videos : post,
                 follower,
+                username:e.username,
+                bio:e.bio,
+                mobile_no:e.mobile_no,
                 following,
                 email:e.email,
                 _id:e._id,
@@ -66,56 +82,38 @@ exports.deleteUser = async(req,res) =>{
 }
 
 exports.updateProfile = async(req,res)=>{
-    if(!req?.body?.name || req?.body?.name  == ''){ 
-        return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+    const bodyData = JSON.parse(req.body.data)
+    
+    console.log(bodyData)
+    // if(!req?.body?.name || req?.body?.name  == ''){ 
+    //     return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+    // }
+    // if(!req?.body?.username || req?.body?.username  == '' ){ 
+    //     return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+    // }
+    // if(req?.body?.user_id == '' || !req?.body?.user_id){ 
+    //     return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+    // }
+    // if(!req?.body?.email || req?.body?.email  == ''){ 
+    //     return  res.status(406).json({status:0,message:"please give prorpery parameter"})
+    // }
+    if(req.file){
+        bodyData.profile_image = req.file.filename
     }
-    if(!req?.body?.username || req?.body?.username  == '' ){ 
-        return  res.status(406).json({status:0,message:"please give prorpery parameter"})
-    }
-    if(req?.body?.user_id == '' || !req?.body?.user_id){ 
-        return  res.status(406).json({status:0,message:"please give prorpery parameter"})
-    }
-    if(!req?.body?.email || req?.body?.email  == ''){ 
-        return  res.status(406).json({status:0,message:"please give prorpery parameter"})
-    }
-  
-    if(!req?.body?.gender || req?.body?.gender  == ''){ 
-        return  res.status(406).json({status:0,message:"please give prorpery parameter"})
-    }
-    const userData = await User.findOneAndUpdate({_id:req?.body?.user_id},{
-        name : req?.body?.name,
-        username : req?.body?.username,
-        email : req?.body?.email,
-        mobile_no:req?.body?.mobile_no ? req?.body?.mobile_no : "",
-        website : req?.body?.website ? req?.body?.website : "",
-        gender : req?.body?.gender,
-        bio : req?.body?.bio ? req?.body?.bio : "",
-        profile_image : req?.file ? req?.file?.filename : "" 
-    })
-    if(userData.profile_image  != ''){
+
+    const userData = await User.findOneAndUpdate({_id:bodyData._id},bodyData)
+    console.log(userData)
+    // if(userData.profile_image  != ''){
         
-        if(fs.existsSync(`uploads/users/profile/${userData.profile_image }`)){
-                    fs.unlink(`uploads/users/profile/${userData.profile_image }`,(err)=>{
-                        if(err) return res.json({status:0,message:"please try again"})
-                    })
-        }
-    }
-    var data = await User.find({_id:req.body.user_id})
+    //     if(fs.existsSync(`uploads/users/profile/${userData.profile_image }`)){
+    //                 fs.unlink(`uploads/users/profile/${userData.profile_image }`,(err)=>{
+    //                     if(err) return res.json({status:0,message:"please try again"})
+    //                 })
+    //     }
+    // }
+    var data = await User.find({_id:bodyData._id})
     if(data.length > 0){
-        if(data[0].profile_image  != ''){
-            const path = process.env.PUBLICPROFILEURL
-            if(fs.existsSync(`uploads/users/profile/${data[0].profile_image }`)){
-                var profile_image      = `${path}/${data[0].profile_image}`
-            }
-            else {
-                var profile_image     = ''
-            }
-        }else{
-            var profile_image     = ''
-        } 
-        console.log(profile_image)
-        data[0].profile_image = profile_image
-        return res.status(201).json({status:1,message:"profile updated successfully",data:data})
+        return res.status(201).json({status:1,message:"profile updated successfully"})
     }else{   
         return res.status(402).json({status:0,message:"user profile not updated"})
     }
@@ -126,27 +124,64 @@ exports.userRoles = (req,res)=>{
 }
 
 exports.getTwoFactorDisableUser = async(req,res)=>{
-    const users = await User.find({two_factor:false},{password:0}).sort({createdAt:-1})
+    let page = req.body.page 
+    let limit = req.body.limit
+    page = (page-1)*limit 
+    const users = await User.find({two_factor:false,"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }},{password:0},{ skip: page, limit: limit }).sort({createdAt:-1})
+    const totalusers = await User.count({two_factor:false,"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }})
     if(users.length>0){
-        const finalusers = users.map((e)=>{
+        const finalusers = users.map(async(e)=>{
 
-            if(e.profile_image  != ''){
-                const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
-                    var profile_image      = `${path}/${e.profile_image}`
-                }
-                else {
-                    var profile_image     = ''
-                }
-            }else{
+            const follower = await followers.count({follower_id:e._id}) 
+            const following = await followers.count({user_id:e._id}) 
+            const post = await videos.count({user_id:e._id}) 
+        if(e.profile_image  != ''){
+            const path = process.env.PUBLICPROFILEURL
+            if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
+                var profile_image      = `${path}/${e.profile_image}`
+            }
+            else {
                 var profile_image     = ''
-            } 
-            console.log(profile_image)
-            e.profile_image = profile_image
-            return e
+            }
+        }else{
+            var profile_image     = ''
+        } 
+        const obj = new Object(e)
+        obj.profile_image = profile_image
+        Object.keys("sumit").values = "sumit"
+        obj['following'] = following
+        obj['follower'] = follower
+        return ({
+            name:e.name,
+            profile_image:profile_image,
+            videos : post,
+            follower,
+            username:e.username,
+            bio:e.bio,
+            mobile_no:e.mobile_no,
+            following,
+            email:e.email,
+            _id:e._id,
+            status:e.status,
+            createdAt:e.createdAt,
+
+
         })
-        console.log(finalusers)
-        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+        })
+        const data = await Promise.all(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:data,total:totalusers})
     }else{
         return res.status(404).json({status:0,message:"User Data Not found."})
     }
@@ -171,10 +206,14 @@ exports.require_two_factor = async(req,res)=>{
 }
 
 exports.email_not_verified_user = async(req,res)=>{
-    const users = await User.find({email:""},{password:0}).sort({createdAt:-1})
+    const users = await User.find({email:{"$exists" : true, "$eq" : ""}},{password:0}).sort({createdAt:-1})
+    const totalusers = await User.count({email:""},{password:0}).sort({createdAt:-1})
     if(users.length>0){
-        const finalusers = users.map((e)=>{
+        const finalusers = users.map(async(e)=>{
 
+            const follower = await followers.count({follower_id:e._id}) 
+                const following = await followers.count({user_id:e._id}) 
+                const post = await videos.count({user_id:e._id}) 
             if(e.profile_image  != ''){
                 const path = process.env.PUBLICPROFILEURL
                 if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
@@ -186,12 +225,30 @@ exports.email_not_verified_user = async(req,res)=>{
             }else{
                 var profile_image     = ''
             } 
-            console.log(profile_image)
-            e.profile_image = profile_image
-            return e
+            const obj = new Object(e)
+            obj.profile_image = profile_image
+            Object.keys("sumit").values = "sumit"
+            obj['following'] = following
+            obj['follower'] = follower
+            return ({
+                name:e.name,
+                profile_image:profile_image,
+                videos : post,
+                follower,
+                username:e.username,
+                bio:e.bio,
+                mobile_no:e.mobile_no,
+                following,
+                email:e.email,
+                _id:e._id,
+                status:e.status,
+                createdAt:e.createdAt,
+
+
+            })
         })
-        console.log(finalusers)
-        return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+        const data = await Promise.all(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:data,total:totalusers})
     }else{
         return res.status(404).json({status:0,message:"User Data Not found."})
     }

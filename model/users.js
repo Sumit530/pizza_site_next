@@ -27,13 +27,18 @@ const Schema = new  mongoose.Schema({
             require:true
     }, 
     password_updated_at : {
-
+        type:Date,
+        require:true
     },
     country_code:{
         type:String,
         default:''
     },
     mobile_no:{
+        type:String,
+        default:''
+    },
+    bio:{
         type:String,
         default:''
     },

@@ -37,6 +37,7 @@
     "peer": "^0.6.1",
     "peerjs": "^1.4.7",
     "qrcode": "^1.5.1",
+    "react-toastify": "^9.1.2",
     "sharp-multer": "^0.2.5",
     "socket.io": "^4.5.4",
     "soft-delete-plugin-mongoose": "^1.0.15",
