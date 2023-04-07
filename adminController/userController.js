@@ -195,6 +195,8 @@ exports.require_two_factor = async(req,res)=>{
     if(!req.body.message || req.body.message == ""){
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+
+    
     const notification = new notifications({
         receiver_id:req.body.user_id,
         type:5,
@@ -206,8 +208,9 @@ exports.require_two_factor = async(req,res)=>{
 }
 
 exports.email_not_verified_user = async(req,res)=>{
-    const users = await User.find({email:{"$exists" : true, "$eq" : ""}},{password:0}).sort({createdAt:-1})
-    const totalusers = await User.count({email:""},{password:0}).sort({createdAt:-1})
+
+    const users = await User.find({ "$and" :  [{email:{"$exists" : true, "$eq" : ""}},{"$expr": {  "$regexMatch": {"input": { "$concat": ["$name", " ", "$email"] },"regex": req.body.key,  "options": "i"}}}]},{password:0}).sort({createdAt:-1})
+    const totalusers = await User.count(  { "$and" :  [{email:{"$exists" : true, "$eq" : ""}},{"$expr": {  "$regexMatch": {"input": { "$concat": ["$name", " ", "$email"] },"regex": req.body.key,  "options": "i"}}}]}).sort({createdAt:-1})
     if(users.length>0){
         const finalusers = users.map(async(e)=>{
 
@@ -261,6 +264,7 @@ exports.verify_email = async(req,res)=>{
     if(!req.body.message || req.body.message == ""){
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    console.log(req.body.user_id)
     const notification = new notifications({
         receiver_id:req.body.user_id,
         type:5,

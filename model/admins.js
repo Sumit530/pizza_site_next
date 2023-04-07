@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
-    type : {
-        type:Number,
+    role : {
+        type:Number,  // 1 = basic 2= medium 3 = hard 4 = all rounder 
     },
    
     name : {

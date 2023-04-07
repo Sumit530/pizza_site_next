@@ -23,6 +23,7 @@ const Schema = new  mongoose.Schema({
     },
     mention_id : {
         type:mongoose.Schema.Types.ObjectId,
+        ref : 'Users',
     },
     comment_id :{
         type:mongoose.Schema.Types.ObjectId,

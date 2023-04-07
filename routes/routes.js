@@ -463,7 +463,7 @@ router.post("/remove_song_bookmark",UserAuth,form.array(),SoundBookmarksControll
 
 
 // notification route
-router.post("/notification",UserAuth,form.array(),NotificationController.notification)
+router.post("/notification",UserAuth,form.array(),NotificationController.allNotification)
 router.post("/like_notification_list",UserAuth,form.array(),NotificationController.like_notification_list)
 router.post("/comment_notification_list",UserAuth,form.array(),NotificationController.comment_notification_list)
 router.post("/follower_notification_list",UserAuth,form.array(),NotificationController.follower_notification_list)

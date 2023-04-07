@@ -50,7 +50,7 @@ const Schema = new  mongoose.Schema({
         type:String,
         enum:['male','female','other'],
     },
-    deAtivated : {
+    deActivated : {
         type:Boolean,
         default:false,
     },
