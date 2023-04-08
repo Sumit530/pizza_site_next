@@ -510,6 +510,12 @@ router.post("/add_account_verification",UserAuth,DocumentUpload.single("document
  // restrict account 
  router.post("/add_restrict_accounts",UserAuth,form.array(),RestrictAccountsController.add_restrict_accounts)
  
+ 
+ // support request 
+ router.post("/user_support_request",UserAuth,form.array(),usercontroller.user_support_request)
+
+
+
  // general controller 
  //router.post("/account_category_list",form.array(),GeneralController.getaccountcategory)
  //router.post("/country_list",form.array(),GeneralController.getcountries)

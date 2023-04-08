@@ -22,6 +22,8 @@ const video_likes = require("../model/video_likes");
 const video_watch_histories = require("../model/video_watch_histories");
 const videos_comments = require("../model/videos_comments");
 const video_favorites = require("../model/video_favorites");
+const user_supports = require("../model/user_supports");
+const banned_user = require("../model/banned_user");
 
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
@@ -189,7 +191,7 @@ exports.LoginUser = async(req,res)=>{
     if(email && password && fcm_id && device_id){
         var user = null
         if(!isNaN(email)){
-             user = await User.find({mobile_no:7041938623})
+             user = await User.find({mobile_no:email})
             
         }
         else if(email.match(/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i) != null){
@@ -199,12 +201,13 @@ exports.LoginUser = async(req,res)=>{
              user = await User.find({username:email})
         }
         if(user.length>0) {
-            if(bcrypt.compare(`'${password}'`,user[0].password)==false){
+                
+            if(await bcrypt.compare(password,user[0].password)==false){
                 return res.status(409).json({status:0,message:"invalid password "})
             }
             else{
 
-                if(user[0].deAtivated == false){
+                if(user[0].deActivated == false){
 
                     const keysecret = process.env.USER_SECRET
                     const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
@@ -1284,7 +1287,18 @@ exports.to_unfollow = async(req,res) =>{
 
 
 
+exports.user_support_request = async(req,res) =>{
+    if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.description == '' || !req?.body?.description ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    } 
 
+    const supports = new user_supports({
+        user_id:req.body.user_id,
+        description:req.body.description,
+    })
+    await supports.save()
+    return  res.status(201).json({status:1,message:"Request Sent successfully!"})
+}
 
 
 

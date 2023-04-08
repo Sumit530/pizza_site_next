@@ -11,10 +11,17 @@ const Schema = new  mongoose.Schema({
         ref : 'videos',
        
     },
+    reporter_id :{
+        type:mongoose.Schema.Types.ObjectId,
+        ref : 'Users',  
+    },
     type : {
-        type:String,
+        type:Number,
         enum : [1,2] // 1 = user 2 = content
     }, 
+    images : [{
+        type:String,
+    }],
     description : {
         type:String,
 

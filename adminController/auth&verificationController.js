@@ -3,10 +3,16 @@ const ban_reasons = require("../model/ban_reasons")
 const password_policies = require("../model/password_policies")
 const momnet = require("moment")
 const Users = require("../model/users")
-exports.getPasswordPolicy = async(res,res) =>{
-        const password_policy = await password_policies.find()
+exports.getPasswordPolicy = async(req,res) =>{
+   
+    let page = req.body.page 
+    let limit = req.body.limit
+    page = (page-1)*limit 
+    
+        const password_policy = await password_policies.find({},{},{ skip: page, limit: limit })
+        const total = await password_policies.count()
         if(password_policy.length>0){
-            res.status(201).json({status:1,message:"password policy got successfully",result:password_policies})
+            res.status(201).json({status:1,message:"password policy got successfully",result:password_policy,total:total})
         }else{
             res.status(402).json({status:0,message:"Password Policy Not Found",})
 

@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 const Schema = new  mongoose.Schema({
     minimum_length : {
-        type:Number,
+         type:Number,
         require:true
     },
     complexity : {
@@ -14,6 +14,6 @@ const Schema = new  mongoose.Schema({
         default:30
         
     }
-})
+},{timestamps:true})
 const password_policies = new mongoose.model("password_policies",Schema)
 module.exports = password_policies;

@@ -2,10 +2,12 @@ const User = require("../model/users")
 const fs = require("fs")
 const notifications = require("../model/notifications")
 const account_verification = require("../model/account_verification")
-const user_report = require("../model/user_reports")
+
 const help_center_data = require("../model/help_center_data")
 const followers = require("../model/followers")
 const videos = require("../model/videos")
+const video_reports = require("../model/video_reports")
+const user_supports = require("../model/user_supports")
 
 
 exports.GetAllUser = async(req,res) =>{
@@ -355,8 +357,17 @@ return res.status(404).json({status:0,message:"User Data Not found."})
 exports.show_help_center_data = (req,res) =>{
     async(req,res) =>{
         try {
-           
-            const Data = await help_center_data.find().populate("user_id").sort({createdAt:-1})
+            let page = req.body.page 
+             let limit = req.body.limit
+             page = (page-1)*limit 
+    
+            const Data = await help_center_data.find({"$expr": {
+                "$regexMatch": {
+                  "input": { "$concat": ["$user_id.name", " ", "$user_id.email"] },
+                  "regex": req.body.key,  //Your text search here
+                  "options": "i"
+                }
+              }}).populate("user_id").sort({createdAt:-1})
             if(Data.length > 0){
               const user_data =   Data.map((e)=>{
 
@@ -401,5 +412,70 @@ exports.add_help_center_problem_resolved = async(req,res) =>{
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
     console.log("server error on add_help_center_problem_resolved" + error);  
+    }
+}
+
+exports.show_user_support = async(req,res) =>{
+    let page = req.body.page 
+    let limit = req.body.limit
+    page = (page-1)*limit 
+    var data = await user_supports.find({},{},{ skip: page, limit: limit }).populate({path:"user_id",select:"social_id name email username mobile_no fcm_id profile_image is_vip private_account",match:{"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }}}).sort({createdAt:-1})
+      var total = await user_supports.count().populate({path:"user_id",select:"social_id name username mobile_no fcm_id profile_image is_vip private_account",match:{"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }}}).sort({createdAt:-1})
+       data = data.filter((e)=>{return e.user_id != null})
+    if(data.length>0){
+        var finalusers =  data.map(async(e)=>{
+            const follower = await followers.count({follower_id:e.user_id._id}) 
+            const following = await followers.count({user_id:e.user_id._id}) 
+            const post = await videos.count({user_id:e.user_id._id}) 
+        if(e.user_id.profile_image  != ''){
+            const path = process.env.PUBLICPROFILEURL
+            if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
+                var profile_image      = `${path}/${e.user_id.profile_image}`
+            }
+            else {
+                var profile_image     = ''
+            }
+        }else{
+            var profile_image     = ''
+        } 
+        const obj = new Object(e)
+        obj.profile_image = profile_image
+        obj['following'] = following
+        obj['follower'] = follower
+        return ({
+            name:e.user_id.name,
+            profile_image:profile_image,
+            videos : post,
+            follower,
+            username:e.user_id.username,
+            bio:e.description,
+            mobile_no:e.user_id.mobile_no,
+            following,
+            email:e.user_id.email,
+            _id:e._id,
+            user_id : e.user_id._id,
+            status:e.status,
+            
+            createdAt:e.createdAt,
+
+
+        })
+    })
+    finalusers = await Promise.all(finalusers)
+    return res.status(201).json({status:1,message:"User Data found!",result:finalusers,total:total})
+    }else{
+    return res.status(404).json({status:0,message:"User Data Not found."}) 
     }
 }
