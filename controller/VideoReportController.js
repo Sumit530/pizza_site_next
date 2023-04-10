@@ -16,34 +16,49 @@ exports.add_video_report = async(req,res) =>{
 
     const user_data = await Users.find({_id:req?.body?.user_id})
     if(user_data.length > 0){
-        const video_report_data  = new VideoReport({
-            user_id :req?.body?.user_id,
-            video_id :req?.body?.user_id ? req?.body?.user_id : ''  ,
-            type :req?.body?.type,
-            description : req?.body?.description ? req?.body?.description : ''  ,
-        })
-        const video_report = await video_report_data.save()
-        var report_id = video_report._id
-        if(report_id != ''){
-           
-            const path = process.env.PUBLICREPORTURL
-                if(!fs.existsSync(path)){
-                    fs.mkdir(path)
-                }
-                if(req?.files?.report_files){
-                    req?.files?.report_files.map(async(e)=>{
-                        const video_reports = new VideoReportData({
-                            report_id:report_id,
-                            filename:e.filename
-                        })
-                        await  video_reports.save()
-                    })
-                    return res.status(201).json({status:1,message:"video report addedd successfully"})
-                }
 
+        if(req.body.type == 1){
 
+            var video_report_data  = new VideoReport({
+                user_id :req?.body?.user_id,
+                // video_id :req?.body?.user_id ? req?.body?.user_id : ''  ,
+                type :req?.body?.type,
+                description : req?.body?.description ? req?.body?.description : ''  ,
+            })
+        }else {
+            const images = req.files.report_files.map((e)=>{
+                return e.filename
+            })
+            var video_report_data  = new VideoReport({
+                user_id :req?.body?.user_id,
+                video_id :req?.body?.user_id ? req?.body?.user_id : ''  ,
+                images:images,
+                type :req?.body?.type,
+                description : req?.body?.description ? req?.body?.description : ''  ,
+            })
         }
-        return res.status(402).json({status:0,message:"error occured when adding report"})
+        const video_report = await video_report_data.save()
+        // var report_id = video_report._id
+        // if(report_id != ''){
+           
+        //     const path = process.env.PUBLICREPORTURL
+        //         if(!fs.existsSync(path)){
+        //             fs.mkdir(path)
+        //         }
+        //         if(req?.files?.report_files){
+        //             req?.files?.report_files.map(async(e)=>{
+        //                 const video_reports = new VideoReportData({
+        //                     report_id:report_id,
+        //                     filename:e.filename
+        //                 })
+        //                 await  video_reports.save()
+        //             })
+        //         }
+                
+                
+        //     }
+            return res.status(201).json({status:1,message:"report addedd successfully"})
+        // return res.status(402).json({status:0,message:"error occured when adding report"})
     }else{
         return res.status(402).json({status:0,message:"video not found"})
     }

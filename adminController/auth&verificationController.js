@@ -3,6 +3,8 @@ const ban_reasons = require("../model/ban_reasons")
 const password_policies = require("../model/password_policies")
 const momnet = require("moment")
 const Users = require("../model/users")
+const followers = require("../model/followers")
+const videos = require("../model/videos")
 exports.getPasswordPolicy = async(req,res) =>{
    
     let page = req.body.page 
@@ -63,26 +65,67 @@ exports.showReasons = async(req,res)=>{
     }
 }
 exports.showBanUsers = async (req,res)=>{
-    const ban_user = await banned_user.find().populate("user_id","-password")
-    const user_data =   ban_user.map((e)=>{
-        if(e.user_id.profile_image  != ''){
-            const path = process.env.PUBLICPROFILEURL
-            if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
-                var profile_image      = `${path}/${e.user_id.profile_image}`
-            }
-            else {
+    let page = req.body.page 
+    let limit = req.body.limit
+    page = (page-1)*limit 
+    
+        
+    const users = await User.find({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }},{password:0},{ skip: page, limit: limit }).sort({createdAt:-1})
+      const totalusers = await banned_user.count({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$email"] },
+          "regex": req.body.key,  //Your text search here
+          "options": "i"
+        }
+      }})
+    if(users.length>0){
+        const finalusers =  banned_user.map(async(e)=>{
+                const follower = await followers.count({follower_id:e._id}) 
+                const following = await followers.count({user_id:e._id}) 
+                const post = await videos.count({user_id:e._id}) 
+            if(e.profile_image  != ''){
+                const path = process.env.PUBLICPROFILEURL
+                if(fs.existsSync(`uploads/users/profile/${e.profile_image }`)){
+                    var profile_image      = `${path}/${e.profile_image}`
+                }
+                else {
+                    var profile_image     = ''
+                }
+            }else{
                 var profile_image     = ''
-            }
-        }else{
-            var profile_image     = ''
-        } 
-        e.user_id.profile_image = profile_image
-        return e
-    })
-    if(user_data.length>0){
-        res.status(201).json({status:1,message:"Ban Users Found Successfully",result:user_data})
+            } 
+            const obj = new Object(e)
+            obj.profile_image = profile_image
+            Object.keys("sumit").values = "sumit"
+            obj['following'] = following
+            obj['follower'] = follower
+            return ({
+                name:e.name,
+                profile_image:profile_image,
+                videos : post,
+                follower,
+                username:e.username,
+                bio:e.bio,
+                mobile_no:e.mobile_no,
+                following,
+                email:e.email,
+                _id:e._id,
+                status:e.status,
+                createdAt:e.createdAt,
+
+
+            })
+        })
+         const data = await Promise.all(finalusers)
+        return res.status(201).json({status:1,message:"User Data found!",result:data,total:totalusers})
     }else{
-        res.status(402).json({status:0,message:"Ban Users not found",})
+        return res.status(404).json({status:0,message:"User Data Not found."})
     }
 }
 exports.unBanUser = async(req,res) =>{

@@ -315,39 +315,113 @@ exports.show_verification_requests = async(req,res)=>{
 
 }
 exports.show_reported_user = async(req,res)=>{
+    let page = parseInt(req.body.page)
+    let limit = parseInt(req.body.limit)
+    page =  parseInt((page-1)*limit)
     
-    const data = await user_report.find().populate("user_id","social_id name username mobile_no fcm_id profile_image is_vip private_account").sort({createdAt:-1})
-
-if(data.length>0){
-const finalusers = data.map((e)=>{
-
-    if(e.user_id.profile_image  != ''){
-        const path = process.env.PUBLICPROFILEURL
-        if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image }`)){
-            var profile_image      = `${path}/${e.user_id.profile_image}`
-        }
-        else {
+  var data =   await video_reports.aggregate([
+    {$group : {_id:"$user_id",count:{$sum:1},reason:{$push:'$description'}},},
+    {$setWindowFields: {output: {totalCount: {$count: {}}}}},
+    {$sort:{count:-1}},
+        {$skip:isNaN(page) ? 0:page},
+        {$limit:limit}
+    ])
+    data = await data.map(async(e)=>{
+        const follower = await followers.count({follower_id:e._id}) 
+        const following = await followers.count({user_id:e._id}) 
+        const post = await videos.count({user_id:e._id}) 
+        const user = await User.find({_id:e._id})
+        if(user[0].profile_image  != ''){
+            const path = process.env.PUBLICPROFILEURL
+            if(fs.existsSync(`uploads/users/profile/${user[0].profile_image }`)){
+                var profile_image      = `${path}/${user[0].profile_image}`
+            }
+            else {
+                var profile_image     = ''
+            }
+        }else{
             var profile_image     = ''
-        }
-    }else{
-        var profile_image     = ''
-    } 
-    e.user_id.profile_image = profile_image
-    if(e.documents  != ''){
-        const path = process.env.PUBLICPROFILEURL
-        if(fs.existsSync(`uploads/users/verification_documents/${e.documents }`)){
-            var document      = `${path}/${e.documents}`
-        }
-        else {
-            var document     = ''
-        }
-    }else{
-        var document     = ''
-    } 
-    e.document = document
-    return e
-})  
-return res.status(201).json({status:1,message:"User Data found!",result:finalusers})
+        } 
+        return ({
+            social_id:user[0].social_id,
+            username:user[0].username,
+            name:user[0].name,
+            _id:user[0]._id,
+            profile_image:profile_image,
+            videos : post,
+            follower,
+            username:user[0].username,
+            bio:user[0].bio,
+            mobile_no:user[0].mobile_no,
+            following,
+            email:user[0].email,
+            status:user[0].status,
+            createdAt:user[0].createdAt,
+            count : e.count,
+            description:e.reason,
+            totalCount:e.totalCount
+
+        })
+    })
+    data = await Promise.all(data)
+if(data.length>0){
+return res.status(201).json({status:1,message:"User Data found!",result:data,total:data[0].totalCount})
+}else{
+return res.status(404).json({status:0,message:"User Data Not found."}) 
+}
+}
+exports.show_reported_post = async(req,res)=>{
+    let page = parseInt(req.body.page)
+    let limit = parseInt(req.body.limit)
+    page =  parseInt((page-1)*limit)
+    
+  var data =   await video_reports.aggregate([
+    {$group : {_id:"$user_id",count:{$sum:1},reason:{$push:'$description'}},},
+    {$setWindowFields: {output: {totalCount: {$count: {}}}}},
+    {$sort:{count:-1}},
+        {$skip:isNaN(page) ? 0:page},
+        {$limit:limit}
+    ])
+    data = await data.map(async(e)=>{
+        const follower = await followers.count({follower_id:e._id}) 
+        const following = await followers.count({user_id:e._id}) 
+        const post = await videos.count({user_id:e._id}) 
+        const user = await User.find({_id:e._id})
+        if(user[0].profile_image  != ''){
+            const path = process.env.PUBLICPROFILEURL
+            if(fs.existsSync(`uploads/users/profile/${user[0].profile_image }`)){
+                var profile_image      = `${path}/${user[0].profile_image}`
+            }
+            else {
+                var profile_image     = ''
+            }
+        }else{
+            var profile_image     = ''
+        } 
+        return ({
+            social_id:user[0].social_id,
+            username:user[0].username,
+            name:user[0].name,
+            _id:user[0]._id,
+            profile_image:profile_image,
+            videos : post,
+            follower,
+            username:user[0].username,
+            bio:user[0].bio,
+            mobile_no:user[0].mobile_no,
+            following,
+            email:user[0].email,
+            status:user[0].status,
+            createdAt:user[0].createdAt,
+            count : e.count,
+            description:e.reason,
+            totalCount:e.totalCount
+
+        })
+    })
+    data = await Promise.all(data)
+if(data.length>0){
+return res.status(201).json({status:1,message:"User Data found!",result:data,total:data[0].totalCount})
 }else{
 return res.status(404).json({status:0,message:"User Data Not found."}) 
 }
