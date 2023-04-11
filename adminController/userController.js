@@ -331,6 +331,9 @@ exports.show_reported_user = async(req,res)=>{
         const following = await followers.count({user_id:e._id}) 
         const post = await videos.count({user_id:e._id}) 
         const user = await User.find({_id:e._id})
+        if(user.length>0){
+
+        
         if(user[0].profile_image  != ''){
             const path = process.env.PUBLICPROFILEURL
             if(fs.existsSync(`uploads/users/profile/${user[0].profile_image }`)){
@@ -359,11 +362,15 @@ exports.show_reported_user = async(req,res)=>{
             createdAt:user[0].createdAt,
             count : e.count,
             description:e.reason,
-            totalCount:e.totalCount
+            totalCount:e.totalCount,
+            deActivated:user[0].deActivated
 
         })
+        }
     })
     data = await Promise.all(data)
+    data = data.filter((e)=>{return e.deActivated == false })
+
 if(data.length>0){
 return res.status(201).json({status:1,message:"User Data found!",result:data,total:data[0].totalCount})
 }else{

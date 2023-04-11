@@ -64,6 +64,8 @@ const ProfileStorage = multer.diskStorage({
   adminRoute.post("/show_user_support", form,userController.show_user_support)
   adminRoute.post("/show_reported_user", form,userController.show_reported_user)
   adminRoute.post("/show_ban_users", form,verificationController.showBanUsers)
+  adminRoute.get("/show_reasons",verificationController.showReasons)
+  adminRoute.post("/ban_user", form,verificationController.banUser)
   adminRoute.post("/getPasswordPolicy", form,verificationController.getPasswordPolicy)
   adminRoute.post("/create_account",form, adminController.create_account)
   adminRoute.post("/login",form, adminController.Login)

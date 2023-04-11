@@ -320,7 +320,6 @@ exports.user_details = async(req,res)=>{
     if(!keyword) {
         return res.status(402).json({status:0,message:"please provide a keyword"})
     } 
-    console.log(isNaN(keyword) == false)
     var user = null
     if(isNaN(keyword) == false){
        var user = await User.find({mobile_no: {$regex :keyword}})

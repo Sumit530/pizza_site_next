@@ -7,7 +7,7 @@ const Schema = new  mongoose.Schema({
         ref : 'admins',
         require:true
     },
-    ban_user_id : {
+    user_id : {
         type:mongoose.Schema.Types.ObjectId,
         ref : 'Users',
         require:true
