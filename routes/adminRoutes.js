@@ -18,6 +18,7 @@ const session = require('express-session');
 const userController = require("../adminController/userController")
 const adminController = require("../adminController/adminController")
 const verificationController = require("../adminController/auth&verificationController")
+const reportingController = require("../adminController/userReporting")
 const ProfileStorage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, "uploads/users/profile");
@@ -63,6 +64,8 @@ const ProfileStorage = multer.diskStorage({
   adminRoute.post("/show_help_center_data", form,userController.show_help_center_data)
   adminRoute.post("/show_user_support", form,userController.show_user_support)
   adminRoute.post("/show_reported_user", form,userController.show_reported_user)
+  adminRoute.post("/show_reported_post", form,userController.show_reported_post)
+  adminRoute.post("/show_complaints", form,reportingController.get_complaint)
   adminRoute.post("/show_ban_users", form,verificationController.showBanUsers)
   adminRoute.get("/show_reasons",verificationController.showReasons)
   adminRoute.post("/ban_user", form,verificationController.banUser)

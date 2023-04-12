@@ -320,6 +320,7 @@ exports.show_reported_user = async(req,res)=>{
     page =  parseInt((page-1)*limit)
     
   var data =   await video_reports.aggregate([
+    {$match:{ type: 1}},
     {$group : {_id:"$user_id",count:{$sum:1},reason:{$push:'$description'}},},
     {$setWindowFields: {output: {totalCount: {$count: {}}}}},
     {$sort:{count:-1}},
@@ -383,17 +384,40 @@ exports.show_reported_post = async(req,res)=>{
     page =  parseInt((page-1)*limit)
     
   var data =   await video_reports.aggregate([
-    {$group : {_id:"$user_id",count:{$sum:1},reason:{$push:'$description'}},},
+    {$match:{ type: 2}},
+    {$group : {_id:"$video_id",count:{$sum:1},reason:{$push:'$description'},images:{$push:'$images'}},},
     {$setWindowFields: {output: {totalCount: {$count: {}}}}},
     {$sort:{count:-1}},
         {$skip:isNaN(page) ? 0:page},
         {$limit:limit}
     ])
     data = await data.map(async(e)=>{
-        const follower = await followers.count({follower_id:e._id}) 
-        const following = await followers.count({user_id:e._id}) 
-        const post = await videos.count({user_id:e._id}) 
-        const user = await User.find({_id:e._id})
+        const video = await videos.find({_id:e._id})
+        const follower = await followers.count({follower_id:video[0].user_id}) 
+        const following = await followers.count({user_id:video[0].user_id}) 
+        const post = await videos.count({user_id:video[0].user_id}) 
+        const user = await User.find({_id:video[0].user_id})
+
+        var report_images = e.images.length>0 ?
+                e.images.map((e)=>{
+                  const image_arrays =   e.map((f)=>{
+                        if(f != ''){
+                            const path = process.env.PUBLICREPORTURL
+                            if(fs.existsSync(`uploads/reports/${f}`)){
+                                var report_image      = `${path}/${f}`
+                            }
+                            else {
+                                var report_image     = ''
+                            }
+                        }else{
+                            var report_image     = ''
+                        } 
+
+                        return report_image
+                    })
+                    return image_arrays
+                })
+        :[]
         if(user[0].profile_image  != ''){
             const path = process.env.PUBLICPROFILEURL
             if(fs.existsSync(`uploads/users/profile/${user[0].profile_image }`)){
@@ -405,11 +429,35 @@ exports.show_reported_post = async(req,res)=>{
         }else{
             var profile_image     = ''
         } 
+        if(video[0].cover_image  != ''){
+            const path = process.env.PUBLICCOVERPAGEURL
+            if(fs.existsSync(`uploads/videos/cover_image/${video[0].profile_image }`)){
+                var cover_image      = `${path}/${video[0].profile_image}`
+            }
+            else {
+                var cover_image     = ''
+            }
+        }else{
+            var cover_image     = ''
+        } 
+        if(video[0].file_name  != ''){
+            const path = process.env.PUBLICVIDEOSURL
+            if(fs.existsSync(`uploads/videos/videos/${video[0].file_name }`)){
+                var video_url      = `${path}/${video[0].file_name}`
+            }
+            else {
+                var video_url     = ''
+            }
+        }else{
+            var video_url     = ''
+        } 
+        
         return ({
             social_id:user[0].social_id,
             username:user[0].username,
             name:user[0].name,
-            _id:user[0]._id,
+            _id:video[0]._id,
+            user_id:user[0]._id,
             profile_image:profile_image,
             videos : post,
             follower,
@@ -417,10 +465,13 @@ exports.show_reported_post = async(req,res)=>{
             bio:user[0].bio,
             mobile_no:user[0].mobile_no,
             following,
+            video_url:video_url,
+            cover_image:cover_image,
             email:user[0].email,
             status:user[0].status,
             createdAt:user[0].createdAt,
             count : e.count,
+            report_images,
             description:e.reason,
             totalCount:e.totalCount
 
@@ -430,7 +481,7 @@ exports.show_reported_post = async(req,res)=>{
 if(data.length>0){
 return res.status(201).json({status:1,message:"User Data found!",result:data,total:data[0].totalCount})
 }else{
-return res.status(404).json({status:0,message:"User Data Not found."}) 
+return res.status(404).json({status:0,message:"User Data Not found"}) 
 }
 }
 

@@ -24,6 +24,7 @@ const videos_comments = require("../model/videos_comments");
 const video_favorites = require("../model/video_favorites");
 const user_supports = require("../model/user_supports");
 const banned_user = require("../model/banned_user");
+const Complaint = require("../model/complaints")
 
 exports.registration = async(req,res) =>{
 const {country_code} = req?.body
@@ -1285,7 +1286,18 @@ exports.to_unfollow = async(req,res) =>{
 
 
 
+exports.add_complaint = async(req,res) =>{
+    if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.description == '' || !req?.body?.description ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    } 
+    const Adding_complaint = new Complaint({
+        user_id:req.body.user_id,
+        description:req.body.description
+    })
+    await Adding_complaint.save()
+    return  res.status(201).json({status:1,message:"Compaint Added Successfully!"})
 
+}
 exports.user_support_request = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id || req?.body?.description == '' || !req?.body?.description ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})

@@ -26,12 +26,13 @@ exports.add_video_report = async(req,res) =>{
                 description : req?.body?.description ? req?.body?.description : ''  ,
             })
         }else {
-            const images = req.files.report_files.map((e)=>{
+            
+            const images = req.files.map((e)=>{
                 return e.filename
             })
             var video_report_data  = new VideoReport({
                 user_id :req?.body?.user_id,
-                video_id :req?.body?.user_id ? req?.body?.user_id : ''  ,
+                video_id :req?.body?.video_id ? req?.body?.video_id : ''  ,
                 images:images,
                 type :req?.body?.type,
                 description : req?.body?.description ? req?.body?.description : ''  ,

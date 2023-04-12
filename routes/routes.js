@@ -320,7 +320,40 @@ const VideoUpload = multer({
 });
 
 
+const ReportStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/reports");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() + "-" + crypto.randomBytes(12).toString("hex");
+    cb(
+      null,
+      uniqueSuffix +
+        ".webp"
+  
+    );
+  },
+});
 
+const ReportUpload = multer({
+  storage: ReportStorage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb("Only .png, .jpg and .jpeg format allowed!");
+    }
+  },
+  limits:{
+    fileSize:5 * 1024 * 1024
+  }
+});
 
 
 
@@ -412,7 +445,9 @@ router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.
 router.post("/remove_video_bookmark",UserAuth,form.array(),VideoBookmarkController.remove_video_bookmark)
 
 
+// adding complaint 
 
+router.post("/add_complaint",UserAuth,form.array(),usercontroller.add_complaint)
 // video not intersted 
 
 router.post("/add_video_not_interested",UserAuth,form.array(),VideoNotInterestedController.add_video_not_interested)
@@ -504,7 +539,7 @@ router.post("/mentions_notification_list",UserAuth,form.array(),NotificationCont
 router.post("/add_account_verification",UserAuth,DocumentUpload.single("document"),AccountVerificationController.add_account_verification)
 
 
- router.post("/add_video_report",UserAuth,form.array(),VideoReportController.add_video_report)
+ router.post("/add_video_report",UserAuth,ReportUpload.array("report_files",5),VideoReportController.add_video_report)
  router.get("/get_video_report_types",UserAuth,form.array(),VideoReportController.get_video_report_types)
  
  // restrict account 
