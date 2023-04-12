@@ -131,8 +131,6 @@ exports.showBanUsers = async (req,res)=>{
             user_id : e.user_id._id,
             status:e.status,
             createdAt:e.createdAt,
-
-
         })
     })
     finalusers = await Promise.all(finalusers)
