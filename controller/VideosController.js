@@ -170,7 +170,7 @@ exports.video_list = async(req,res) =>{
                                     }
                                     if(f.file_name  != ''){
                                         const path = process.env.PUBLICVIDEOSURL
-                                        if(fs.existsSync(`${path}/${e.file_name }`)){
+                                        if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                                             var  video_url     = `${path}/${f.file_name}`
                                         }
                                         else {
@@ -179,7 +179,7 @@ exports.video_list = async(req,res) =>{
                                     }else{
                                         var  video_url    = ''
                                      } 
-                                     var video_id = video_details[0]._id
+                                    //  var video_id =._id
                                      var user_like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:e._id})
                                      if(user_like_data.length > 0){
                                         var is_video_like = 1
@@ -301,7 +301,7 @@ exports.video_list = async(req,res) =>{
                                     if(f.file_name  != ''){
                                         console.log(f.file_name)
                                         const path = process.env.PUBLICVIDEOSURL
-                                        if(fs.existsSync(`${path}/${f.file_name }`)){
+                                        if(fs.existsSync(`uploads/videos/videos/${f.file_name }`)){
                                             var  video_url     = `${path}/${f.file_name}`
                                         }
                                         else {
@@ -422,7 +422,7 @@ exports.video_list = async(req,res) =>{
                     }
                     if(f.file_name  != ''){
                         const path = process.env.PUBLICVIDEOSURL
-                        if(fs.existsSync(`${path}/${e.file_name }`)){
+                        if(fs.existsSync(`uplaods/videos/videos/${e.file_name }`)){
                             var  video_url     = `${path}/${f.file_name}`
                         }
                         else {

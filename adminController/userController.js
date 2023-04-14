@@ -431,8 +431,8 @@ exports.show_reported_post = async(req,res)=>{
         } 
         if(video[0].cover_image  != ''){
             const path = process.env.PUBLICCOVERPAGEURL
-            if(fs.existsSync(`uploads/videos/cover_image/${video[0].profile_image }`)){
-                var cover_image      = `${path}/${video[0].profile_image}`
+            if(fs.existsSync(`uploads/videos/cover_image/${video[0].cover_image }`)){
+                var cover_image      = `${path}/${video[0].cover_image}`
             }
             else {
                 var cover_image     = ''
@@ -466,6 +466,8 @@ exports.show_reported_post = async(req,res)=>{
             mobile_no:user[0].mobile_no,
             following,
             video_url:video_url,
+            video_description:video[0].description,
+            upload_date:video[0].createdAt,
             cover_image:cover_image,
             email:user[0].email,
             status:user[0].status,
