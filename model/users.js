@@ -50,13 +50,18 @@ const Schema = new  mongoose.Schema({
         type:String,
         enum:['male','female','other'],
     },
+    // isBlockedByAdmin : {
+    //     type:Boolean,
+    //     default:false,
+    // },
     deActivated : {
         type:Boolean,
         default:false,
     },
     deActivate_type : {
         type:Number,  // 1 = ban 2 = block 
-        require:true
+        require:true,
+        default:0
     },
 
     dob : {

@@ -5,6 +5,7 @@ const momnet = require("moment")
 const Users = require("../model/users")
 const followers = require("../model/followers")
 const videos = require("../model/videos")
+const notifications =  require("../model/notifications")
 exports.getPasswordPolicy = async(req,res) =>{
    
     let page = req.body.page 
@@ -49,7 +50,7 @@ const data = JSON.parse(req.body.data)
             reason = await Promise.all(reason)
 // var reasons = await ban_reasons.find({reason:{$in:req.body.reason.split(",")}},{_id:1})
 // reasons = reasons.map((e)=> {return e.id})
-         await Users.findOneAndUpdate({_id:req.body.user_id},{deActivated:true})
+         await Users.findOneAndUpdate({_id:req.body.user_id},{deActivated:true,deActivate_type:1})
 if( parseInt(data.type.value) == 1 ){
 
     var ban_user = new banned_user({
@@ -81,7 +82,7 @@ exports.showReasons = async(req,res)=>{
 exports.showBanUsers = async (req,res)=>{
     let page = req.body.page 
     let limit = req.body.limit
-    page = (page-1)*limit 
+    page = (page-1)*limit   
     var data = await user_supports.find({},{},{ skip: page, limit: limit }).populate({path:"user_id",select:"social_id name email username mobile_no fcm_id profile_image is_vip private_account",match:{"$expr": {
         "$regexMatch": {
           "input": { "$concat": ["$name", " ", "$email"] },
@@ -139,12 +140,24 @@ exports.showBanUsers = async (req,res)=>{
     return res.status(404).json({status:0,message:"User Data Not found."}) 
     }
 }
+exports.blockUser = async (req,res) =>{
+    if(!req.body.user_id || req.body.user_id == ''){ 
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    }
+    const notification = new notifications({
+        receiver_id:req.body.user_id,
+        type:5,
+        message:req.body.message
+    })
+        await notification.save()
+    await Users.findOneAndUpdate({_id:req.body.user_id},{deActivated:true,deActivate_type:2})
+}
 exports.unBanUser = async(req,res) =>{
     if(!req.body.user_id || req.body.user_id == ''){ 
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     await banned_user.deleteOne({user_id:req.body.user_id})
-    await Users.findOneAndUpdate({_id:req.body.user_id},{deAtivated:false})
+    await Users.findOneAndUpdate({_id:req.body.user_id},{deActivated:false,deActivate_type:0})
     res.status(201).json({status:1,message:"User Unban Successfully"})
 }
 
