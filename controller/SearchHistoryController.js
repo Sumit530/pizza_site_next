@@ -11,6 +11,7 @@ const HashtagBookmarks = require("../model/hashtags_bookmarks")
 const Hashtag = require("../model/hashtags")
 const HashtagData = require("../model/hashtag_data")
 const VideoFavorite = require("../model/video_favorites")
+const Users = require('../model/users')
 
 
 
@@ -92,66 +93,47 @@ exports.delete_search_history = async(req,res)=>{
 exports.search_top_list = async(req,res)=>{
   
    try {
-    if(req?.body?.keyword){
+    if(!req?.body?.keyword ||  req?.body?.keyword == ""){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const keyword = req?.body?.keyword
-    var hashtags_result = []
-    var video_result  = []
-    var user_result = []
-    var song_result  = []
-    const search_hashtags_data  = await Hashtag.find({name:`/${keyword}/i`})
-    if(search_hashtags_data.length>0){
-        search_hashtags_data?.map(async(e)=>{
-            const total_videos = await HashtagData.find({hashtag_id:e._id})
-            hashtags_result.push({
-                id:e._id,
-                hashtag:e.name,
-                total_videos:total_videos
+    const users = await Users.find({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$name", " ", "$username"] },
+          "regex": req.body.keyword,  //Your text search here
+          "options": "i"
+        }
+      }})
+      var arr = []
+    const getFollwerById = async(id,count,arr,list) => { 
+        if(list.find((e)=>{e==id})){
+            console.log("hey")
+            return "hey"
+        }else{
+
+            list.push(id)
+        }
+        if(count == 5){
+            return
+        }
+        
+        const follower = await Followers.find({follower_id:id}).populate("user_id")
+        console.log(follower.length)
+        if(follower.length>0){
+
+            follower.map((e)=>{
+                if(e.user_id.username.includes(req.body.keyword)){
+                    arr.push(e)
+                    //  console.log(e)
+                }
+                return getFollwerById(e.user_id._id,count+1,arr,list)
             })
-        })
-    }else{
-        hashtags_result = []
+        }else{
+            return arr
+        }
     }
-    const search_by_video_data   = await Videos.find({description:`/${keyword}/i`})
-    if(search_hashtags_data.length>0){
-        search_hashtags_data?.map(async(e)=>{
-            const totalviews = await VideoWatchHistory.find({video_id:e._id})
-            if(e.cover_image != ''){
-                
-                const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`${path}/${e.profile_image}`)){
-                    var cover_image  = `${path}/${e.profile_image}`
-                }
-                else {
-                    var cover_image  = ''
-                }
-            }else{
-                var cover_image  = ''
-            }
-            if(e.file_name  != ''){
-                
-                const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${e.file_name }`)){
-                    var video_url   = `${path}/${e.file_name }`
-                }
-                else {
-                    var video_url   = ''
-                }
-            }else{
-                var video_url   = ''
-            }
-            video_result.push({
-                id:e._id,
-                cover_image:cover_image,
-                video_url:video_url,
-                description:e.description
-            })
-            
-        })
-    }else{
-        video_result = []
-    }
+      const s = await getFollwerById(req.body.user_id,1,[],[])
+    console.log(s)
+    console.log(arr)       
    } catch (error) {
     
    }

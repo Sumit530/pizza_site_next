@@ -1014,7 +1014,6 @@ exports.following_list = async(req,res) =>{
     }
     const user = await User.find({_id:req.body.user_id})
     flwdata = await Follow.find({follower_id:req?.body?.user_id})
-    console.log(flwdata)
     const data = []
    const promisedata =  flwdata?.map(async(g)=>{
         const users = await User.find({_id:g.user_id}) 
@@ -1033,10 +1032,10 @@ exports.following_list = async(req,res) =>{
             }
             return({
                 id:g._id,
-                user_id:g.user_id,
-                name:g.name ? g.name  : "" ,
-                username:g.username ? g.username :"",
-                private_account:g.private_account ? g.private_account : "",
+                user_id:g.follower_id,
+                name:users[0].name ? users[0].name  : "" ,
+                username:users[0].username ? users[0].username :"",
+                private_account:users[0].private_account ? users[0].private_account : "",
                 profil_image:filepath
             })
         
@@ -1061,16 +1060,16 @@ exports.follow_list = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
 
-    flwdata = await Follow.find({user_id:req?.body?.user_id})
+    const flwdata = await Follow.find({user_id:req?.body?.user_id})
     const data = []
     const proimesdata = flwdata?.map(async(g)=>{
        
             const users = await User.find({_id:g.follower_id}) 
-            if(users[0].profile_image != ''){
+            if(users[0]?.profile_image != ''){
                 
                 const path = process.env.PUBLICPROFILEURL
-                if(fs.existsSync(`uploads/users/profile/${users[0].profile_image}`)){
-                    var filepath = `${path}/${users[0].profile_image}`
+                if(fs.existsSync(`uploads/users/profile/${users[0]?.profile_image}`)){
+                    var filepath = `${path}/${users[0]?.profile_image}`
                 }
                 else {
                     var filepath = ''
@@ -1081,10 +1080,10 @@ exports.follow_list = async(req,res) =>{
            
             return({
                 id:g._id,
-                user_id:g.user_id,
-                name:g.name ? g.name  : "" ,
-                username:g.username ? g.username :"",
-                private_account:g.private_account ? g.private_account : "",
+                user_id:g.follower_id,
+                name:users[0].name ? users[0].name  : "" ,
+                username:users[0].username ? users[0].username :"",
+                private_account:users[0].private_account ? users[0].private_account : "",
                 profil_image:filepath
             })
         

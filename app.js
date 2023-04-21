@@ -47,7 +47,6 @@ require("./db/connection")
 app.use('/api',router)
 app.use('/admin',adminRoute)
 const { v4: uuidv4 } = require("uuid");
-const { lang } = require("moment")
 app.set("view engine", "ejs");
 
 
