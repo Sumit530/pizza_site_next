@@ -104,36 +104,43 @@ exports.search_top_list = async(req,res)=>{
         }
       }})
       var arr = []
-    const getFollwerById = async(id,count,arr,list) => { 
-        if(list.find((e)=>{e==id})){
-            console.log("hey")
-            return "hey"
-        }else{
+    // const getFollwerById = async(id,count,arr,list) => { 
+    //     if(list.find((e)=>{e==id})){
+    //         console.log("hey")
+    //         return "hey"
+    //     }else{
 
-            list.push(id)
-        }
-        if(count == 5){
-            return
-        }
+    //         list.push(id)
+    //     }
+    //     if(count == 5){
+    //         return
+    //     }
         
-        const follower = await Followers.find({follower_id:id}).populate("user_id")
-        console.log(follower.length)
-        if(follower.length>0){
+    //     const follower = await Followers.find({follower_id:id}).populate("user_id")
+    //     console.log(follower.length)
+    //     if(follower.length>0){
 
-            follower.map((e)=>{
-                if(e.user_id.username.includes(req.body.keyword)){
-                    arr.push(e)
-                    //  console.log(e)
-                }
-                return getFollwerById(e.user_id._id,count+1,arr,list)
-            })
-        }else{
-            return arr
+    //         follower.map((e)=>{
+    //             if(e.user_id.username.includes(req.body.keyword)){
+    //                 arr.push(e)
+    //                 //  console.log(e)
+    //             }
+    //             return getFollwerById(e.user_id._id,count+1,arr,list)
+    //         })
+    //     }else{
+    //         return arr
+    //     }
+    // }
+    //   const s = await getFollwerById(req.body.user_id,1,[],[])
+    // console.log(s)
+    const Video = await HashtagData.find({"$expr": {
+        "$regexMatch": {
+          "input": { "$concat": ["$video_id.description", " ", "$hashtag_id.name"] },
+          "regex": req.body.keyword,  //Your text search here
+          "options": "i"
         }
-    }
-      const s = await getFollwerById(req.body.user_id,1,[],[])
-    console.log(s)
-    console.log(arr)       
+    }}).populate("hashtag_id").populate("video_id")
+    console.log(Video)       
    } catch (error) {
     
    }
