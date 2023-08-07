@@ -519,6 +519,28 @@ exports.update_username = async(req,res) =>{
     console.log("server error on update username"); 
 }
 }
+
+exports.update_dob = async(req,res) =>{
+    try {
+        
+   
+    if(!req?.body?.dob ||  req?.body?.dob == '' || req?.body?.user_id == '' || !req?.body?.user_id){ 
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    }
+    const {dob,user_id} = req?.body
+    const user = await User.find({user_id:user_id})
+    if(user.length>0){
+        await User.findOneAndUpdate({_id:user_id},{dob:dob},{new:true})
+        return res.status(201).json({status:1,message:"Dob updated successfully"})
+    }
+    else {
+        return res.status(402).json({status:0,message:"User Not Exist"})
+    }
+} catch (error) {
+    res.status(502).json({status:0,message:"internal server error"})
+    console.log("server error on update username"); 
+}
+}
 exports.update_password = async(req,res) =>{
     try {
         
