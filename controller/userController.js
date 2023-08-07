@@ -531,7 +531,7 @@ exports.update_dob = async(req,res) =>{
     console.log(dob)
     const user = await User.find({_id:user_id})
     if(user.length>0){
-        await User.findOneAndUpdate({_id:user_id},{dob: moment(dob,"DD-MM-YYYY")},{new:true})
+        await User.findOneAndUpdate({_id:user_id},{dob: moment(dob,"DD/MM/YYYY")},{new:true})
         return res.status(201).json({status:1,message:"Dob updated successfully"})
     }
     else {
