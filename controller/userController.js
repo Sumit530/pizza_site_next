@@ -528,7 +528,7 @@ exports.update_dob = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const {dob,user_id} = req?.body
-    const user = await User.find({user_id:user_id})
+    const user = await User.find({_id:user_id})
     if(user.length>0){
         await User.findOneAndUpdate({_id:user_id},{dob: moment(dob)},{new:true})
         return res.status(201).json({status:1,message:"Dob updated successfully"})
