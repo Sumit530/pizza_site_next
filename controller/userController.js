@@ -528,9 +528,10 @@ exports.update_dob = async(req,res) =>{
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
     const {dob,user_id} = req?.body
+    console.log(dob)
     const user = await User.find({_id:user_id})
     if(user.length>0){
-        await User.findOneAndUpdate({_id:user_id},{dob: moment(dob)},{new:true})
+        await User.findOneAndUpdate({_id:user_id},{dob: moment(dob,"DD-MM-YYYY")},{new:true})
         return res.status(201).json({status:1,message:"Dob updated successfully"})
     }
     else {
@@ -538,7 +539,7 @@ exports.update_dob = async(req,res) =>{
     }
 } catch (error) {
     res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update username"); 
+    console.log("server error on update username",error); 
 }
 }
 exports.update_password = async(req,res) =>{
