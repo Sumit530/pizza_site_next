@@ -27,8 +27,10 @@ const banned_user = require("../model/banned_user");
 const Complaint = require("../model/complaints")
 
 exports.registration = async(req,res) =>{
+    
 const {country_code} = req?.body
 console.log(req.body)
+console.log(req.headers)
 var email = null;
 let mobile_no = null;
 if(req?.body?.email){
