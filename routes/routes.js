@@ -357,7 +357,7 @@ const ReportUpload = multer({
 
 
 
-  router.post("/registration", form.array(),usercontroller.registration)
+  router.post("/registration",usercontroller.registration)
 router.post("/social_signup",form.array(),usercontroller.social_signup)
 router.post("/login",form.array(),usercontroller.LoginUser)
 //router.post("/get_all_users",usercontroller.get_all_users)
