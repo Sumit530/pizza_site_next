@@ -9,8 +9,12 @@ const path = require("path")
 const bodyparser= require("body-parser")
 const mongoose = require("mongoose")
 const models = path.join(__dirname,"model")
+const multer = require("multer");
 const Message = require("./model/messages")
 const cors = require("cors")
+app.use(bodyparser.json())
+app.use(multer().array())
+app.use(bodyparser.urlencoded({extended:true}))
 app.use(cors())
 const server = https.createServer(
      {
