@@ -28,7 +28,7 @@ const Complaint = require("../model/complaints")
 
 exports.registration = async(req,res) =>{
     
-const {country_code} = req?.body
+const country_code = req?.body?.country_code
 console.log(req.body)
 console.log(req.headers)
 var email = null;
@@ -43,11 +43,11 @@ mobile_no = req?.body?.mobile_no
 if(mobile_no != null ){
     const phoneno = /^\d{10}$/;
     if(mobile_no.match(phoneno) == null){
-        return res.status(401).json({status:0,message:"incorrect phone number"})
+        return res.json({status:0,message:"incorrect phone number"})
     }
     const check = await User.find({mobile_no})
     if(check.length>0){
-        return res.status(401).json({status:0,message:"phone number already exist"})
+        return res.json({status:0,message:"phone number already exist"})
     }
     const otp = Math.floor(1000 + Math.random() * 9000)
     const otpdate = Date.now()
