@@ -494,7 +494,7 @@ exports.check_username = async(req,res)=>{
             return res.status(201).json({status:1,message:"This user name is already our database"})
         }
         else {
-            return res.status(402).json({status:0,message:"This user name is not in our database"})
+            return res.status(201).json({status:0,message:"This user name is not in our database"})
         }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
