@@ -26,6 +26,16 @@ const user_supports = require("../model/user_supports");
 const banned_user = require("../model/banned_user");
 const Complaint = require("../model/complaints")
 
+
+function validateEmail(email) { 
+    var emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    return emailRegex.test(email);
+}
+
+function validatePhone(phone) { 
+    var phoneRegex = /^(\+91-|\+91|0)?\d{10}$/; 
+    return phoneRegex.test(phone);
+}
 exports.registration = async(req,res) =>{
     
 const country_code = req?.body?.country_code
@@ -239,28 +249,87 @@ exports.LoginUser = async(req,res)=>{
 //api for registration user 
 exports.send_otp = async(req,res)=>{
 const {mobile_no} = req?.body
+if(!req.body.mobile_no){
+    return res.json({status:0,message:"please provide email or phone"})
+}
 const phoneno = /^\d{10}$/;
+if(req.body?.mobile_no.includes("@")){
+    const otp = Math.floor(1000 + Math.random() * 9000)
+    const otpdate = Date.now()
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'appstane.test@gmail.com',
+          pass: 'hwivyglhxqcngwgy'
+        },
+      });
+      transporter.use('complie',hbs({
+        viewPath: 'views',
+        extName:".handlebars"
+
+    }))
+    const sendEmail = (receiver,otp) => {
+        let path = __dirname + "/../views/email.ejs"
+        ejs.renderFile(path, { otp:otp , email:req.body?.mobile_no}, (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            var mailOptions = {
+              from: '"Swipe up" <Swipeup@gmail.com>',
+              to: receiver,
+              subject: "varification otp",
+              html: data
+            };
+      
+            transporter.sendMail(mailOptions, async(error, info) => {
+                if (error) {
+                    res.status(501).json({status:0,message:"internal error cannot sent email"+ error})
+                  } else {
+                      let finaluser = await User.findOne({email:receiver})
+                      const otp_expired = moment(otpdate).add(30, 'm').toDate();
+                       await User.findOneAndUpdate({email:receiver},{otp:otp,otp_expired:otp_expired},{new:true})
+                     
+                      finaluser = {
+                          user_id:finaluser?._id,
+                          name:finaluser?.name,
+                          country_code:finaluser?.country_code,
+                          mobile_no :finaluser?.mobile_no,
+                          email:finaluser?.email,
+                          language_id:finaluser?.language_id,
+                          otp:otp
+                      }
+                     return res.status(201).json({data:finaluser,status:1,message:"email send successfully"})
+                  }
+            });
+          }
+        });
+      };
+      sendEmail(req.body.mobile_no,otp)
+}else{
     if(mobile_no.match(phoneno) == null ){
         return res.status(406).json({status:0,message:"please povide a valide number"})
     }
-
-const finaluser = await User.findOne({mobile_no:mobile_no})
-if(finaluser){
-
-    const otp = Math.floor(1000 + Math.random() * 9000)
-    // await TwoFactor.sendOTP(mobile_no,{otp:otp})
-    const otpdate = Date.now()
-    const otp_expired = moment(otpdate).add(30, 'm').toDate();
-    const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
-    const data = {
-        user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code:finaluser.country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id
+    const finaluser = await User.findOne({mobile_no:mobile_no})
+    if(finaluser){
+    
+        const otp = Math.floor(1000 + Math.random() * 9000)
+        // await TwoFactor.sendOTP(mobile_no,{otp:otp})
+        const otpdate = Date.now()
+        const otp_expired = moment(otpdate).add(30, 'm').toDate();
+        const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
+        const data = {
+            user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code:finaluser.country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id
+        }
+        res.status(201).json({status:1,message:"otp send successfully",data})
+       
     }
-    res.status(201).json({status:1,message:"otp send successfully",data})
-   
+    else{
+        res.status(409).json({status:0,message:"user not found"})
+    }
 }
-else{
-    res.status(409).json({status:0,message:"user not found"})
-}
+
+
+
 }
 exports.reset_password = (req,res)=>{
     
