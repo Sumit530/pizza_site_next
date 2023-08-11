@@ -244,16 +244,16 @@ const phoneno = /^\d{10}$/;
         return res.status(406).json({status:0,message:"please povide a valide number"})
     }
 
-const finaluser = await User.find({mobile_no:mobile_no})
-if(finaluser.length>0){
+const finaluser = await User.findOne({mobile_no:mobile_no})
+if(finaluser){
 
     const otp = Math.floor(1000 + Math.random() * 9000)
-    await TwoFactor.sendOTP(mobile_no,{otp:otp})
+    // await TwoFactor.sendOTP(mobile_no,{otp:otp})
     const otpdate = Date.now()
     const otp_expired = moment(otpdate).add(30, 'm').toDate();
-    const updateuser = await User.findOneAndUpdate({_id:finaluser[0]._id},{otp:otp,otp_expired:otp_expired},{new:true})
+    const updateuser = await User.findOneAndUpdate({_id:finaluser._id},{otp:otp,otp_expired:otp_expired},{new:true})
     const data = {
-        user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code:finaluser[0].country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id,token:token
+        user_id:finaluser._id,name:finaluser.name ? finaluser.name : "" ,otp:otp,country_code:finaluser.country_code,mobile_no : finaluser.mobile_no ? finaluser.mobile_no : "",email : finaluser.email ? finaluser.email :"",language_id:finaluser.language_id
     }
     res.status(201).json({status:1,message:"otp send successfully",data})
    
@@ -458,7 +458,9 @@ exports.get_all_users = async(req,res)=>{
 }
 
 }
+exports.reset_password = async(req,res)=>{
 
+}
 exports.check_otp  = async(req,res)=>{
     try {
         if(!req?.body?.user_id || req?.body?.user_id == '' ){
