@@ -224,7 +224,7 @@ exports.LoginUser = async(req,res)=>{
                 if(user[0].deActivated == false){
 
                     const keysecret = process.env.USER_SECRET
-                    const update = await User.findOneAndUpdate({email:email},{device_id:device_id,fcm_id:fcm_id},{new:true})
+                    const update = await User.findOneAndUpdate({_id:user[0]._id},{device_id:device_id,fcm_id:fcm_id},{new:true})
                     const token = jwt.sign({id:update._id,email:update.email},keysecret)
                     const data = {
                         user_id:update._id,name:update.name ? update.name : "" ,country_code:update.country_code,mobile_no : update.mobile_no ? update.mobile_no : "",email : update.email ? update.email :"",language_id:update.language_id,token:token
