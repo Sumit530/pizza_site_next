@@ -220,6 +220,7 @@ exports.video_list = async(req,res) =>{
                                         is_video_like:is_video_like,
                                         is_bookmark:is_bookmark,
                                         is_favorite:is_favorite,
+                                        type:req?.body?.type,
                                         total_likes:total_this_likes,
                                         total_comments:total_this_comments,
                                         total_views:parseInt(total_views),
@@ -301,7 +302,7 @@ exports.video_list = async(req,res) =>{
                                     }else{
                                         var cover_image   = ''
                                     }
-                                    if(f.file_name  != ''){
+                                    if( f?.file_name  != '' ){
                                         console.log(f.file_name)
                                         const path = process.env.PUBLICVIDEOSURL
                                         if(fs.existsSync(`uploads/videos/videos/${f.file_name }`)){
@@ -354,6 +355,7 @@ exports.video_list = async(req,res) =>{
                                         total_likes:total_this_likes,
                                         total_comments:total_this_comments,
                                         total_views:parseInt(total_views),
+                                        type:req?.body?.type,
                                         is_allow_comment:f.is_allow_comment,
                                         is_allow_duet:f.is_allow_duet,
                                         cover_image:cover_image,
@@ -472,6 +474,7 @@ exports.video_list = async(req,res) =>{
                         is_bookmark:is_bookmark,
                         is_favorite:is_favorite,
                         total_likes:total_this_likes,
+                        type:req?.body?.type,
                         total_comments:total_this_comments,
                         total_views:parseInt(total_views),
                         is_allow_comment:e.is_allow_comment,
