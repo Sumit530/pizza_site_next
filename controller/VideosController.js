@@ -162,7 +162,7 @@ exports.video_list = async(req,res) =>{
 
                                     if(f.cover_image != ''){
                                         const path = process.env.PUBLICCOVERIMAGEEURL
-                                        if(fs.existsSync(`${path}/${f.cover_image}`)){
+                                        if(fs.existsSync(`uploads/videos/cover_image/${f.cover_image}`)){
                                             var cover_image    = `${path}/${f.cover_image}`
                                         }
                                         else {
@@ -293,7 +293,7 @@ exports.video_list = async(req,res) =>{
 
                                     if(f.cover_image != ''){
                                         const path = process.env.PUBLICCOVERIMAGEEURL
-                                        if(fs.existsSync(`${path}/${f.cover_image}`)){
+                                        if(fs.existsSync(`uploads/videos/cover_image/${f.cover_image}`)){
                                             var cover_image    = `${path}/${f.cover_image}`
                                         }
                                         else {
@@ -416,7 +416,7 @@ exports.video_list = async(req,res) =>{
 
                     if(f.cover_image != ''){
                         const path = process.env.PUBLICCOVERIMAGEEURL
-                        if(fs.existsSync(`${path}/${f.cover_image}`)){
+                        if(fs.existsSync(`uploads/videos/cover_image/${f.cover_image}`)){
                             var cover_image    = `${path}/${f.cover_image}`
                         }
                         else {
