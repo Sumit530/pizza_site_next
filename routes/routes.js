@@ -357,18 +357,19 @@ const ReportUpload = multer({
 
 
 
-  router.post("/registration",usercontroller.registration)
+  router.post("/registration",form.array(),usercontroller.registration)
 router.post("/social_signup",form.array(),usercontroller.social_signup)
 router.post("/login",form.array(),usercontroller.LoginUser)
 //router.post("/get_all_users",usercontroller.get_all_users)
 router.post("/check_otp",form.array(),usercontroller.check_otp)
 router.post("/check_username",form.array(),usercontroller.check_username)
-router.post("/send_otp",form.array(),usercontroller.send_otp)
+router.post("/send_otp",usercontroller.send_otp)
 router.post("/resend_otp",form.array(),usercontroller.resend_otp)
 router.post("/update_location",form.array(),usercontroller.update_location)
 //router.post("/update_profile",form.array(),usercontroller.update_profile)
 //router.post("/get_user_language",usercontroller.USE)
 router.post("/update_password",form.array(),usercontroller.update_password)
+router.post("/reset_password",form.array(),usercontroller.reset_password)
 router.post("/update_mobile_no",form.array(),usercontroller.update_mobile_no)
 router.post("/update_username",form.array(),usercontroller.update_username)
 router.post("/update_dob",form.array(),usercontroller.update_dob)

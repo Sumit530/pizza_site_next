@@ -13,8 +13,8 @@ const multer = require("multer");
 const Message = require("./model/messages")
 const cors = require("cors")
 app.use(bodyparser.json())
-app.use(multer().array())
-app.use(bodyparser.urlencoded({extended:true}))
+ app.use(bodyparser.urlencoded({extended:true}))
+// app.use(multer())
 app.use(cors())
 const server = https.createServer(
      {
