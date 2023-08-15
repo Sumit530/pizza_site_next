@@ -25,6 +25,9 @@ exports.upload_video = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    if( req?.body?.song_id == '' || !req?.body?.song_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
     if( req?.body?.is_view == '' || !req?.body?.is_view ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
