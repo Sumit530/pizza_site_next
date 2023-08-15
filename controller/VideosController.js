@@ -112,7 +112,7 @@ if(req?.files?.video_file ){
 }
 }
 exports.video_list = async(req,res) =>{
-
+        console.log(req.body)
     // type - 1 = following 2=for you 
     if( req?.body?.type == '' || !req?.body?.type ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
@@ -245,7 +245,7 @@ exports.video_list = async(req,res) =>{
                 return res.status(402).json({status:0,message:"no data found"})
             }
         }else{
-            return res.status(402).json({status:0,message:"please provide a user login id"})
+         return res.status(402).json({status:0,message:"please provide a user login id"})
         }
     }else if (req?.body?.type == 2 && req?.body?.user_id != '' ){
        
