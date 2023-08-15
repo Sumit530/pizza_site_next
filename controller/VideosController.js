@@ -551,7 +551,8 @@ var data = []
         }
         if(video_data[0].file_name  != ''){
             const path = process.env.PUBLICVIDEOSURL
-            if(fs.existsSync(`${path}/${video_data[0].file_name }`)){
+
+            if(fs.existsSync(`uploads/videos/cover_image/${video_data[0].file_name }`)){
                 var  video_url     = `${path}/${video_data[0].file_name}`
             }
             else {
