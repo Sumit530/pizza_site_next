@@ -1,12 +1,8 @@
-const video_bookmarks = require("../model/video_bookmarks")
-const VideoWatchHistory = require("../model/video_watch_histories")
-const VideoLikes = require("../model/video_likes")
-const VideoComments = require("../model/videos_comments")
-const Videos = require("../model/videos")
+const video_favorites = require("../model/video_favorites")
 const User = require("../model/users")
 const fs = require("fs")
 
-exports.add_video_bookmark =async(req,res)=>{
+exports.add_video_favorite =async(req,res)=>{
     try {
         if(!req?.body?.user_id || req?.body?.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
@@ -16,17 +12,17 @@ exports.add_video_bookmark =async(req,res)=>{
         }
         const user = await User.find({_id:req?.body?.user_id})
         if(user.length > 0){
-            const videoBookMark = await video_bookmarks.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
+            const videoBookMark = await video_favorites.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
             if(videoBookMark.length == 0){
-                const videobokmarkData = new video_bookmarks({
+                const videobokmarkData = new video_favorites({
                     user_id:req?.body?.user_id,
                     video_id:req?.body?.video_id
                 })
                 await videobokmarkData.save()
-                return  res.status(201).json({status:1,message:"Video bookmark add successfully"})
+                return  res.status(201).json({status:1,message:"Video Favorite add successfully"})
                 
             }else{
-                return  res.status(406).json({status:0,message:"This video already added bookmark"})  
+                return  res.status(406).json({status:0,message:"This video already added Favorite"})  
             }
         }else{
             return  res.status(406).json({status:0,message:"user not found"})  
@@ -38,7 +34,7 @@ exports.add_video_bookmark =async(req,res)=>{
     }
 }
 
-exports.remove_video_bookmark = async(req,res)=>{
+exports.remove_video_favorite = async(req,res)=>{
     try {
         if(!req?.body?.user_id || req?.body?.user_id == ''){
             return  res.status(406).json({status:0,message:"please give proper parameter"})
@@ -47,27 +43,27 @@ exports.remove_video_bookmark = async(req,res)=>{
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
         
-            const videoBookMark = await video_bookmarks.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
+            const videoBookMark = await video_favorites.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
             if(videoBookMark.length > 0){
               
-                const videoBookMark = await video_bookmarks.deleteOne({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
+                const videoBookMark = await video_favorites.deleteOne({user_id:req?.body?.user_id,video_id:req?.body?.video_id})
                 return  res.status(201).json({status:1,message:"Video bookmark deleted successfully"})
                 
             }else{
-                return  res.status(406).json({status:0,message:" bookmark video not found"})  
+                return  res.status(406).json({status:0,message:" Favorite video not found"})  
             }
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on add video bookmark" + error);  
+        console.log("server error on add video Favorite" + error);  
     }
 }
 
-exports.get_video_bookmarks = async(req,res)=>{
+exports.get_video_favorite = async(req,res)=>{
     if(!req?.body?.user_id || req?.body?.user_id == ''){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     } 
 
-    const videoBookMark = await video_bookmarks.find({user_id:req?.body?.user_id}).populate("video_id")
+    const videoBookMark = await video_favorites.find({user_id:req?.body?.user_id}).populate("video_id")
     if(videoBookMark.length>0){
         const data = videoBookMark.map((e)=>{
 

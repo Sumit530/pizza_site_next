@@ -39,6 +39,7 @@ const RestrictAccountsController  = require("../controller/RestrictAccountsContr
 const VideoReportController  = require("../controller/VideoReportController")
 const VideoEffectBookmarkController  = require("../controller/VideoEffectBookmarkController")
 const AccountVerificationController  = require("../controller/AccountVerificationController")
+const videoFavoriteController  = require("../controller/videoFavoriteController")
 const Generalontroller  = require("../controller/GeneralController")
 const Message = require("../model/messages")
 const Chat = require("../model/chats")
@@ -432,7 +433,9 @@ router.post("/add_watch_video_history",UserAuth,form.array(),VideoWatchHistoryCo
 //  video comments
 router.post("/add_video_comments",UserAuth,form.array(),videocontroller.add_video_comments)
 router.post("/add_parent_comment",UserAuth,form.array(),videocontroller.add_parent_comment)
-//router.post("/get_parent_video_comments",UserAuth,form.array(),videocontroller.get_parent_video_comments)
+router.post("/remove_video_comments",UserAuth,form.array(),videocontroller.remove_video_comments)
+router.post("/get_parent_video_comments",UserAuth,form.array(),videocontroller.get_parent_video_comments)
+router.post("/get_video_comments",UserAuth,form.array(),videocontroller.get_video_comments)
 router.post("/add_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.add_comment_pinned)
 router.post("/remove_comment_pinned",UserAuth,form.array(),VideoCommentPinnedController.remove_comment_pinned)
 //router.post("/add_parent_comment")
@@ -443,8 +446,12 @@ router.post("/remove_comment_like",UserAuth,form.array(),VideoCommentLikesContro
 
 // video bookmarks
 router.post("/add_video_bookmark",UserAuth,form.array(),VideoBookmarkController.add_video_bookmark)
-//router.post("/get_video_bookmarks",UserAuth,form.array(),VideoBookmarkController.get_video_bookmarks)
+router.post("/get_video_bookmarks",UserAuth,form.array(),VideoBookmarkController.get_video_bookmarks)
 router.post("/remove_video_bookmark",UserAuth,form.array(),VideoBookmarkController.remove_video_bookmark)
+//video favorite
+router.post("/add_video_favorite",UserAuth,form.array(),videoFavoriteController.add_video_favorite)
+router.post("/get_video_favorite",UserAuth,form.array(),videoFavoriteController.get_video_favorite)
+router.post("/remove_video_favorite",UserAuth,form.array(),videoFavoriteController.remove_video_favorite)
 
 
 // adding complaint 

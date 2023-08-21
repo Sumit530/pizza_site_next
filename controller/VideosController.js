@@ -760,8 +760,8 @@ exports.add_video_comments = async(req,res)=>{
                 if(video_data[0].user_id.fcm_id != ''){
                     const notification_id = Math.floor(1000 + Math.random() * 9000)
                     const find_reciever_id   = video_data[0].user_id.fcm_id
-                    const title = `${user_data[0].name} like your video`
-                    const message = `${user_data[0].name} like your video at ${moment().format('DD-MM-YYYY HH:mm A')}`
+                    const title = `${user_data[0].name} Commented on your video`
+                    const message = `${user_data[0].name} Commented on your video at ${moment().format('DD-MM-YYYY HH:mm A')}`
                     if(find_reciever_id != ''){
                         let img = ''
                         push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
@@ -798,9 +798,9 @@ exports.add_parent_comment = async(req,res)=>{
     if( req?.body?.comment_id == '' || !req?.body?.comment_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    if( req?.body?.mention_user == '' || !req?.body?.mention_user ){ 
-        return  res.status(406).json({status:0,message:"please give a proper parameter"})
-    }
+    // if( req?.body?.mention_user == '' || !req?.body?.mention_user ){ 
+    //     return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    // }
     const user_data = await Users.find({_id:req?.body?.user_id})
     if(user_data.length > 0){
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
@@ -808,9 +808,9 @@ exports.add_parent_comment = async(req,res)=>{
            const  video_comment = new VideoComments({
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
-                mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
+                mention_user : req?.body?.mention_user && req?.body?.mention_user ,
                 comment : req?.body?.comment ? req?.body?.comment : '',
-                parent_id : req?.body?.comment_id
+                parent_id : req?.body?.comment_id ? req?.body?.comment_id  : ''
             })
             await video_comment.save()
             return res.status(201).json({ status:1,message:"comment added  successfully"})
@@ -821,6 +821,53 @@ exports.add_parent_comment = async(req,res)=>{
     }else{
         return res.status(402).json({status:0,message:"user data not found"})
     }
+}
+exports.remove_video_comments = async(req,res)=>{
+    if( req?.body?.comment_id == '' || !req?.body?.comment_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    const comment = await VideoComments.find({_id:req.body.comment_id})
+    if(comment.length>0){
+         await VideoComments.deleteOne({_id:req.body.comment_id})
+         return res.status(201).json({ status:1,message:"Comment Deleted Successfully"})
+    }else{
+        return res.status(402).json({status:0,message:"no data found"})
+    }
+}
+exports.get_parent_video_comments = async(req,res)=>{
+    if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+    if( req?.body?.comment_id == '' || !req?.body?.comment_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+
+        const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
+        if(video_data.length>0){
+           const  video_comment =  await VideoComments.find({video_id:req?.body?.video_id,parent_id:req.body.comment_id}).sort({createdAt:-1})
+           console.log(video_comment)
+            return res.status(201).json({ status:1,message:"Data Got  successfully",data:video_comment})
+
+        }else{
+            return res.status(402).json({status:0,message:"no data found"})
+        }
+    
+}
+exports.get_video_comments = async(req,res)=>{
+    if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
+
+        const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
+        if(video_data.length>0){
+           const  video_comment =  await VideoComments.find({video_id:req?.body?.video_id}).sort({createdAt:-1})
+           console.log(video_comment)
+            return res.status(201).json({ status:1,message:"Data Got  successfully",data:video_comment})
+
+        }else{
+            return res.status(402).json({status:0,message:"no data found"})
+        }
+    
 }
 
 exports.private_position_video_list = async(req,res)=>{
@@ -867,7 +914,7 @@ exports.private_position_video_list = async(req,res)=>{
             }
             if(e.cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`${path}/${e.cover_image}`)){
+                if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                     var cover_image    = `${path}/${e.cover_image}`
                 }
                 else {
@@ -878,7 +925,7 @@ exports.private_position_video_list = async(req,res)=>{
             }
             if(e.file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${e.file_name }`)){
+                if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                     var  video_url     = `${path}/${e.file_name}`
                 }
                 else {
@@ -940,7 +987,7 @@ exports.private_position_video_list = async(req,res)=>{
              }
              if(e.cover_image != ''){
                  const path = process.env.PUBLICCOVERIMAGEEURL
-                 if(fs.existsSync(`${path}/${e.cover_image}`)){
+                 if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                      var cover_image    = `${path}/${e.cover_image}`
                  }
                  else {
@@ -951,7 +998,7 @@ exports.private_position_video_list = async(req,res)=>{
              }
              if(e.file_name  != ''){
                  const path = process.env.PUBLICVIDEOSURL
-                 if(fs.existsSync(`${path}/${e.file_name }`)){
+                 if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                      var  video_url     = `${path}/${e.file_name}`
                  }
                  else {
@@ -1040,7 +1087,7 @@ exports.position_video_list = async(req,res)=>{
             }
             if(e.cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`${path}/${e.cover_image}`)){
+                if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                     var cover_image    = `${path}/${e.cover_image}`
                 }
                 else {
@@ -1051,7 +1098,7 @@ exports.position_video_list = async(req,res)=>{
             }
             if(e.file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${e.file_name }`)){
+                if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                     var  video_url     = `${path}/${e.file_name}`
                 }
                 else {
@@ -1113,7 +1160,7 @@ exports.position_video_list = async(req,res)=>{
              }
              if(e.cover_image != ''){
                  const path = process.env.PUBLICCOVERIMAGEEURL
-                 if(fs.existsSync(`${path}/${e.cover_image}`)){
+                 if(fs.existsSync(`$uploads/videos/cover_image/${e.cover_image}`)){
                      var cover_image    = `${path}/${e.cover_image}`
                  }
                  else {
@@ -1124,7 +1171,7 @@ exports.position_video_list = async(req,res)=>{
              }
              if(e.file_name  != ''){
                  const path = process.env.PUBLICVIDEOSURL
-                 if(fs.existsSync(`${path}/${e.file_name }`)){
+                 if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                      var  video_url     = `${path}/${e.file_name}`
                  }
                  else {
