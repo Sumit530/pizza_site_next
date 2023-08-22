@@ -839,6 +839,9 @@ exports.get_parent_video_comments = async(req,res)=>{
     if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
     if( req?.body?.comment_id == '' || !req?.body?.comment_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
