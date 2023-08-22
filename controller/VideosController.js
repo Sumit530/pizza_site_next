@@ -18,6 +18,7 @@ const Hashtag = require("../model/hashtag_data")
 const fs = require('fs')
 const moment = require("moment")
 const push_message = require("../push-message/notification")
+const video_comment_likes = require("../model/video_comment_likes")
 require("dotenv").config()
 
 
@@ -857,12 +858,43 @@ exports.get_video_comments = async(req,res)=>{
     if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
+        return  res.status(406).json({status:0,message:"please give a proper parameter"})
+    }
 
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
         if(video_data.length>0){
-           const  video_comment =  await VideoComments.find({video_id:req?.body?.video_id}).sort({createdAt:-1})
-           console.log(video_comment)
-            return res.status(201).json({ status:1,message:"Data Got  successfully",data:video_comment})
+
+           const  video_comment =  await VideoComments.find({video_id:req?.body?.video_id}).populate('user_id').sort({createdAt:-1})
+           const data = []
+           for(let i =0;i<video_comment.length;i++){
+                const  total_like =  await video_comment_likes.count({video_id:req?.body?.video_id,comment_id:video_comment[i]._id})
+                const is_comment_like = await video_comment_likes.count({video_id:req?.body?.video_id,comment_id:video_comment[i]._id,user_id:req.body.user_id})
+                if(video_comment[i]?.user_id?.profile_image != ''){
+                    const path = process.env.PUBLICPOROFILEIMAGEURL
+                    if(fs.existsSync(`uploads/user/profile/${video_comment[i].profile_image}`)){
+                        var  profile_image = `${path}/${video_comment[i].profile_image}`
+                    }else{
+                        
+                        var profile_image = ''
+                    }
+                }else{
+                    var profile_image = ''
+                }
+                data.push({
+                     comment_id:video_comment[i]._id,
+                     user_id:video_comment[i].user_id._id,
+                    video_id:video_comment[i].video_id,
+                    username:video_comment[i].user_id.username,
+                    profile_image:profile_image,
+                    total_like,
+                    is_comment_like,
+                    createdAt:video_comment[i].createdAt,
+                    updatedAt:video_comment[i].updatedAt,
+                    
+                })
+            }
+            return res.status(201).json({ status:1,message:"Data Got  successfully",data:data})
 
         }else{
             return res.status(402).json({status:0,message:"no data found"})
