@@ -5,6 +5,7 @@ const VideoData = require("../model/video_data")
 
 
 exports.add_comment_like = async(req,res) =>{
+    console.log(req.body)
     if( req?.body?.user_id == '' || !req?.body?.user_id ){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
@@ -19,12 +20,13 @@ exports.add_comment_like = async(req,res) =>{
     if(user_data.length>0){
         const likedata = await VideoCommentsLikes.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id,comment_id:req?.body?.comment_id})
         if(likedata.length>0){
+            console.log("Already liked")
             return  res.status(406).json({status:0,message:"This comment already likeed"})
         }
         else{
             const video = await Videos.find({_id:req?.body?.video_id})
             if(video.length>0){
-
+                
                 const data = new VideoCommentsLikes({
                     user_id:req?.body?.user_id,
                     video_id:req?.body?.video_id,
@@ -33,10 +35,12 @@ exports.add_comment_like = async(req,res) =>{
                 await data.save()
                 return  res.status(201).json({status:1,message:"Video comment liked successfully"})
             }else{
+                console.log("not found")
                 return  res.status(406).json({status:0,message:"video not found"})
             }
         }
     }else{
+        console.log("user not found")
         return  res.status(406).json({status:0,message:"user not found"})
     }
 }
