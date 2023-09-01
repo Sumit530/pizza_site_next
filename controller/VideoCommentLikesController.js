@@ -21,7 +21,7 @@ exports.add_comment_like = async(req,res) =>{
         const likedata = await VideoCommentsLikes.find({user_id:req?.body?.user_id,video_id:req?.body?.video_id,comment_id:req?.body?.comment_id})
         if(likedata.length>0){
             console.log("Already liked")
-            return  res.status(406).json({status:0,message:"This comment already likeed"})
+            return  res.status(201).json({status:0,message:"This comment already likeed"})
         }
         else{
             const video = await Videos.find({_id:req?.body?.video_id})
@@ -66,7 +66,7 @@ exports.remove_comment_like = async(req,res) =>{
         }
         else{
             
-            return  res.status(406).json({status:0,message:"comment like not found"})
+            return  res.status(201).json({status:0,message:"comment like not found"})
          }
 }else{
     return  res.status(406).json({status:0,message:"user not found"})
