@@ -744,6 +744,7 @@ exports.add_video_comments = async(req,res)=>{
     if( req?.body?.video_id == '' || !req?.body?.video_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    console.log(req.body)
     const user_data = await Users.find({_id:req?.body?.user_id})
     if(user_data.length > 0){
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
