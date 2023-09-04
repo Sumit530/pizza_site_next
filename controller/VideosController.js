@@ -83,7 +83,7 @@ if(req?.files?.video_file ){
                 const message = `${user_data[0].name} mention you to video ${moment().format('DD-MM-YYYY HH:mm A')}`
                 if(find_reciever_id != ''){
                     let img = ''
-                    push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                    // push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
                 }
                     const notification_data = new Notification({
                         user_id:user_id,
@@ -637,7 +637,7 @@ exports.add_video_like = async(req,res)=>{
                     const message = `${user_data[0].name} like your video at ${moment().format('DD-MM-YYYY HH:mm A')}`
                     if(find_reciever_id != ''){
                         let img = ''
-                        push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                        // push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
                     }  
                         const notification_data = new Notification({
                             user_id:req?.body?.user_id,
@@ -766,7 +766,7 @@ exports.add_video_comments = async(req,res)=>{
                     const message = `${user_data[0].name} Commented on your video at ${moment().format('DD-MM-YYYY HH:mm A')}`
                     if(find_reciever_id != ''){
                         let img = ''
-                        push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                        // push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
                         const notification_data = new Notification({
                             user_id:user_id,
                             receiver_id :video_data[0].user_id._id ,
