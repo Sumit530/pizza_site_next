@@ -751,7 +751,7 @@ exports.add_video_comments = async(req,res)=>{
            const  video_comment = new VideoComments({
                 user_id:req?.body?.user_id,
                 video_id:req?.body?.video_id,
-                mention_user : req?.body?.mention_user ? req?.body?.mention_user : '',
+                mention_user : req?.body?.mention_user ,
                 comment : req?.body?.comment ? req?.body?.comment : '',
             })
             const comment = await video_comment.save()
