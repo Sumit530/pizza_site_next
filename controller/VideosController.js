@@ -768,7 +768,7 @@ exports.add_video_comments = async(req,res)=>{
                         let img = ''
                         // push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
                         const notification_data = new Notification({
-                            user_id:user_id,
+                            user_id:req?.body?.user_id,
                             receiver_id :video_data[0].user_id._id ,
                             video_id:req?.body?.video_id,
                             comment:title,
