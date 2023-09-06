@@ -15,6 +15,7 @@ const videoWatchHistories = require("../model/video_watch_histories")
 const VideoReportData = require("../model/video_reports_data")
 const Notification = require("../model/notifications")
 const Hashtag = require("../model/hashtag_data")
+const Hashtags = require("../model/hashtags")
 const fs = require('fs')
 const moment = require("moment")
 const push_message = require("../push-message/notification")
@@ -1111,7 +1112,43 @@ exports.private_position_video_list = async(req,res)=>{
         }
      })
 }
+exports.add_hashtag = async(req,res)=>{
+    try {
+        if(!req.body.hashtag){
+            return  res.status(406).json({status:0,message:"please give a proper parameter"})  
+        }
+        let hashData = req.body.hashtag.split(",")
+        const data = []
+        for(let i = 0 ; i<hashData.length;i++){
 
+            const single_Hashtag = await Hashtags.find({name:hashData[i]})
+            if(single_Hashtag.length>0){
+                data.push(single_Hashtag[0])
+            }else{
+                const hash  =  new Hashtags({
+                    name:req.body.hashtag
+                })
+                let new_hashtag = await hash.save()
+                data.push(new_hashtag)
+            }
+
+        }
+        return res.status(201).json({status:1,message:"data got",data})
+    } catch (error) {
+        return res.status(406).json({status:0,message:error})
+        
+    }
+    
+}
+exports.get_hashtag = async(req,res)=>{
+    try {
+            const data = await Hashtags.find()
+        return res.status(201).json({status:1,message:"data got",data})
+    
+    } catch (error) {
+        return res.status(406).json({status:0,message:error})  
+    }
+}
 
 exports.position_video_list = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
@@ -1230,7 +1267,7 @@ exports.position_video_list = async(req,res)=>{
              }
              if(e.cover_image != ''){
                  const path = process.env.PUBLICCOVERIMAGEEURL
-                 if(fs.existsSync(`$uploads/videos/cover_image/${e.cover_image}`)){
+                 if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                      var cover_image    = `${path}/${e.cover_image}`
                  }
                  else {

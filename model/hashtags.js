@@ -7,16 +7,6 @@ const Schema = new  mongoose.Schema({
         require:true
     },
    
-    status : {
-        type : Boolean,
-        default:true
-    },
-    deleted_at : {
-        type:Date,
-        default:null
-        
-    }
-   
 },
 {timestamps:true})
 Schema.plugin(softDeletePlugin)
