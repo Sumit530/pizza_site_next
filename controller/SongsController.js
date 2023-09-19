@@ -440,7 +440,7 @@ exports.get_song_to_video = async(req,res) =>{
             const total_views  = await VideoWatchHistory.count({video_id:single_song_data[0]._id})
             if(single_song_data[0].cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`${path}/${single_song_data[0].cover_image}`)){
+                if(fs.existsSync(`uploads/videos/cover_image/${single_song_data[0].cover_image}`)){
                     var cover_image    = `${path}/${single_song_data[0].cover_image}`
                 }
                 else {
