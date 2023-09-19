@@ -359,7 +359,7 @@ exports.get_song_to_video = async(req,res) =>{
                     
             if(e.cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`${path}/${e.cover_image}`)){
+                if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
                     var cover_image    = `${path}/${e.cover_image}`
                 }
                 else {
