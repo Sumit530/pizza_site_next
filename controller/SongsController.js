@@ -11,6 +11,7 @@ const VideoFavorite = require("../model/video_favorites")
 const VideoLikes = require("../model/video_likes")
 const VideoComments = require("../model/videos_comments")
 const VideoWatchHistory = require("../model/video_watch_histories")
+const favorite_songs = require("../model/favorite_songs")
 const Country = require("../model/countries")
 const fs = require("fs")
 
@@ -164,7 +165,7 @@ exports.add_favortie_song = async(req,res) =>{
     if(!req?.body?.user_id || req?.body?.user_id == ''  || !req?.body?.sound_id || req?.body?.sound_id == ''){
         return res.status(406).json({status:0,message:"please give a user id"})
     }
-    const check = await SoundBookmark.find({song_id:req.body.sound_id,user_id:req.body.user_id})
+    const check = await favorite_songs.find({song_id:req.body.sound_id,user_id:req.body.user_id})
     if(check.length == 0){
 
         const favsongdata = new SoundBookmark({
@@ -181,10 +182,10 @@ exports.removed_favortie_song = async(req,res) =>{
     if(!req?.body?.user_id || req?.body?.user_id == ''  || !req?.body?.song_id || req?.body?.song_id == ''){
         return res.status(406).json({status:0,message:"please give a user id"})
     }
-    const check = await SoundBookmark.find({song_id:req.body.sound_id,user_id:req.body.user_id})
+    const check = await fa.find({song_id:req.body.sound_id,user_id:req.body.user_id})
     if(check.length > 0){
 
-        await favsongdata.deleteOne({_id:check[0]._id})
+        await favorite_songs.deleteOne({_id:check[0]._id})
         return  res.status(201).json({status:1,message:"sound remove from favorite successfully!"})
     }else{
         return res.status(406).json({status:0,message:"not added as favorite"})
@@ -196,14 +197,14 @@ try {
         return res.status(406).json({status:0,message:"please give a user id"})
     }
     if(req?.body?.keyword && req?.body?.keyword != ''  ){
-        var songdata = await SoundBookmark.find({user_id:req.body.user_id,name:`/${req.body.keyword}/`}).populate({ 
+        var songdata = await favorite_songs.find({user_id:req.body.user_id,name:`/${req.body.keyword}/`}).populate({ 
             path: 'sound_id',
             populate: {
               path: 'cat_id'
             } 
          })
     }else{
-        var songdata = await SoundBookmark.find({user_id:req.body.user_id}).populate({ 
+        var songdata = await favorite_songs.find({user_id:req.body.user_id}).populate({ 
             path: 'sound_id',
             populate: {
               path: 'cat_id'
@@ -343,7 +344,7 @@ exports.get_song_to_video = async(req,res) =>{
                 var singer_image  = ''
             }
 
-            var total_videos  = await Videos.find({song_id:single_song_data[0]._id})
+            var total_videos  = await Videos.count({song_id:single_song_data[0]._id})
             if(!req?.body?.user_id && req?.body?.user_id?.length > 0 ){
                 var song_data   = await Videos.find().populate("song_id")
 
@@ -440,37 +441,37 @@ exports.get_song_to_video = async(req,res) =>{
             if(single_song_data[0].cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
                 if(fs.existsSync(`${path}/${single_song_data[0].cover_image}`)){
-                     cover_image    = `${path}/${single_song_data[0].cover_image}`
+                    var cover_image    = `${path}/${single_song_data[0].cover_image}`
                 }
                 else {
-                     cover_image   = ''
+                     var cover_image   = ''
                 }
             }else{
-                cover_image   = ''
+               var cover_image   = ''
             }
             if(single_song_data[0].file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
                 if(fs.existsSync(`${path}/${single_song_data[0].file_name }`)){
-                     video_url     = `${path}/${single_song_data[0].file_name}`
+                    var video_url     = `${path}/${single_song_data[0].file_name}`
                 }
                 else {
-                     video_url    = ''
+                    var video_url    = ''
                 }
             }else{
-                video_url    = ''
+               var video_url    = ''
              }
              var user_details  = await User.find({_id:single_song_data[0].user_id})
             if(user_details.length >0 ){
                 if(user_details.profile_image  != ''){
                     const path = process.env.PUBLICPROFILEURL
                     if(fs.existsSync(`${path}/${user_details[0].profile_image }`)){
-                        profile_image      = `${path}/${user_details[0].profile_image}`
+                        var  profile_image      = `${path}/${user_details[0].profile_image}`
                     }
                     else {
-                         profile_image     = ''
+                        var    profile_image     = ''
                     }
                 }else{
-                    profile_image     = ''
+                    var profile_image     = ''
                 } 
                 user_name = user_details[0].name
                 user_username = user_details[0].username
@@ -484,21 +485,21 @@ exports.get_song_to_video = async(req,res) =>{
              total_comments  = VideoComments.count({video_id:single_song_data[0]._id})
             const user_like_data = await VideoLikes.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
             if(user_like_data.length > 0 ){
-                 is_video_like = 1
+                var is_video_like = 1
             }else{
-                 is_video_like = 0
+                var  is_video_like = 0
             }
             const user_bookmark_data = await VideoBookmarks.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
             if(user_bookmark_data.length > 0 ){
-                is_video_bookmark    = 1
+                var  is_video_bookmark    = 1
             }else{
-                 is_video_bookmark  = 0
+                var  is_video_bookmark  = 0
             }
             const video_favorites_data  = await VideoFavorite.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
             if(video_favorites_data.length > 0 ){
-                 is_favorite  = 1
+                var   is_favorite  = 1
             }else{
-                 is_favorite  = 0
+                var  is_favorite  = 0
             }
             singleSongData.push({
                 video_id : single_song_data[0]._id,
