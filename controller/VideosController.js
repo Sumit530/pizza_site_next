@@ -209,7 +209,6 @@ exports.video_list = async(req,res) =>{
                                      }else{
                                             var is_favorite  = 0
                                      }
-                                     console.log(song_id["_id"])
                                      return({
                                         video_id : e._id,
                                         user_id:req?.body?.user_id,
@@ -342,7 +341,6 @@ exports.video_list = async(req,res) =>{
                                      }else{
                                             var is_favorite  = 0
                                      }
-                                     console.log(song_id["_id"])
                                      return ({
                                         video_id : f._id,
                                         user_id:req?.body?.user_id,
@@ -466,7 +464,6 @@ exports.video_list = async(req,res) =>{
                      }else{
                             var is_favorite  = 0
                      }
-                     console.log(song_id["_id"])
                      data.push({
                         video_id : e._id,
                         user_id:req?.body?.user_id,
