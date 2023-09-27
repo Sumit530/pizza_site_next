@@ -429,7 +429,8 @@ exports.get_song_to_video = async(req,res) =>{
                 total_views : parseInt(total_views),
                 is_bookmark : is_video_bookmark,
                 is_favorite : is_favorite,
-                is_video_like : is_video_like
+                is_video_like : is_video_like,
+                sound_id: req?.body?.song_id
             })
 
                 })
@@ -501,7 +502,7 @@ exports.get_song_to_video = async(req,res) =>{
             }else{
                 var  is_favorite  = 0
             }
-            singleSongData.push({
+            songData.push({
                 video_id : single_song_data[0]._id,
                 user_id:single_song_data[0].user_id,
                 name:user_name,
@@ -510,7 +511,8 @@ exports.get_song_to_video = async(req,res) =>{
                 total_views : parseInt(total_views),
                 is_bookmark : is_video_bookmark,
                 is_favorite : is_favorite,
-                is_video_like : is_video_like
+                is_video_like : is_video_like,
+                sound_id: req?.body?.song_id
             })
             
     
@@ -518,8 +520,8 @@ exports.get_song_to_video = async(req,res) =>{
     }else{
         singleSongData = []
     }
-    const mainarray = []
-    mainarray.push(singleSongData)
+    const mainarray = []    
+    //mainarray.push(singleSongData)
     mainarray.push(songData)
     return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0].song_id._id,singer_description:single_song_data[0].song_id.description,is_song_bookmark:is_song_bookmark, data:mainarray,status:1,message:"data found"})
 
