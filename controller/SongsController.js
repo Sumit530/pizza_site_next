@@ -523,7 +523,7 @@ exports.get_song_to_video = async(req,res) =>{
     const mainarray = []    
     //mainarray.push(singleSongData)
     mainarray.push(songData)
-    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0].song_id._id,singer_description:single_song_data[0].song_id.description,is_song_bookmark:is_song_bookmark, data:mainarray,status:1,message:"data found"})
+    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0].song_id._id,singer_description:single_song_data[0].song_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
 
     }else{
         res.status(402).json({status:0,message:"this song not found"}) 
