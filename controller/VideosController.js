@@ -230,7 +230,7 @@ exports.video_list = async(req,res) =>{
                                         is_allow_duet:e.is_allow_duet,
                                         cover_image:cover_image,
                                         video_url:video_url,
-                                        song_id:f.song_id["_id"]
+                                        song_id:f.song_id
                                      })
                                      
                             }
@@ -362,7 +362,7 @@ exports.video_list = async(req,res) =>{
                                         is_allow_duet:f.is_allow_duet,
                                         cover_image:cover_image,
                                         video_url:video_url,
-                                        song_id:f.song_id["_id"]
+                                        song_id:f.song_id
                                      })
                                      
                                     }
@@ -484,7 +484,7 @@ exports.video_list = async(req,res) =>{
                         is_allow_duet:e.is_allow_duet,
                         cover_image:cover_image,
                         video_url:video_url,
-                        song_id:f.song_id["_id"]
+                        song_id:f.song_id
                     })
                      
             }
