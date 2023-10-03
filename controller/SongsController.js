@@ -512,7 +512,7 @@ exports.get_song_to_video = async(req,res) =>{
                 is_bookmark : is_video_bookmark,
                 is_favorite : is_favorite,
                 is_video_like : is_video_like,
-                sound_id: req?.body?.song_id
+                song_id: req?.body?.song_id
             })
             
     
