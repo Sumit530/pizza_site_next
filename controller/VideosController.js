@@ -184,6 +184,28 @@ exports.video_list = async(req,res) =>{
                                     }else{
                                         var  video_url    = ''
                                      } 
+                                    // if(f.song_id?.attachment  != ''){
+                                    //     const path = process.env.PUBLICVIDEOSURL
+                                    //     if(fs.existsSync(`uploads/songs/${e.song_id?.attachment }`)){
+                                    //         var  song_url     = `${path}/${f.song_id?.attachment}`
+                                    //     }
+                                    //     else {
+                                    //         var song_url    = ''
+                                    //     }
+                                    // }else{
+                                    //     var  song_url    = ''
+                                    //  } 
+                                    // if(f.song_id?.attachment  != ''){
+                                    //     const path = process.env.PUBLICVIDEOSURL
+                                    //     if(fs.existsSync(`uploads/songs/${e.song_id?.attachment }`)){
+                                    //         var  song_url     = `${path}/${f.song_id?.attachment}`
+                                    //     }
+                                    //     else {
+                                    //         var song_url    = ''
+                                    //     }
+                                    // }else{
+                                    //     var  song_url    = ''
+                                    //  } 
                                     //  var video_id =._id
                                      var user_like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:e._id})
                                      if(user_like_data.length > 0){
@@ -216,6 +238,7 @@ exports.video_list = async(req,res) =>{
                                         username:user_username,
                                         profile_image:profile_image,
                                         song_name : e?.song_id?.name ? e?.song_id?.name : '',
+                                        song_id : e?.song_id?._id ? e?.song_id?._id : '',
                                         description:e.description,
                                         is_follow:is_follow,
                                         is_view:e.is_view,
@@ -348,6 +371,7 @@ exports.video_list = async(req,res) =>{
                                         username:user_username,
                                         profile_image:profile_image,
                                         song_name : f?.song_id?.name ? f?.song_id?.name : '',
+                                        song_id : f?.song_id?._id ? f?.song_id?._id : '',
                                         description:f.description,
                                         is_follow:is_follow,
                                         is_view:f.is_view,
@@ -470,6 +494,7 @@ exports.video_list = async(req,res) =>{
                         username:user_username,
                         profile_image:profile_image,
                         song_name : e?.song_id?.name ? e?.song_id?.name : '',
+                        song_id : e?.song_id?._id ? e?.song_id?._id : '',
                         description:e.description,
                         is_follow:is_follow,
                         is_video_like:is_video_like,
