@@ -231,7 +231,7 @@ exports.video_list = async(req,res) =>{
                                      }else{
                                             var is_favorite  = 0
                                      }
-                                   return({
+                                     return({
                                         video_id : e._id,
                                         user_id:req?.body?.user_id,
                                         name:user_name,
@@ -252,8 +252,8 @@ exports.video_list = async(req,res) =>{
                                         is_allow_comment:e.is_allow_comment,
                                         is_allow_duet:e.is_allow_duet,
                                         cover_image:cover_image,
-                                        video_url:video_url
-
+                                        video_url:video_url,
+                                        song_id:f.song_id
                                      })
                                      
                             }
@@ -385,7 +385,8 @@ exports.video_list = async(req,res) =>{
                                         is_allow_comment:f.is_allow_comment,
                                         is_allow_duet:f.is_allow_duet,
                                         cover_image:cover_image,
-                                        video_url:video_url
+                                        video_url:video_url,
+                                        song_id:f.song_id
                                      })
                                      
                                     }
@@ -507,8 +508,9 @@ exports.video_list = async(req,res) =>{
                         is_allow_comment:e.is_allow_comment,
                         is_allow_duet:e.is_allow_duet,
                         cover_image:cover_image,
-                        video_url:video_url
-                     })
+                        video_url:video_url,
+                        song_id:f.song_id
+                    })
                      
             }
 
