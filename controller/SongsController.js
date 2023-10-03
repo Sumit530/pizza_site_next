@@ -305,7 +305,7 @@ exports.get_song_to_video = async(req,res) =>{
         }else{
             var is_song_bookmark  = 0
         }
-        let single_song_data = await Songs.find({_id:req?.body?.song_id}).populate("singer_id")
+        var single_song_data = await Songs.find({_id:req?.body?.song_id}).populate("singer_id")
         console.log(single_song_data)
         if(single_song_data.length >0 ){
             if(single_song_data[0].attachment != ''){
@@ -437,12 +437,12 @@ exports.get_song_to_video = async(req,res) =>{
             }
         
         if(req?.body?.video_id != '' && req?.body?.video_id?.length > 0){
-             single_song_data = await Videos.find({_id:req?.body?.video_id}).populate("song_id")
-            const total_views  = await VideoWatchHistory.count({video_id:single_song_data[0]._id})
-            if(single_song_data[0].cover_image != ''){
+             let single_video = await Videos.find({_id:req?.body?.video_id}).populate("song_id")
+            const total_views  = await VideoWatchHistory.count({video_id:single_video[0]._id})
+            if(single_video[0].cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`uploads/videos/cover_image/${single_song_data[0].cover_image}`)){
-                    var cover_image    = `${path}/${single_song_data[0].cover_image}`
+                if(fs.existsSync(`uploads/videos/cover_image/${single_video[0].cover_image}`)){
+                    var cover_image    = `${path}/${single_video[0].cover_image}`
                 }
                 else {
                      var cover_image   = ''
@@ -450,10 +450,10 @@ exports.get_song_to_video = async(req,res) =>{
             }else{
                var cover_image   = ''
             }
-            if(single_song_data[0].file_name  != ''){
+            if(single_video[0].file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${single_song_data[0].file_name }`)){
-                    var video_url     = `${path}/${single_song_data[0].file_name}`
+                if(fs.existsSync(`${path}/${single_video[0].file_name }`)){
+                    var video_url     = `${path}/${single_video[0].file_name}`
                 }
                 else {
                     var video_url    = ''
@@ -461,7 +461,7 @@ exports.get_song_to_video = async(req,res) =>{
             }else{
                var video_url    = ''
              }
-             var user_details  = await User.find({_id:single_song_data[0].user_id})
+             var user_details  = await User.find({_id:single_video[0].user_id})
             if(user_details.length >0 ){
                 if(user_details.profile_image  != ''){
                     const path = process.env.PUBLICPROFILEURL
@@ -482,29 +482,29 @@ exports.get_song_to_video = async(req,res) =>{
                  user_username =''
                  profile_image =''
             }
-              total_likes  = VideoLikes.count({video_id:single_song_data[0]._id})
-             total_comments  = VideoComments.count({video_id:single_song_data[0]._id})
-            const user_like_data = await VideoLikes.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
+              total_likes  = VideoLikes.count({video_id:single_video[0]._id})
+             total_comments  = VideoComments.count({video_id:single_video[0]._id})
+            const user_like_data = await VideoLikes.find({video_id:single_video[0]._id,user_id:req?.body?.user_id})
             if(user_like_data.length > 0 ){
                 var is_video_like = 1
             }else{
                 var  is_video_like = 0
             }
-            const user_bookmark_data = await VideoBookmarks.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
+            const user_bookmark_data = await VideoBookmarks.find({video_id:single_video[0]._id,user_id:req?.body?.user_id})
             if(user_bookmark_data.length > 0 ){
                 var  is_video_bookmark    = 1
             }else{
                 var  is_video_bookmark  = 0
             }
-            const video_favorites_data  = await VideoFavorite.find({video_id:single_song_data[0]._id,user_id:req?.body?.user_id})
+            const video_favorites_data  = await VideoFavorite.find({video_id:single_video[0]._id,user_id:req?.body?.user_id})
             if(video_favorites_data.length > 0 ){
                 var   is_favorite  = 1
             }else{
                 var  is_favorite  = 0
             }
             songData.push({
-                video_id : single_song_data[0]._id,
-                user_id:single_song_data[0].user_id,
+                video_id : single_video[0]._id,
+                user_id:single_video[0].user_id,
                 name:user_name,
                 username : user_username,
                 cover_image : cover_image,
@@ -523,13 +523,14 @@ exports.get_song_to_video = async(req,res) =>{
     const mainarray = []    
     //mainarray.push(singleSongData)
     mainarray.push(songData)
-    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0].song_id._id,singer_description:single_song_data[0].song_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
+    console.log('songggggggggggg',single_song_data)
+    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0]?.singer_id?._id,singer_description:single_song_data[0]?.singer_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
 
     }else{
         res.status(402).json({status:0,message:"this song not found"}) 
     }   
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-        console.log("server error on get song to video");    
+        console.log("server error on get song to video", error);    
     }
 }
