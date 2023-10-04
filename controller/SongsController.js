@@ -312,12 +312,15 @@ exports.get_song_to_video = async(req,res) =>{
                 const path = process.env.PUBLICSONGURL
                 if(fs.existsSync(`uploads/songs/${single_song_data[0].attachment}`)){
                     var attachment  = `${path}/${single_song_data[0].attachment}`
+                    var song_size = getFilesizeInBytes(`uploads/songs/${single_song_data[0].attachment}`)
                 }
                 else {
                     var attachment = ''
+                    var song_size= ''
                 }
             }else{
                 var attachment = ''
+                var song_size= ''
             }       
             if(single_song_data[0].banner_image != ''){
                 
@@ -523,8 +526,8 @@ exports.get_song_to_video = async(req,res) =>{
     const mainarray = []    
     //mainarray.push(singleSongData)
     mainarray.push(songData)
-    console.log('songggggggggggg',single_song_data)
-    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0]?.singer_id?._id,singer_description:single_song_data[0]?.singer_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
+    
+    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_size,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0]?.singer_id?._id,singer_description:single_song_data[0]?.singer_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
 
     }else{
         res.status(402).json({status:0,message:"this song not found"}) 
@@ -533,4 +536,9 @@ exports.get_song_to_video = async(req,res) =>{
         res.status(502).json({status:0,message:"internal server error"})
         console.log("server error on get song to video", error);    
     }
+}
+function getFilesizeInBytes(filename) {
+    var stats = fs.statSync(filename);
+    var fileSizeInBytes = stats.size;
+    return fileSizeInBytes;
 }
