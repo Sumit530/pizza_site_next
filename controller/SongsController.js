@@ -381,11 +381,11 @@ exports.get_song_to_video = async(req,res) =>{
                 }
                 else {
                     var video_url    = ''
-                    var video_size   = ''
+                    var video_size   = 0
                 }
             }else{
                 var video_url    = ''
-                var video_size   = ''
+                var video_size   = 0
             }
             var user_details  = await User.find({_id:e.user_id})
             if(user_details.length >0 ){
