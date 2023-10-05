@@ -375,9 +375,9 @@ exports.get_song_to_video = async(req,res) =>{
             }
             if(e.file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`uploads/video/video/${e.file_name }`)){
+                if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
                     var video_url     = `${path}/${e.file_name}`
-                    var video_size     = getFilesizeInBytes(`uploads/video/video/${e.file_name }`)
+                    var video_size     = getFilesizeInBytes(`uploads/videos/videos/${e.file_name }`)
                 }
                 else {
                     var video_url    = ''
@@ -461,15 +461,18 @@ exports.get_song_to_video = async(req,res) =>{
             }
             if(single_video[0].file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${single_video[0].file_name }`)){
+                if(fs.existsSync(`uploads/video/video/${single_video[0].file_name }`)){
                     var video_url     = `${path}/${single_video[0].file_name}`
+                    var video_size     = getFilesizeInBytes(`uploads/video/video/${single_video[0].file_name }`)
                 }
                 else {
                     var video_url    = ''
+                    var video_size   = ''
                 }
             }else{
-               var video_url    = ''
-             }
+                var video_url    = ''
+                var video_size   = ''
+            }
              var user_details  = await User.find({_id:single_video[0].user_id})
             if(user_details.length >0 ){
                 if(user_details.profile_image  != ''){
@@ -515,6 +518,7 @@ exports.get_song_to_video = async(req,res) =>{
                 video_id : single_video[0]._id,
                 user_id:single_video[0].user_id,
                 name:user_name,
+                video_size,
                 username : user_username,
                 cover_image : cover_image,
                 total_views : parseInt(total_views),
