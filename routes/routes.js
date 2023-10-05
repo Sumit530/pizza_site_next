@@ -230,7 +230,6 @@ const SongUpload = multer({
         ) {
           cb(null, true);
         } else {
-          cb(null, false);
           return cb("Only .mp3 avi format allowed!");
         }
       }
@@ -242,7 +241,6 @@ const SongUpload = multer({
         ) {
           cb(null, true);
         } else {
-          cb(null, false);
           return cb("Only .png, .jpg and .jpeg format allowed!");
         }
       }

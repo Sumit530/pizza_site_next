@@ -63,6 +63,8 @@ exports.add_song = async(req,res) =>{
         banner_image:req?.files?.banner_image[0].filename ,
         attachment:req?.files?.attachment[0].filename ,
         singer_id:req?.body?.singer_id ? req?.body?.singer_id : null,
+        user_id:req?.body?.user_id ? req?.body?.user_id : null,
+        is_user:req?.body?.user_id ? true : false,
         description:req?.body?.description ? req?.body?.description : "",
         duration : req?.body?.duration ? req?.body?.duration : ""
 
@@ -305,7 +307,7 @@ exports.get_song_to_video = async(req,res) =>{
         }else{
             var is_song_bookmark  = 0
         }
-        var single_song_data = await Songs.find({_id:req?.body?.song_id}).populate("singer_id")
+        var single_song_data = await Songs.find({_id:req?.body?.song_id}).populate("singer_id").populate("user_id")
         console.log(single_song_data)
         if(single_song_data.length >0 ){
             if(single_song_data[0].attachment != ''){
@@ -335,7 +337,7 @@ exports.get_song_to_video = async(req,res) =>{
                 var song_banner_image = ''
             }
 
-            if(single_song_data[0].singer_id.image != ''){
+            if(single_song_data[0]?.singer_id?.image  && single_song_data[0]?.singer_id?.image != ''){
                 const path = process.env.PUBLICSINGERURL
                 if(fs.existsSync(`uploads/singer/${single_song_data[0].singer_id.image}`)){
                     var singer_image   = `${path}/${single_song_data[0].singer_id.image}`
@@ -348,13 +350,13 @@ exports.get_song_to_video = async(req,res) =>{
             }
 
             var total_videos  = await Videos.count({song_id:single_song_data[0]._id})
-            if(!req?.body?.user_id && req?.body?.user_id?.length > 0 ){
-                var song_data   = await Videos.find().populate("song_id")
+            // if(!req?.body?.user_id && req?.body?.user_id?.length > 0 ){
+            //     var song_data   = await Videos.find().populate("song_id")
 
-            }
-            else{
-                var song_data = await Videos.find({song_id:req?.body?.song_id}).populate("song_id")
-            }
+            // }
+            // else{
+            // }
+            var song_data = await Videos.find({song_id:req?.body?.song_id}).populate("song_id")
             if(song_data.length > 0){
                 song_data?.map(async(e)=>{
 
@@ -373,14 +375,17 @@ exports.get_song_to_video = async(req,res) =>{
             }
             if(e.file_name  != ''){
                 const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`${path}/${e.file_name }`)){
+                if(fs.existsSync(`uploads/video/video/${e.file_name }`)){
                     var video_url     = `${path}/${e.file_name}`
+                    var video_size     = getFilesizeInBytes(`uploads/video/video/${e.file_name }`)
                 }
                 else {
                     var video_url    = ''
+                    var video_size   = ''
                 }
             }else{
                 var video_url    = ''
+                var video_size   = ''
             }
             var user_details  = await User.find({_id:e.user_id})
             if(user_details.length >0 ){
@@ -433,6 +438,7 @@ exports.get_song_to_video = async(req,res) =>{
                 is_bookmark : is_video_bookmark,
                 is_favorite : is_favorite,
                 is_video_like : is_video_like,
+                video_size,
                 song_id: req?.body?.song_id
             })
 
@@ -526,8 +532,9 @@ exports.get_song_to_video = async(req,res) =>{
     const mainarray = []    
     //mainarray.push(singleSongData)
     mainarray.push(songData)
+    console.log(songData.length)
     
-    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_size,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0]?.singer_id?._id,singer_description:single_song_data[0]?.singer_id.description,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
+    return res.status(201).json({song_id:single_song_data[0]._id,song_name:single_song_data[0].name,song_banner_image:song_banner_image,song_size,song_url:attachment,total_videos:total_videos,singer_id:single_song_data[0]?.singer_id?._id,singer_description:single_song_data[0]?.singer_id?.description,user_username:single_song_data[0]?.user_id?.username,user_name : single_song_data[0]?.user_id?.name,is_song_bookmark:is_song_bookmark, data:songData,status:1,message:"data found"})
 
     }else{
         res.status(402).json({status:0,message:"this song not found"}) 

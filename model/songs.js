@@ -9,7 +9,15 @@ const Schema = new  mongoose.Schema({
     singer_id : {
         type:mongoose.Schema.Types.ObjectId,
         ref : 'singers',
-        require:true
+        require:true 
+    },
+    user_id : {
+        type:mongoose.Schema.Types.ObjectId,
+        ref : 'Users',
+        require:true 
+    },
+    is_user : {
+        type:Boolean,
     },
     name : {
         type:String,
