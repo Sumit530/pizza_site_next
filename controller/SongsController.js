@@ -467,7 +467,7 @@ exports.get_song_to_video = async(req,res) =>{
                 }
                 else {
                     var video_url    = ''
-                    var video_size   = ''
+                    var video_size   = 0
                 }
             }else{
                 var video_url    = ''
