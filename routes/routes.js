@@ -475,7 +475,7 @@ router.post("/search_top_list",UserAuth,form.array(),SearchHistoryController.sea
 router.post("/search_hashtag",UserAuth,form.array(),SearchHistoryController.search_hashtag)
 router.post("/search_song",UserAuth,form.array(),SearchHistoryController.search_song)
 router.post("/search_user",UserAuth,form.array(),SearchHistoryController.search_user)
-router.post("/search_user",UserAuth,form.array(),SearchHistoryController.search_user)
+router.post("/search_video",UserAuth,form.array(),SearchHistoryController.search_video)
 
 //router.post("/search_hashtags_list",UserAuth,form.array(),SearchHistoryController.search_hashtags_list)
 //router.post("/search_video_list",UserAuth,form.array(),SearchHistoryController.search_video_list)
