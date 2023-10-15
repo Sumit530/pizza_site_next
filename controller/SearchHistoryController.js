@@ -374,6 +374,7 @@ exports.search_hashtag = async(req,res)=>{
     if(!req?.body?.keyword ||  req?.body?.keyword == ""){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
+    
     const hashtags = await Hashtag.find({"$expr": {
         "$regexMatch": {
           "input": { "$concat": ["$name"], },
@@ -462,6 +463,53 @@ exports.search_song= async(req,res)=>{
     // console.log(s)
     
     return res.status(201).json({status:1,message:'data Found',data:songs})
+   } catch (error) {
+    return  res.status(406).json({status:0,message:error})
+   }
+}
+exports.hashtags_to_videos= async(req,res)=>{
+  
+   try {
+    if(!req?.body?.hashtag_id ||  req?.body?.hashtag_id == ""){
+        return  res.status(406).json({status:0,message:"please give proper parameter"})
+    }
+    const hashtags = await Hashtag.findOne({_id:req?.body?.hashtag_id})
+    const Video = await HashtagData.find({hashtag_id:req?.body?.hashtag_id}).populate("video_id")
+      var data = []
+      for(let i=0;i<Video.length;i++){
+        if(Video[i].video_id.cover_image != ''){
+          const path = process.env.PUBLICCOVERPAGEURL
+          if(fs.existsSync(`uploads/videos/cover_image/${Video[i].video_id.cover_image}`)){
+              var  cover_image = `${path}/${Video[i].video_id.cover_image}`
+          }else{
+              
+              var cover_image = ''
+          }
+      }else{
+          var cover_image = ''
+      }
+      var user_like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:Video[i].video_id._id})
+      var total_like = await VideoLikes.count({video_id:Video[i].video_id._id})
+      var total_views = await video_watch_histories.count({videp_id:Video[i].video_id._id})
+      var total_this_comments = await VideoComments.count({video_id:Video[i].video_id._id})
+
+      if(user_like_data.length > 0){
+         var is_video_like = 1
+      }else{
+             var is_video_like = 0
+      }
+      data.push({
+        video_id:Video[i].video_id._id,
+        cover_image,
+        total_like,
+        total_views,
+        is_video_like,
+        description:Video[i].video_id.description,
+        total_comments:total_this_comments
+      })
+      }
+    
+    return res.status(201).json({status:1,message:'data Found',data:{hashtagData:hashtags,videoData:data}})
    } catch (error) {
     return  res.status(406).json({status:0,message:error})
    }
