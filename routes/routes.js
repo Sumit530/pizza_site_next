@@ -530,6 +530,7 @@ router.post("/mentions_notification_list",UserAuth,form.array(),NotificationCont
  router.post("/add_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.add_hashtag_bookmark)
  router.post("/remove_hashtag_bookmark",UserAuth,form.array(),HashtagBookmarksController.remove_hashtag_bookmark)
  router.post("/get_hashtag_bookmarks",UserAuth,form.array(),HashtagBookmarksController.get_hashtag_bookmarks)
+ router.post("/hashtags_to_videos",UserAuth,form.array(),SearchHistoryController.hashtags_to_videos)
  
  // block user controller
  router.post("/add_block_user",UserAuth,form.array(),BlockUserContoller.add_block_user)
