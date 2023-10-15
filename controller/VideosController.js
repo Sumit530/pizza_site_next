@@ -139,7 +139,7 @@ exports.video_list = async(req,res) =>{
 
                                     if(f.user_id.profile_image != ''){
                                         const path = process.env.PUBLICPOROFILEIMAGEURL
-                                        if(fs.existsSync(`uploads/user/profile/${f.user_id.profile_image}`)){
+                                        if(fs.existsSync(`uploads/users/profile/${f.user_id.profile_image}`)){
                                             var  profile_image = `${path}/${f.user_id.profile_image}`
                                         }else{
                                             

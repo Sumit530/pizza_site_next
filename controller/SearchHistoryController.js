@@ -9,12 +9,14 @@ const VideoWatchHistory = require("../model/video_watch_histories")
 const VideoBookmark = require("../model/video_bookmarks")
 const HashtagBookmarks = require("../model/hashtags_bookmarks")
 const Hashtag = require("../model/hashtags")
-
 const HashtagData = require("../model/hashtag_data")
 const VideoFavorite = require("../model/video_favorites")
 const Users = require('../model/users')
+const video_watch_histories = require('../model/video_watch_histories')
 
 
+const fs =require("fs")
+const videos = require('../model/videos')
 
 exports.add_search_history = async(req,res)=>{
     if(!req?.body?.user_id || req?.body?.user_id == ''){
@@ -104,7 +106,30 @@ exports.search_top_list = async(req,res)=>{
           "options": "i"
         }
       }})
-      
+      var useData = []
+      for(let i=0;i<users.length;i++){
+        
+        if(users[i].profile_image != ''){
+          
+          const path = process.env.PUBLICPROFILEURL
+          if(fs.existsSync(`uploads/users/profile/${users[i].profile_image}`)){
+              var  profile_image = `${path}/${users[i].profile_image}`
+          }else{
+              
+              var profile_image = ''
+          }
+      }else{
+          var profile_image = ''
+      }
+      var user_name = users[i].name
+      var user_username = users[i].username
+      useData.push({
+        user_id:users[i]._id,
+        profile_image,
+        user_name:users[i].name,
+        user_username :users[i].username
+      })
+      }
       const songs = await Songs.find({"$expr": {
           "$regexMatch": {
             "input": { "$concat": ["$name", " ", "$description"] },
@@ -149,14 +174,44 @@ exports.search_top_list = async(req,res)=>{
     // }
     //   const s = await getFollwerById(req.body.user_id,1,[],[])
     // console.log(s)
-    const Video = await HashtagData.find({"$expr": {
-        "$regexMatch": {
-          "input": { "$concat": ["$video_id.description", " ", "$hashtag_id.name"] },
-          "regex": req.body.keyword,  //Your text search here
-          "options": "i"
+    
+
+    const Video = await videos.find({"description":{$regex:req.body.keyword,$options:'i'}})
+    var data = []
+
+    for(let i=0;i<Video.length;i++){
+      if(Video[i].cover_image != ''){
+        const path = process.env.PUBLICCOVERPAGEURL
+        if(fs.existsSync(`uploads/videos/cover_image/${Video[i].cover_image}`)){
+            var  cover_image = `${path}/${Video[i].cover_image}`
+        }else{
+            
+            var cover_image = ''
         }
-    }}).populate("hashtag_id").populate("video_id")
-    return res.status(201).json({status:1,message:'data Found',data:{users,songs,hashtags,Video}})
+    }else{
+        var cover_image = ''
+    }
+    var user_like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:Video[i]._id})
+    var total_like = await VideoLikes.count({video_id:Video[i]._id})
+    var total_views = await video_watch_histories.count({videp_id:Video[i]._id})
+    var total_this_comments = await VideoComments.count({video_id:Video[i]._id})
+
+    if(user_like_data.length > 0){
+       var is_video_like = 1
+    }else{
+           var is_video_like = 0
+    }
+    data.push({
+      video_id:Video[i]._id,
+      cover_image,
+      total_like,
+      total_views,
+      is_video_like,
+      description:Video[i].description,
+      total_comments:total_this_comments
+    })
+    }
+    return res.status(201).json({status:1,message:'data Found',data:{users:useData,songs,hashtags,Video:data}})
    } catch (error) {
     return  res.status(406).json({status:0,message:error})
    }
@@ -174,6 +229,30 @@ exports.search_user = async(req,res)=>{
           "options": "i"
         }
       }})
+      var data = []
+      for(let i=0;i<users.length;i++){
+        
+        if(users[i].profile_image != ''){
+          
+          const path = process.env.PUBLICPROFILEURL
+          if(fs.existsSync(`uploads/users/profile/${users[i].profile_image}`)){
+              var  profile_image = `${path}/${users[i].profile_image}`
+          }else{
+              
+              var profile_image = ''
+          }
+      }else{
+          var profile_image = ''
+      }
+      var user_name = users[i].name
+      var user_username = users[i].username
+      data.push({
+        user_id:users[i]._id,
+        profile_image,
+        user_name:users[i].name,
+        user_username :users[i].username
+      })
+      }
     
       var arr = []
     // const getFollwerById = async(id,count,arr,list) => { 
@@ -206,8 +285,9 @@ exports.search_user = async(req,res)=>{
     //   const s = await getFollwerById(req.body.user_id,1,[],[])
     // console.log(s)
     
-    return res.status(201).json({status:1,message:'data Found',data:users})
+    return res.status(201).json({status:1,message:'data Found',data:data})
    } catch (error) {
+    console.log(error)
     return  res.status(406).json({status:0,message:error})
    }
 }
@@ -217,14 +297,41 @@ exports.search_video = async(req,res)=>{
     if(!req?.body?.keyword ||  req?.body?.keyword == ""){
         return  res.status(406).json({status:0,message:"please give proper parameter"})
     }
-    const Video = await HashtagData.find({"$expr": {
-        "$regexMatch": {
-          "input": { "$concat": ["$video_id.description", " ", "$hashtag_id.name"] },
-          "regex": req.body.keyword,  //Your text search here
-          "options": "i"
-        }
-    }}).populate("hashtag_id").populate("video_id")
-      var arr = []
+    const Video = await videos.find({"description":{$regex:req.body.keyword,$options:'i'}})
+      var data = []
+
+      for(let i=0;i<Video.length;i++){
+        if(Video[i].cover_image != ''){
+          const path = process.env.PUBLICCOVERPAGEURL
+          if(fs.existsSync(`uploads/videos/cover_image/${Video[i].cover_image}`)){
+              var  cover_image = `${path}/${Video[i].cover_image}`
+          }else{
+              
+              var cover_image = ''
+          }
+      }else{
+          var cover_image = ''
+      }
+      var user_like_data = await VideoLikes.find({user_id:req?.body?.user_id,video_id:Video[i]._id})
+      var total_like = await VideoLikes.count({video_id:Video[i]._id})
+      var total_views = await video_watch_histories.count({videp_id:Video[i]._id})
+      var total_this_comments = await VideoComments.count({video_id:Video[i]._id})
+
+      if(user_like_data.length > 0){
+         var is_video_like = 1
+      }else{
+             var is_video_like = 0
+      }
+      data.push({
+        video_id:Video[i]._id,
+        cover_image,
+        total_like,
+        total_views,
+        is_video_like,
+        description:Video[i].description,
+        total_comments:total_this_comments
+      })
+      }
     // const getFollwerById = async(id,count,arr,list) => { 
     //     if(list.find((e)=>{e==id})){
     //         console.log("hey")
@@ -255,8 +362,9 @@ exports.search_video = async(req,res)=>{
     //   const s = await getFollwerById(req.body.user_id,1,[],[])
     // console.log(s)
     
-    return res.status(201).json({status:1,message:'data Found',data:Video})
+    return res.status(201).json({status:1,message:'data Found',data:data})
    } catch (error) {
+     console.log(error)
     return  res.status(406).json({status:0,message:error})
    }
 }
@@ -321,7 +429,7 @@ exports.search_song= async(req,res)=>{
           "regex": req.body.keyword,  //Your text search here
           "options": "i"
         }
-      }})
+      }}).populate("singer_id").populate("user_id")
       var arr = []
     // const getFollwerById = async(id,count,arr,list) => { 
     //     if(list.find((e)=>{e==id})){
