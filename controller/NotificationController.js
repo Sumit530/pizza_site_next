@@ -25,7 +25,7 @@ exports.notification = async(req,res)=>{
             if(userdata.length > 0){
             if(userdata[0].profile_image != ''){
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${userdata[0].profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${userdata[0].profile_image}`)){
                     var  profile_image = `${path}/${userdata[0].profile_image}`
                 }else{
                     
@@ -152,7 +152,9 @@ exports.allNotification = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
+    const receiver_id = req?.body?.user_id
     const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).sort({createdAt:-1})
+    console.log(all_notidication_data)
     
     if(all_notidication_data.length > 0){
         
@@ -268,7 +270,7 @@ exports.allNotification = async(req,res) =>{
             }
             else if (e.type==4){
                 const userData =  await Users.find({_id:e.user_id})
-               const isFollowing = await Followers.find({follower_id:receiver_id,user_id:e.user_id})
+               const isFollowing = await Followers.find({mention_id:receiver_id,user_id:e.user_id})
                 if(userData[0].profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
@@ -281,18 +283,18 @@ exports.allNotification = async(req,res) =>{
                 }else{
                     var profile_image = ''
                 }
-                if(videoData[0].cover_image != ''){
+                // if(videoData[0].cover_image != ''){
 
-                    const path = process.env.PUBLICCOVERIMAGEEURL
-                    if(fs.existsSync(`uploads/videos/cover_image/${videoData[0].cover_image != ''}`)){
-                        var  cover_image = `${path}/${videoData[0].cover_image }`
-                    }else{
+                //     const path = process.env.PUBLICCOVERIMAGEEURL
+                //     if(fs.existsSync(`uploads/videos/cover_image/${videoData[0].cover_image != ''}`)){
+                //         var  cover_image = `${path}/${videoData[0].cover_image }`
+                //     }else{
                         
-                        var cover_image = ''
-                    }
-                }else{
-                    var cover_image = ''
-                }
+                //         var cover_image = ''
+                //     }
+                // }else{
+                //     var cover_image = ''
+                // }
 
 
                 return({
@@ -301,6 +303,7 @@ exports.allNotification = async(req,res) =>{
                 type:e.type,
                 name:userData?.name ? userData?.name: '',
                 username:userData?.username ? userData?.username : '',
+                comment:e?.message,
                 profile_image : profile_image,
                 isFollowing : isFollowing.length>0 ? true:false, 
                 created_at:moment(e.createdAt).local()
@@ -636,7 +639,7 @@ exports.follower_notification_list = async(req,res) =>{
              if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image}`)){
                     var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
@@ -668,20 +671,24 @@ exports.follower_notification_list = async(req,res) =>{
     }
 
     var result = []
+    if(today_list || yesterday_list){
     Promise.all(today_list).then((e)=>{
     
-        result.push({
-            today_list:e
-        })
-        Promise.all(yesterday_list).then((e)=>{
-            yesterday_list:e
-        })
+        result.push(...e)
+        // Promise.all(yesterday_list).then((e)=>{
+        //     result.push({
+        //         yesterday_list:e
+        //     })
+        // })
         if(result.length > 0){
             return  res.status(201).json({status:1,message:"data found found",data:result})
         }else{
             return res.status(406).json({status:0,message:"No data found.!"})
         }
     })
+}else {
+    return res.status(406).json({status:0,message:"No data found.!"})
+}
 }
 
 exports.mentions_notification_list = async(req,res) =>{
@@ -694,7 +701,7 @@ exports.mentions_notification_list = async(req,res) =>{
             if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image}`)){
                     var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
@@ -756,7 +763,7 @@ exports.comment_notification_list = async(req,res) =>{
             if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image}`)){
                     var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
@@ -826,13 +833,14 @@ exports.like_notification_list = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).populate('user_id').sort({createdAt:-1})
-      if(all_notidication_data?.length > 0){
+    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).populate('user_id').populate("video_id").sort({createdAt:-1})
+      if(all_notidication_data?.length > 0 ){
         var video_all_data =   all_notidication_data?.map(async(e)=>{
-            if(Object.keys(e.user_id).length > 0){
+            if(e.type == 1 ){
+            if( Object.keys(e.user_id).length > 0 ){
             if(e.user_id.profile_image != ''){
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image}`)){
                     var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
@@ -852,7 +860,7 @@ exports.like_notification_list = async(req,res)=>{
         
         if(Object.keys(e.video_id).length > 0){
             if(e.video_id.cover_image != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
+                const path = process.env.PUBLICCOVERPAGEURL 
                 if(fs.existsSync(`uploads/videos/cover_images/${e.video_id.cover_image}`)){
                     var cover_image = `${path}/${e.video_id.cover_image}`;    
                 }else{
@@ -862,7 +870,7 @@ exports.like_notification_list = async(req,res)=>{
                 var cover_image = "";
             }
             if(e.video_id.file_name != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
+                const path = process.env.PUBLICVIDEOSURL 
                 if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
                     var video_url  = `${path}/${e.video_id.file_name}`;    
                 }else{
@@ -875,7 +883,6 @@ exports.like_notification_list = async(req,res)=>{
             var video_url  = "";
             var cover_image = "";
         }
-        const follower_data = await Followers.find({user_id:req?.body?.user_id,follower_id:e.user_id._id})
        return({
             id:e._id,
             video_id:e?.video_id._id ? e?.video_id._id  : '',
@@ -888,7 +895,8 @@ exports.like_notification_list = async(req,res)=>{
             cover_image:cover_image,
             created_at:moment(e.createdAt).local()
         })
-        })
+    }
+    })
 
     }
     var yesterday_data = await Notification.find({receiver_id:req?.body?.user_id,notification_type:1}).populate('user_id').sort({createdAt:-1})
@@ -904,7 +912,7 @@ exports.like_notification_list = async(req,res)=>{
                 if(f.receiver_id.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
-                    if(fs.existsSync(`uploads/user/profile/${f.receiver_id.profile_image}`)){
+                    if(fs.existsSync(`uploads/users/profile/${f.receiver_id.profile_image}`)){
                         var  profile_image = `${path}/${f.receiver_id.profile_image}`
                     }else{
                         
@@ -932,7 +940,7 @@ exports.like_notification_list = async(req,res)=>{
            if(e.receiver_id.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
-                    if(fs.existsSync(`uploads/user/profile/${e.receiver_id.profile_image}`)){
+                    if(fs.existsSync(`uploads/users/profile/${e.receiver_id.profile_image}`)){
                         var  profile_image = `${path}/${e.receiver_id.profile_image}`
                     }else{
                         
@@ -990,18 +998,16 @@ exports.like_notification_list = async(req,res)=>{
 Promise.all(video_all_data).then((e)=>{
                 var result = []
                 
-                result.push({
-                    today_list:e
-                })
-                if(yesterday_data.length>0){
+                result.push(...e.filter((e)=>{return e!= null}))
+                // if(yesterday_data.length>0){
 
-                    Promise.all(yesterday_video_data).then((f)=>{
+                //     Promise.all(yesterday_video_data).then((f)=>{
                         
-                        result.push({
-                            yesterday_video_data:f
-                        })
-                    })
-                }
+                //         result.push({
+                //             yesterday_video_data:f
+                //         })
+                //     })
+                // }
                 if(result.length>0){
                     return  res.status(201).json({status:1,message:"data found found",data:result})
                 }else{

@@ -90,7 +90,7 @@ if(req?.files?.video_file ){
                         user_id:user_id,
                         receiver_id : e,
                         video_id:video_id,
-                        comment:title,
+                        message:title,
                         type:4
                     })
                     await notification_data.save()
@@ -669,7 +669,7 @@ exports.add_video_like = async(req,res)=>{
                             user_id:req?.body?.user_id,
                             receiver_id : video_data[0].user_id._id,
                             video_id:req?.body?.video_id,
-                            comment:title,
+                            message:title,
                             type:1
                         })
                         await notification_data.save()
@@ -782,7 +782,34 @@ exports.add_video_comments = async(req,res)=>{
                 comment : req?.body?.comment ? req?.body?.comment : '',
             })
             const comment = await video_comment.save()
-            
+            if(req?.body?.mention_user && req?.body?.mention_user != ''){
+                const mention_user_id = req?.body?.mention_user
+                const user_data = await Users.find({_id:req?.body?.user_id}).select("name")
+                // const mention_data  = await Users.find({_id:user_id}).select("fcm_id")
+                const title = `${user_data[0].name} mentioned you in a comment`
+                const notification_data = new Notification({
+                    user_id:req?.body?.user_id,
+                    receiver_id : mention_user_id,
+                    comment_id:comment._id,
+                    message:title,
+                    type:4
+                })
+                await notification_data.save()
+                // mention_user_id?.map(async(e)=>{
+                //     if(mention_data.length > 0){
+                //         const notification_id = Math.floor(1000 + Math.random() * 9000)
+                //         const find_reciever_id   = mention_user_id[0].fcm_id
+                //         const title = `${user_data[0].name} mention you to video`
+                //         const message = `${user_data[0].name} mention you to video ${moment().format('DD-MM-YYYY HH:mm A')}`
+                //         if(find_reciever_id != ''){
+                //             let img = ''
+                //             // push_message.sendPushNotification(find_reciever_id,title,message,message,notification_id,1,e,img,1,1)
+                //         }
+                           
+                            
+                //     }
+                // })
+            }
             //console.log(video_data)
             if(Object.keys(video_data[0].user_id).length > 0){
                 if(video_data[0].user_id.fcm_id != ''){

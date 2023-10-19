@@ -1264,7 +1264,7 @@ exports.to_follow = async(req,res)=>{
         if(user_id == follower_id){
             return  res.status(406).json({status:0,message:"please follow another user"})
         }
-        const user_data = await User.find({_id:user_id})
+        const user_data = await User.find({_id:follower_id})
         if(user_data.length>0){
            const follower_data = await Follow.find({user_id:user_id,follower_id:follower_id})
             if(follower_data.length>0){
@@ -1277,8 +1277,8 @@ exports.to_follow = async(req,res)=>{
                 //     const find_receiver_id = follower_user_data[0].device_id
                 //     const fcms = []
                 //     fcms.push(find_receiver_id)
-                //     const title = `${user_data[0].name} send follow request`
-                //     const message = `${user_data[0].name} send follow request at ${moment().format("D-MM-YYYY hh:mm:ss a")}`
+                    const title = `${user_data[0].name} send follow request`
+                //   const message = `${user_data[0].name} send follow request at ${moment().format("D-MM-YYYY hh:mm:ss a")}`
                 //     if(find_receiver_id != ""){
                 //         const img = "";
                 //         const field = {
@@ -1306,9 +1306,10 @@ exports.to_follow = async(req,res)=>{
                 //             body:field
                 //         }).then(async(e)=>{
                              const notifcationdata = new Notification({
-                               user_id:mongoose.Types.ObjectId(user_id),
-                                receiver_id :mongoose.Types.ObjectId(follower_id),
-                             type:3
+                               user_id:mongoose.Types.ObjectId(follower_id),
+                                receiver_id :mongoose.Types.ObjectId(user_id),
+                                 type:3,
+                                 messsage:title
                            })
                              const notification = await notifcationdata.save()
                 //         })
