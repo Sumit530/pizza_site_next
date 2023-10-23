@@ -703,7 +703,8 @@ exports.mentions_notification_list = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     } 
-    var mention_data  = await Notification.find({receiver_id:req.body.user_id,notification_type:4}).populate("video_id").populate("user_id").sort({createdAt:-1})
+    var mention_data  = await Notification.find({receiver_id:req.body.user_id,type:4}).populate("video_id").populate("user_id").sort({createdAt:-1})
+    console.log(mention_data.length)
     if(mention_data.length > 0){
         var mentionList = mention_data.map((e)=>{
             if(e.user_id.profile_image != ''){
@@ -719,35 +720,34 @@ exports.mentions_notification_list = async(req,res) =>{
                 var profile_image = ''
             }
 
-            if(e.video_id.cover_image != ''){
+            if(e?.video_id?.cover_image != ''){
                 const path = process.env.PUBLICCOVERIMAGEURL 
-                if(fs.existsSync(`uploads/videos/cover_images/${e.video_id.cover_image}`)){
-                    var cover_image = `${path}/${e.video_id.cover_image}`;    
+                if(fs.existsSync(`uploads/videos/cover_images/${e?.video_id?.cover_image}`)){
+                    var cover_image = `${path}/${e?.video_id?.cover_image}`;    
                 }else{
                     var cover_image = "";    
                 }
             }else{
                 var cover_image = "";
             }
-            if(e.video_id.file_name != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
-                if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
-                    var video_url  = `${path}/${e.video_id.file_name}`;    
-                }else{
-                    var video_url  = "";    
-                }
-            }else{
-                var video_url  = "";
-            }
+            // if(e.video_id.file_name != ''){
+            //     const path = process.env.PUBLICCOVERIMAGEURL 
+            //     if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
+            //         var video_url  = `${path}/${e.video_id.file_name}`;    
+            //     }else{
+            //         var video_url  = "";    
+            //     }
+            // }else{
+            //     var video_url  = "";
+            // }
             return({
                 id:e._id,
                 user_id : e.user_id._id,
                 name: e.user_id.name,
-                username: f.user_id.username,
+                username: e.user_id.username,
                 profile_image: profile_image,
-                video_url:video_url,
                 cover_image:cover_image,
-                created_at : moment(f.createdAt).local()
+                created_at : moment(e.createdAt).local()
             })
 
         })
@@ -764,7 +764,7 @@ exports.comment_notification_list = async(req,res) =>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     } 
-    var mention_data  = await Notification.find({receiver_id:req.body.user_id,notification_type:2}).populate("video_id").populate("user_id").sort({createdAt:-1})
+    var mention_data  = await Notification.find({receiver_id:req.body.user_id,type:2}).populate("video_id").populate("user_id").sort({createdAt:-1})
     console.log(mention_data)
     if(mention_data.length > 0){
         var mentionList = mention_data.map(async(e)=>{
@@ -791,16 +791,16 @@ exports.comment_notification_list = async(req,res) =>{
             }else{
                 var cover_image = "";
             }
-            if(e.video_id.file_name != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
-                if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
-                    var video_url  = `${path}/${e.video_id.file_name}`;    
-                }else{
-                    var video_url  = "";    
-                }
-            }else{
-                var video_url  = "";
-            }
+            // if(e.video_id.file_name != ''){
+            //     const path = process.env.PUBLICCOVERIMAGEURL 
+            //     if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
+            //         var video_url  = `${path}/${e.video_id.file_name}`;    
+            //     }else{
+            //         var video_url  = "";    
+            //     }
+            // }else{
+            //     var video_url  = "";
+            // }
             const comment_like = await  VideoCommentLikes.find({user_id:req.body.user_id,comment_id:e?.comment_id})
             if(comment_like.length > 0){
                 var is_like_comment  = 1
@@ -811,11 +811,12 @@ exports.comment_notification_list = async(req,res) =>{
                 id:e._id,
                 user_id : e.user_id._id,
                 name: e.user_id.name,
-                username: f.user_id.username,
+                username: e.user_id.username,
                 profile_image: profile_image,
-                video_url:video_url,
+                // video_url:video_url,
+                message:e.message,
                 cover_image:cover_image,
-                created_at : moment(f.createdAt).local()
+                created_at : moment(e.createdAt).local()
             })
 
         })

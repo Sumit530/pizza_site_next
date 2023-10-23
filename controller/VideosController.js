@@ -774,6 +774,7 @@ exports.add_video_comments = async(req,res)=>{
     const user_data = await Users.find({_id:req?.body?.user_id})
     if(user_data.length > 0){
         const video_data = await videos.find({_id:req?.body?.video_id}).populate("user_id")
+        console.log(video_data)
         if(video_data.length>0){
            const  video_comment = new VideoComments({
                 user_id:req?.body?.user_id,
@@ -782,15 +783,16 @@ exports.add_video_comments = async(req,res)=>{
                 comment : req?.body?.comment ? req?.body?.comment : '',
             })
             const comment = await video_comment.save()
+            const user_data = await Users.find({_id:req?.body?.user_id}).select("name")
             if(req?.body?.mention_user && req?.body?.mention_user != ''){
                 const mention_user_id = req?.body?.mention_user
-                const user_data = await Users.find({_id:req?.body?.user_id}).select("name")
                 // const mention_data  = await Users.find({_id:user_id}).select("fcm_id")
                 const title = `${user_data[0].name} mentioned you in a comment`
                 const notification_data = new Notification({
                     user_id:req?.body?.user_id,
                     receiver_id : mention_user_id,
                     comment_id:comment._id,
+                    video_id:req?.body?.video_id,
                     message:title,
                     type:4
                 })
@@ -810,6 +812,16 @@ exports.add_video_comments = async(req,res)=>{
                 //     }
                 // })
             }
+            const notify_data = new Notification({
+                user_id:req?.body?.user_id,
+                receiver_id : video_data[0].user_id._id,
+                message:`${user_data[0].name} commented on your post`,
+                comment_id:comment._id,
+                video_id:req?.body?.video_id,
+                type:2
+            })
+          const s =   await notify_data.save()
+          console.log(s)
             //console.log(video_data)
             if(Object.keys(video_data[0].user_id).length > 0){
                 if(video_data[0].user_id.fcm_id != ''){
