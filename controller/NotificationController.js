@@ -842,12 +842,15 @@ exports.like_notification_list = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id,createdAt:{ "$eq": new Date(moment().subtract(1, "days"))}}).populate('user_id').populate("video_id").sort({createdAt:-1})
+
+    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id,type:1,createdAt:{ "$gte": new Date(moment().subtract(1, "days")),"$lte": new Date()}}).populate('user_id').populate("video_id").sort({createdAt:-1})
     var today_data = []
     var yesterday_data = []
+    
       if(all_notidication_data?.length > 0 ){
         var video_all_data =   all_notidication_data?.map(async(e)=>{
-            if(e.type == 1 ){
+            console.log(e)
+            
 
             if( Object.keys(e.user_id).length > 0 ){
             if(e.user_id.profile_image != ''){
@@ -928,9 +931,14 @@ exports.like_notification_list = async(req,res)=>{
     return ({
         type:e.type 
     })
-    }
+    
     })
 
+    const result = await Promise.all(video_all_data)
+    
+    return  res.status(201).json({status:1,message:"data found found",data:{today_data,yesterday_data}})
+    }else{
+        return res.status(406).json({status:0,message:"No data found.!"})
     }
 //     var yesterday_data = await Notification.find({receiver_id:req?.body?.user_id,notification_type:1}).populate('user_id').sort({createdAt:-1})
 //      if(yesterday_data.length > 0){
@@ -1045,15 +1053,7 @@ exports.like_notification_list = async(req,res)=>{
     //                 }else{
         //                 }
         //             })
-    const result = await Promise.all(video_all_data)
-    console.log(today_data.length,yesterday_data.length)
-        if(yesterday_data.length || today_data.length){
-
-            return  res.status(201).json({status:1,message:"data found found",data:{today_data,yesterday_data}})
-        }else{
-
-            return res.status(406).json({status:0,message:"No data found.!"})
-        }
-        
-
+    
+    
+    
 }
