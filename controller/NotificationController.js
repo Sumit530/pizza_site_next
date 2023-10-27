@@ -925,6 +925,9 @@ exports.like_notification_list = async(req,res)=>{
         created_at:moment(e.createdAt).local()
     })
     }
+    return ({
+        type:e.type 
+    })
     }
     })
 
