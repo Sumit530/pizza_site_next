@@ -1,7 +1,7 @@
 const User = require("../model/users")
 const moment = require("moment")
 const nodemailer = require('nodemailer');
-const { validate} =   require('deep-email-validator')
+// const { validate} =   require('deep-email-validator')
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs");
 const Notification = require("../model/notifications")
@@ -10,7 +10,7 @@ const safety = require("../model/safeties")
 const Follow = require("../model/followers")
 const Language = require("../model/languages")
 require("dotenv").config()
-const TwoFactor = new (require('2factor'))(process.env.API_KEY)
+// const TwoFactor = new (require('2factor'))(process.env.API_KEY)
 const fs = require("fs");
 const qrcode = require("qrcode")
 const mongoose = require("mongoose")
@@ -1309,7 +1309,7 @@ exports.to_follow = async(req,res)=>{
                                user_id:mongoose.Types.ObjectId(follower_id),
                                 receiver_id :mongoose.Types.ObjectId(user_id),
                                  type:3,
-                                 messsage:title
+                                 message:title
                            })
                              const notification = await notifcationdata.save()
                 //         })
