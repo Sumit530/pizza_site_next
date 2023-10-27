@@ -842,10 +842,13 @@ exports.like_notification_list = async(req,res)=>{
     if( req?.body?.user_id == '' || !req?.body?.user_id ){ 
         return  res.status(406).json({status:0,message:"please give a proper parameter"})
     }
-    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id}).populate('user_id').populate("video_id").sort({createdAt:-1})
+    const all_notidication_data  = await Notification.find({receiver_id:req?.body?.user_id,createdAt:{ "$eq": new Date(moment().subtract(1, "days"))}}).populate('user_id').populate("video_id").sort({createdAt:-1})
+    var today_data = []
+    var yesterday_data = []
       if(all_notidication_data?.length > 0 ){
         var video_all_data =   all_notidication_data?.map(async(e)=>{
             if(e.type == 1 ){
+
             if( Object.keys(e.user_id).length > 0 ){
             if(e.user_id.profile_image != ''){
                 const path = process.env.PUBLICPOROFILEIMAGEURL
@@ -870,7 +873,7 @@ exports.like_notification_list = async(req,res)=>{
         if(Object.keys(e.video_id).length > 0){
             if(e.video_id.cover_image != ''){
                 const path = process.env.PUBLICCOVERPAGEURL 
-                if(fs.existsSync(`uploads/videos/cover_images/${e.video_id.cover_image}`)){
+                if(fs.existsSync(`uploads/videos/cover_image/${e.video_id.cover_image}`)){
                     var cover_image = `${path}/${e.video_id.cover_image}`;    
                 }else{
                     var cover_image = "";    
@@ -892,137 +895,162 @@ exports.like_notification_list = async(req,res)=>{
             var video_url  = "";
             var cover_image = "";
         }
-       return({
-            id:e._id,
-            video_id:e?.video_id._id ? e?.video_id._id  : '',
-            user_id:e.user_id._id,
-            name:e.user_id.name,
-            username:e.user_id.username,
+        if(moment(e.createdAt).date() == moment().date() ){
+
+            today_data.push({
+                id:e._id,
+                video_id:e?.video_id._id ? e?.video_id._id  : '',
+                user_id:e.user_id._id,
+                name:e.user_id.name,
+                username:e.user_id.username,
+            message:e.message ? e?.message  : "",
             profile_image : profile_image,
             type:e.type,
             video_url:video_url,
             cover_image:cover_image,
             created_at:moment(e.createdAt).local()
         })
+    }else {
+        yesterday_data.push({
+            id:e._id,
+            video_id:e?.video_id._id ? e?.video_id._id  : '',
+            user_id:e.user_id._id,
+            name:e.user_id.name,
+            username:e.user_id.username,
+        message:e.message ? e?.message  : "",
+        profile_image : profile_image,
+        type:e.type,
+        video_url:video_url,
+        cover_image:cover_image,
+        created_at:moment(e.createdAt).local()
+    })
+    }
     }
     })
 
     }
-    var yesterday_data = await Notification.find({receiver_id:req?.body?.user_id,notification_type:1}).populate('user_id').sort({createdAt:-1})
-     if(yesterday_data.length > 0){
-        var yesterday_video_data = yesterday_data?.map(async(e)=>{
+//     var yesterday_data = await Notification.find({receiver_id:req?.body?.user_id,notification_type:1}).populate('user_id').sort({createdAt:-1})
+//      if(yesterday_data.length > 0){
+//         var yesterday_video_data = yesterday_data?.map(async(e)=>{
 
         
      
-        var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
-        var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
-        if(noti_more_data?.length>0){
-          var  yesterday_more_result =   noti_more_data?.map((f)=>{
-                if(f.receiver_id.profile_image != ''){
+//         var noti_more_data = await Notification.find({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
+//         var noti_more_count = await Notification.count({receiver_id:req?.body?.user_id,_id:{$ne:e._id},video_id:e.video_id,createdAt:{$gte:moment().utc().subtract(1,"day")}}).populate("receiver_id")
+//         if(noti_more_data?.length>0){
+//           var  yesterday_more_result =   noti_more_data?.map((f)=>{
+//                 if(f.receiver_id.profile_image != ''){
 
-                    const path = process.env.PUBLICPOROFILEIMAGEURL
-                    if(fs.existsSync(`uploads/users/profile/${f.receiver_id.profile_image}`)){
-                        var  profile_image = `${path}/${f.receiver_id.profile_image}`
-                    }else{
+//                     const path = process.env.PUBLICPOROFILEIMAGEURL
+//                     if(fs.existsSync(`uploads/users/profile/${f.receiver_id.profile_image}`)){
+//                         var  profile_image = `${path}/${f.receiver_id.profile_image}`
+//                     }else{
                         
-                        var profile_image = ''
-                    }
-                }else{
-                    var profile_image = ''
-                }
+//                         var profile_image = ''
+//                     }
+//                 }else{
+//                     var profile_image = ''
+//                 }
                 
-                            return({
-                        id:f._id,
-                        user_id : f.receiver_id._id,
-                        name: f.receiver_id.name,
-                        username: f.receiver_id.username,
-                        profile_image: profile_image,
-                        total_another_like : noti_more_data.length,
-                        created_at : moment(f.createdAt).local()
+//                             return({
+//                         id:f._id,
+//                         user_id : f.receiver_id._id,
+//                         name: f.receiver_id.name,
+//                         username: f.receiver_id.username,
+//                         profile_image: profile_image,
+//                         total_another_like : noti_more_data.length,
+//                         created_at : moment(f.createdAt).local()
 
 
 
-                    })
-             })
+//                     })
+//              })
 
 
-           if(e.receiver_id.profile_image != ''){
+//            if(e.receiver_id.profile_image != ''){
 
-                    const path = process.env.PUBLICPOROFILEIMAGEURL
-                    if(fs.existsSync(`uploads/users/profile/${e.receiver_id.profile_image}`)){
-                        var  profile_image = `${path}/${e.receiver_id.profile_image}`
-                    }else{
+//                     const path = process.env.PUBLICPOROFILEIMAGEURL
+//                     if(fs.existsSync(`uploads/users/profile/${e.receiver_id.profile_image}`)){
+//                         var  profile_image = `${path}/${e.receiver_id.profile_image}`
+//                     }else{
                         
-                        var profile_image = ''
-                    }
-                }else{
-                    var profile_image = ''
-                }
+//                         var profile_image = ''
+//                     }
+//                 }else{
+//                     var profile_image = ''
+//                 }
 
-                if(Object.keys(e.video_id).length > 0){
-            if(e.video_id.cover_image != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
-                if(fs.existsSync(`uploads/videos/cover_images/${e.video_id.cover_image}`)){
-                    var cover_image = `${path}/${e.video_id.cover_image}`;    
-                }else{
-                    var cover_image = "";    
-                }
-            }else{
-                var cover_image = "";
-            }
-            if(e.video_id.file_name != ''){
-                const path = process.env.PUBLICCOVERIMAGEURL 
-                if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
-                    var video_url  = `${path}/${e.video_id.file_name}`;    
-                }else{
-                    var video_url  = "";    
-                }
-            }else{
-                var video_url  = "";
-            }
-        }else{
-            var video_url  = "";
-            var cover_image = "";
-        }
-        }
-        return({
-            id:e._id,
-            video_id:e?.video_id._id ? e?.video_id._id  : '',
-            user_id:e.user_id._id,
-            name:e.user_id.name,
-            username:e.user_id.username,
-            profile_image : profile_image,
-            type:e.type,
-            video_url:video_url,
-            cover_image:cover_image,
-            created_at:moment(e.createdAt).local()
-        })
+//                 if(Object.keys(e.video_id).length > 0){
+//             if(e.video_id.cover_image != ''){
+//                 const path = process.env.PUBLICCOVERIMAGEURL 
+//                 if(fs.existsSync(`uploads/videos/cover_images/${e.video_id.cover_image}`)){
+//                     var cover_image = `${path}/${e.video_id.cover_image}`;    
+//                 }else{
+//                     var cover_image = "";    
+//                 }
+//             }else{
+//                 var cover_image = "";
+//             }
+//             if(e.video_id.file_name != ''){
+//                 const path = process.env.PUBLICCOVERIMAGEURL 
+//                 if(fs.existsSync(`uploads/videos/videos/${e.video_id.file_name}`)){
+//                     var video_url  = `${path}/${e.video_id.file_name}`;    
+//                 }else{
+//                     var video_url  = "";    
+//                 }
+//             }else{
+//                 var video_url  = "";
+//             }
+//         }else{
+//             var video_url  = "";
+//             var cover_image = "";
+//         }
+//         }
+//         return({
+//             id:e._id,
+//             video_id:e?.video_id._id ? e?.video_id._id  : '',
+//             user_id:e.user_id._id,
+//             name:e.user_id.name,
+//             username:e.user_id.username,
+//             profile_image : profile_image,
+//             type:e.type,
+//             video_url:video_url,
+//             cover_image:cover_image,
+//             created_at:moment(e.createdAt).local()
+//         })
         
            
-    })
+//     })
         
   
-}
+// }
 
-Promise.all(video_all_data).then((e)=>{
-                var result = []
+// Promise.all(video_all_data).then((e)=>{
+//                 var result = []
                 
-                result.push(...e.filter((e)=>{return e!= null}))
-                // if(yesterday_data.length>0){
+//                 result.push(...e.filter((e)=>{return e!= null}))
+//                 // if(yesterday_data.length>0){
 
-                //     Promise.all(yesterday_video_data).then((f)=>{
+//                 //     Promise.all(yesterday_video_data).then((f)=>{
                         
-                //         result.push({
-                //             yesterday_video_data:f
-                //         })
-                //     })
-                // }
-                if(result.length>0){
-                    return  res.status(201).json({status:1,message:"data found found",data:result})
-                }else{
-                    return res.status(406).json({status:0,message:"No data found.!"})
-                }
-            })
+//                 //         result.push({
+//                 //             yesterday_video_data:f
+//                 //         })
+//                 //     })
+//                 // }
+//                 if(result.length>0){
+    //                 }else{
+        //                 }
+        //             })
+    const result = await Promise.all(video_all_data)
+    console.log(today_data.length,yesterday_data.length)
+        if(yesterday_data.length || today_data.length){
+
+            return  res.status(201).json({status:1,message:"data found found",data:{today_data,yesterday_data}})
+        }else{
+
+            return res.status(406).json({status:0,message:"No data found.!"})
+        }
         
 
 }
