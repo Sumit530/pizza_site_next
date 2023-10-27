@@ -614,7 +614,7 @@ exports.follower_notification_list = async(req,res) =>{
              if(e.user_id.profile_image != ''){
 
                 const path = process.env.PUBLICPOROFILEIMAGEURL
-                if(fs.existsSync(`uploads/user/profile/${e.user_id.profile_image}`)){
+                if(fs.existsSync(`uploads/users/profile/${e.user_id.profile_image}`)){
                     var  profile_image = `${path}/${e.user_id.profile_image}`
                 }else{
                     
