@@ -163,7 +163,7 @@ exports.allNotification = async(req,res) =>{
             if(e.type == 1){
                 const userData =  await Users.find({_id:e.user_id})
                 const videoData = await Videos.find({_id:e.video_id})
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -204,7 +204,7 @@ exports.allNotification = async(req,res) =>{
                 const userData =  await Users.find({_id:e.user_id})
                 const videoData = await Videos.find({_id:e.video_id})
                 const commentData = await VideoComments.find({_id:e.comment_id})
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -245,7 +245,7 @@ exports.allNotification = async(req,res) =>{
             else if(e.type == 3){
                 const userData =  await Users.find({_id:e.user_id})
                const isFollowing = await Followers.find({follower_id:receiver_id,user_id:e.user_id})
-                if(userData[0]?.profile_image != ''){
+               if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -271,7 +271,7 @@ exports.allNotification = async(req,res) =>{
             else if (e.type==4){
                 const userData =  await Users.find({_id:e.user_id})
                const isFollowing = await Followers.find({mention_id:receiver_id,user_id:e.user_id})
-                if(userData[0]?.profile_image != ''){
+               if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -318,7 +318,7 @@ exports.allNotification = async(req,res) =>{
                 var userData =  await Users.find({_id:e.user_id})
 
                 
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -372,7 +372,7 @@ exports.allNotification = async(req,res) =>{
             if(e.type == 1){
                 const userData =  await Users.find({_id:e.user_id})
                 const videoData = await Videos.find({_id:e.video_id})
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -413,7 +413,7 @@ exports.allNotification = async(req,res) =>{
                 const userData =  await Users.find({_id:e.user_id})
                 const videoData = await Videos.find({_id:e.video_id})
                 const commentData = await VideoComments.find({_id:e.comment_id})
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -454,7 +454,7 @@ exports.allNotification = async(req,res) =>{
             else if(e.type == 3){
                 const userData =  await Users.find({_id:e.user_id})
                const isFollowing = await Followers.find({follower_id:receiver_id,user_id:e.user_id})
-                if(userData[0]?.profile_image != ''){
+               if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -481,7 +481,7 @@ exports.allNotification = async(req,res) =>{
                 const userData =  await Users.find({_id:e.user_id})
                const isFollowing = await Followers.find({follower_id:receiver_id,user_id:e.user_id})
                const videoData = await Videos.find({_id:e.video_id})
-                if(userData[0]?.profile_image != ''){
+               if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
@@ -534,7 +534,7 @@ exports.allNotification = async(req,res) =>{
                 var userData =  await Users.find({_id:e.user_id})
 
                 
-                if(userData[0]?.profile_image != ''){
+                if  (userData.length>0  && userData[0]?.profile_image != ''){
 
                     const path = process.env.PUBLICPOROFILEIMAGEURL
                     if(fs.existsSync(`uploads/user/profile/${userData[0]?.profile_image != ''}`)){
