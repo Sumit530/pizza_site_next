@@ -846,10 +846,11 @@ exports.get_notification_settings = async(req,res) =>{
 
 exports.getProfile = async(req,res) =>{
     try {
-        if(!req?.body?.follower_id || req?.body?.follower_id == '' || req?.body?.login_id == '' || !req?.body?.login_id){ 
+        if(!req?.body?.user_id || req?.body?.user_id == '' || req?.body?.login_id == '' || !req?.body?.login_id){ 
             return  res.status(406).json({status:0,message:"please give proper parameter"})
         }
-        var profile = await User.find({_id:follower_id})
+        var profile = await User.find({_id:req?.body?.user_id})
+        
         if(profile.length==0){
             return res.status(402).json({status:0,message:"No Data Found"})
         }
@@ -857,29 +858,46 @@ exports.getProfile = async(req,res) =>{
                 
             const path = process.env.PUBLICPROFILEURL
             if(fs.existsSync(`uploads/profile/${profile[0].profile_image}`)){
-                var filepath = `${path}/${profile[0].profile_image}`
+                var profile_image = `${path}/${profile[0].profile_image}`
             }
             else {
-                var filepath = ''
+                var profile_image = ''
             }
         }else{
-            var filepath = ''
+            var profile_image = ''
         }
         var total_following  = await Follow.count({follower_id:profile[0]._id})
         var total_follow     = await Follow.count({user_id:profile[0]._id})
-        var total_likess  = 0
-        const videos  = await videos.find({user_id:profile[0]._id})
-        if(videos.length>0){
-            videos.map((e)=>{
-                total_likess += video_likes.count({video_id:e._id}) 
-            })
+        var total_likes  = 0
+        
+        const video  = await videos.find({user_id:profile[0]._id})
+        if(video.length>0){
+          await Promise.all(video.map(async(e)=>{
+                let likes = await video_likes.count({video_id:e._id}) 
+                total_likes += likes
+            }))
         }else{
-            total_likess = 0
+            total_likes = 0
+        }
+        
+        const userProfile = {
+            user_id:profile[0]._id,
+            dob:profile[0].dob,
+            website:profile[0].website,
+            usernname:profile[0].username,
+            usernname:profile[0].name,
+            profile_image ,
+            total_following,
+            total_follow,
+            total_likes
         }
         var total_likes   = 0
         var total_like_this_video   = 0
         var total_comments   = 0
-        var all_video_data  = await videos.find({user_id:profile[0]._id,is_view:1,is_save_to_device:0})
+        var all_video_data  = await videos.find({user_id:profile[0]._id,is_save_to_device:0})
+        var user_video = []
+        var user_privateVideo = []
+        var favorite_video = []
         if(all_video_data.length>0){
                var video_file_data =  all_video_data.map(async(e)=>{
                     var total_views = await video_watch_histories.count({video_id:e._id})
@@ -914,8 +932,19 @@ exports.getProfile = async(req,res) =>{
                      }else{
                         var is_video_like  = 0
                      }
-                     return ({
-                    id:e._id,
+                     if(e.is_view == 3){
+                        user_privateVideo.push({
+                            video_id:e._id,
+                            cover_image:cover_image,
+                            video_url:video_url,
+                            description:e.description,
+                            is_video_like:is_video_like,
+                            total_comments:total_comments,
+                            total_views:total_views,
+                             })
+                     }else{
+                     user_video.push({
+                    video_id:e._id,
                     cover_image:cover_image,
                     video_url:video_url,
                     description:e.description,
@@ -923,12 +952,18 @@ exports.getProfile = async(req,res) =>{
                     total_comments:total_comments,
                     total_views:total_views,
                      })
+                    }
+                     return ({
+                        video_id:e._id,  
+                     })
 
                 })
+
+                await Promise.all(video_file_data)
         }else{
             var video_file_data = []
         }
-        const all_favorite_video_data = await video_favorites.find({user_id:req?.body?.login_id})
+        const all_favorite_video_data = await video_favorites.find({user_id:req?.body?.user_id})
         if(all_favorite_video_data.length>0){
             var record_video_files =  all_favorite_video_data.map(async(e)=>{
                 var total_views = await video_watch_histories.count({video_id:e._id})
@@ -963,7 +998,7 @@ exports.getProfile = async(req,res) =>{
                  }else{
                     var is_video_like  = 0
                  }
-                 return ({
+                 favorite_video.push({
                 id:e._id,
                 cover_image:cover_image,
                 video_url:video_url,
@@ -972,114 +1007,20 @@ exports.getProfile = async(req,res) =>{
                 total_comments:total_comments,
                 total_views:total_views,
                  })
+                 return({
+                    id:e._id,
+                     })
 
             })
+                await Promise.all(record_video_files)
         }else{
             var record_video_files = []
         }
-       const private_videos  = await videos.find({user_id:profile[0]._id,is_save_to_device:0})
-       if(private_videos.length > 0){
-       var recordp_video_file =  all_favorite_video_data.map(async(e)=>{
-            var total_views = await video_watch_histories.count({video_id:e._id})
-            total_likes   += await video_likes.count({video_likes:e._id})
-            total_like_this_video   = await video_likes.count({video_likes:e._id})
-            total_comments   = await videos_comments.count({video_id:e._id})
-            if(e.cover_image != ''){
-                const path = process.env.PUBLICCOVERIMAGEEURL
-                if(fs.existsSync(`uploads/videos/cover_image/${e.cover_image}`)){
-                    var cover_image    = `${path}/${e.cover_image}`
-                }
-                else {
-                    var cover_image   = ''
-                }
-            }else{
-                var cover_image   = ''
-            }
-            if(e.file_name  != ''){
-                const path = process.env.PUBLICVIDEOSURL
-                if(fs.existsSync(`uploads/videos/videos/${e.file_name }`)){
-                    var  video_url     = `${path}/${e.file_name}`
-                }
-                else {
-                    var video_url    = ''
-                }
-            }else{
-                var  video_url    = ''
-             } 
-             var user_like_data = await video_likes.find({video_id:e._id,user_id:req?.body?.login_id})
-             if(user_like_data.length > 1){
-                var is_video_like  = 1
-             }else{
-                var is_video_like  = 0
-             }
-             return ({
-            id:e._id,
-            cover_image:cover_image,
-            video_url:video_url,
-            description:e.description,
-            is_video_like:is_video_like,
-            total_comments:total_comments,
-            total_views:total_views,
-             })
-
-        })
-       }else{
-        var recordp_video_file = []
-       } 
-       const unshuffle_followers_data  = await Follow.find({user_id:req?.body?.follower_id})
-       if(unshuffle_followers_data.length>0){
-
-           var followers_data =  unshuffle_followers_data
-           .map(value => ({ value, sort: Math.random() }))
-           .sort((a, b) => a.sort - b.sort)
-           .map(({ value }) => value)
-           followers_data = followers_data.splice(0,25)
-           var followers_result  = followers_data.map(async(e)=>{
-                const user_data = await User.find({_id:e.follower_id})
-                if(user_data.length>0){
-                    if(user_data[0].profile_image  != ''){
-                        const path = process.env.PUBLICPROFILEURL
-                        if(fs.existsSync(`uploads/users/profile/${user_data[0].profile_image }`)){
-                            var  profile_image     = `${path}/${user_data[0].profile_image}`
-                        }
-                        else {
-                            var profile_image    = ''
-                        }
-                    }else{
-                        var  profile_image    = ''
-                     } 
-                    }
-                    return({
-                        id:e._id,
-                        user_id:user_data[0]._id,
-                        name:user_data[0].name,
-                        username:user_data[0].username,
-                        private_account:user_data[0].private_account,
-                        profile_image:profile_image
-                    })
-           })
-        }else{
-            var followers_result = []
-        }
-
-        if(profile[0].email != ""){
-            hidden = ""
-            for(let i = 0;i<profile[0].email.split("@")[0]-3;i++){
-                hidden += "*" 
-            }
-            var email = `${profile[0].email.splice(0,3)}${hidden}`
-        }else{
-            email = ""
-        }
-        if(profile[0].email != ""){
-            var mobile_no = `${profile[0].email.splice(0,2)}******${profile[0].email.splice(8,2)}`
-        }else{
-            mobile_no = ""
-        }
-        
+   
+             return res.json({status:1,message:"Data found",data:{user_data:userProfile,videos:user_video,favorite_video,private_video:user_privateVideo}})        
     } catch (error) {
         res.status(502).json({status:0,message:"internal server error"})
-    console.log("server error on update get notification setting"); 
+    console.log(error + "get profile "); 
     }
 }
 
